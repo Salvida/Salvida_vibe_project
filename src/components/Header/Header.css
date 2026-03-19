@@ -1,0 +1,82 @@
+.header {
+  height: 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-slate-100);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.header__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-slate-900);
+  letter-spacing: -0.025em;
+}
+
+.header__subtitle {
+  font-size: 0.875rem;
+  color: var(--color-slate-500);
+  margin-top: 0.125rem;
+}
+
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header__notif-btn {
+  padding: 0.625rem;
+  border-radius: 0.75rem;
+  background-color: var(--color-slate-50);
+  color: var(--color-slate-600);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header__notif-btn:hover {
+  background-color: var(--color-slate-100);
+}
+
+.header__notif-btn:hover svg {
+  transform: rotate(12deg);
+}
+
+.header__notif-btn svg {
+  transition: transform 0.15s;
+}
+
+.header__notif-badge {
+  position: absolute;
+  top: 0.625rem;
+  right: 0.625rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: var(--color-red-500);
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.header__date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-primary-10);
+  color: var(--color-primary);
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-primary-10);
+}
