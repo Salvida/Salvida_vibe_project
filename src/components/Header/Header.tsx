@@ -16,7 +16,7 @@ export default function Header({ title, subtitle }: HeaderProps) {
       </div>
 
       <div className="header__actions">
-        <Link to="/notifications" className="header__notif-btn">
+        <Link to="/app/notifications" className="header__notif-btn">
           <Bell size={20} />
           <span className="header__notif-badge" />
         </Link>

@@ -79,7 +79,7 @@ export default function Dashboard() {
               ))}
             </div>
 
-            <Link to="/bookings/new" className="new-booking-btn">
+            <Link to="/app/bookings/new" className="new-booking-btn">
               <PlusCircle size={20} />
               <span>Request New Booking</span>
             </Link>
