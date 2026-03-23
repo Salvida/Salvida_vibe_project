@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
+  /* ── Admin app palette ── */
   --color-primary: #6b4691;
   --color-primary-dark: #543673;
   --color-primary-05: rgba(107, 70, 145, 0.05);
@@ -10,6 +11,34 @@
   --color-primary-40: rgba(107, 70, 145, 0.4);
   --color-primary-60: rgba(107, 70, 145, 0.6);
   --color-bg: #f8f9fc;
+
+  /* ── Landing page / Luminous Sanctuary design tokens ── */
+  --lp-primary:               #61337a;
+  --lp-primary-container:     #7b4b94;
+  --lp-primary-fixed:         #f6d9ff;
+  --lp-primary-fixed-dim:     #e7b3ff;
+  --lp-on-primary:            #ffffff;
+  --lp-on-primary-fixed:      #310049;
+  --lp-secondary:             #6c5775;
+  --lp-secondary-fixed:       #f5d9fe;
+  --lp-secondary-fixed-dim:   #d8bde1;
+  --lp-on-secondary-fixed:    #26142f;
+  --lp-tertiary-fixed-dim:    #c6cd66;
+  --lp-on-tertiary-fixed:     #1b1d00;
+  --lp-surface:               #fff7fc;
+  --lp-surface-bright:        #fff7fc;
+  --lp-surface-container-lowest:  #ffffff;
+  --lp-surface-container-low:     #faf1f8;
+  --lp-surface-container:         #f4ebf2;
+  --lp-surface-container-high:    #efe6ed;
+  --lp-surface-container-highest: #e9e0e7;
+  --lp-surface-variant:       #e9e0e7;
+  --lp-on-surface:            #1e1a1f;
+  --lp-on-surface-variant:    #4c444f;
+  --lp-on-background:         #1e1a1f;
+  --lp-outline-variant:       #cfc3d0;
+  --lp-amber:                 #f59e0b;
+  --lp-font:                  'Manrope', 'Inter', ui-sans-serif, system-ui, sans-serif;
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
   --color-slate-200: #e2e8f0;

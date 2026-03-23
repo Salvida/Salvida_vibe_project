@@ -1,0 +1,207 @@
+import './LandingPage.css';
+
+const testimonials = [
+  {
+    quote:
+      'Excelente servicio. Me sentí respetada y segura durante todo el trayecto al hospital. Los conductores son muy amables.',
+    initials: 'ME',
+    name: 'María Elena',
+    role: 'Usuaria desde 2023',
+    avatarMod: 'purple',
+  },
+  {
+    quote:
+      'Muy puntuales. Es difícil encontrar servicios que realmente cumplan con los horarios cuando se trata de citas médicas.',
+    initials: 'JR',
+    name: 'Juan Rodríguez',
+    role: 'Familiar de Usuario',
+    avatarMod: 'mauve',
+  },
+  {
+    quote:
+      'Trato humano excepcional. No es solo un transporte, es acompañamiento real. Gracias Salvida por dignificar el servicio.',
+    initials: 'CG',
+    name: 'Carmen García',
+    role: 'Usuaria Frecuente',
+    avatarMod: 'lime',
+  },
+] as const;
+
+const stats = [
+  {
+    icon: 'medical_services',
+    value: '280',
+    label: 'Servicios Totales',
+    sublabel: null,
+  },
+  {
+    icon: 'groups',
+    value: '47 Usuarios',
+    label: null,
+    sublabel: '20 Hombres / 27 Mujeres',
+  },
+  {
+    icon: 'location_on',
+    value: '15',
+    label: 'Puntos de Asistencia',
+    sublabel: null,
+  },
+] as const;
+
+export default function LandingPage() {
+  return (
+    <div className="lp">
+      {/* ── Nav ── */}
+      <nav className="lp-nav">
+        <div className="lp-nav__inner">
+          <span className="lp-nav__logo">Salvida</span>
+
+          <div className="lp-nav__links">
+            <a href="#" className="lp-nav__link lp-nav__link--active">Home</a>
+            <a href="#servicios" className="lp-nav__link">Servicios</a>
+            <a href="#nosotros" className="lp-nav__link">Nosotros</a>
+            <a href="#testimonios" className="lp-nav__link">Testimonios</a>
+          </div>
+
+          <button className="lp-nav__cta">Login</button>
+        </div>
+        <div className="lp-nav__divider" />
+      </nav>
+
+      <main className="lp-main">
+        {/* ── Hero ── */}
+        <section className="lp-hero">
+          <div className="lp-hero__blobs" aria-hidden="true">
+            <div className="lp-hero__blob lp-hero__blob--1" />
+            <div className="lp-hero__blob lp-hero__blob--2" />
+          </div>
+
+          <h1 className="lp-hero__title">Salvida</h1>
+
+          <p className="lp-hero__subtitle">
+            Un proyecto dedicado a transformar el transporte médico y la asistencia para Personas
+            de Movilidad Reducida (PMR), combinando tecnología, cuidado y dignidad.
+          </p>
+
+          <div className="lp-hero__actions">
+            <button className="lp-hero__btn-primary">Acceder a Reservas</button>
+            <button className="lp-hero__btn-secondary">Conocer más</button>
+          </div>
+        </section>
+
+        {/* ── Stats ── */}
+        <section className="lp-stats">
+          <div className="lp-stats__grid">
+            {stats.map((s) => (
+              <div key={s.icon} className="lp-stats__card">
+                <div className="lp-stats__icon-wrap">
+                  <span className="lp-material-icon lp-stats__icon">{s.icon}</span>
+                </div>
+                <div className="lp-stats__value">{s.value}</div>
+                {s.label && <div className="lp-stats__label">{s.label}</div>}
+                {s.sublabel && <div className="lp-stats__sublabel">{s.sublabel}</div>}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Video ── */}
+        <section className="lp-video" id="nosotros">
+          <div className="lp-video__frame">
+            <img
+              className="lp-video__img"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc3UX1FguYT2duV0Oc7SWw8_OcNtgzZCPS1aZAmzIro3OZr3HzZMd9qXc_HQTpFDCul_1nHC_pm4rkteqWNQASwgmKM5r0uG8JLttFzElcTnQblsdJj07q7awgW08YdQgu2O4rEMsjd1h-02YwhCeUvmlT97qSX0tGTSd8FPFft6t6LHYSXDCcZLI450wCDkZR4b3w_SwMRhY5ESr2aV2Zbjq-Fc49zcBLyOOC64BNPa8OKLHq56cMqj5XuuCPF9fkPWdX-yPtiw"
+              alt="Personal médico asistiendo a paciente con equipamiento de movilidad"
+            />
+            <div className="lp-video__overlay" aria-hidden="true" />
+            <div className="lp-video__play" role="button" aria-label="Reproducir video">
+              <span className="lp-material-icon lp-video__play-icon">play_arrow</span>
+            </div>
+            <div className="lp-video__caption">
+              <div className="lp-video__caption-title">Conoce nuestra misión</div>
+              <div className="lp-video__caption-sub">3:45 • Salvida en acción</div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── CTA Band ── */}
+        <section className="lp-cta-band">
+          <div className="lp-cta-band__inner">
+            <h2 className="lp-cta-band__title">
+              ¿Listo para transformar tu experiencia de traslado?
+            </h2>
+            <button className="lp-cta-band__btn">Acceder a Reservas</button>
+            <span className="lp-cta-band__note">(Requiere inicio de sesión)</span>
+          </div>
+        </section>
+
+        {/* ── Testimonials ── */}
+        <section className="lp-testimonials" id="testimonios">
+          <div className="lp-testimonials__inner">
+            <div className="lp-testimonials__header">
+              <div>
+                <span className="lp-testimonials__label">Experiencias Reales</span>
+                <h2 className="lp-testimonials__title">Lo que dicen de nosotros</h2>
+              </div>
+              <div className="lp-testimonials__nav">
+                <button
+                  className="lp-testimonials__nav-btn"
+                  aria-label="Anterior testimonio"
+                >
+                  chevron_left
+                </button>
+                <button
+                  className="lp-testimonials__nav-btn"
+                  aria-label="Siguiente testimonio"
+                >
+                  chevron_right
+                </button>
+              </div>
+            </div>
+
+            <div className="lp-testimonials__grid">
+              {testimonials.map((t) => (
+                <div key={t.initials} className="lp-testimonial-card">
+                  <div className="lp-testimonial-card__stars" aria-label="5 estrellas">
+                    {'star'.repeat(1) /* trick: render 5 spans */}
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <span key={i} className="lp-material-icon lp-material-icon--filled">
+                        star
+                      </span>
+                    ))}
+                  </div>
+                  <p className="lp-testimonial-card__quote">"{t.quote}"</p>
+                  <div className="lp-testimonial-card__author">
+                    <div
+                      className={`lp-testimonial-card__avatar lp-testimonial-card__avatar--${t.avatarMod}`}
+                    >
+                      {t.initials}
+                    </div>
+                    <div>
+                      <div className="lp-testimonial-card__name">{t.name}</div>
+                      <div className="lp-testimonial-card__role">{t.role}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* ── Footer ── */}
+      <footer className="lp-footer">
+        <div className="lp-footer__inner">
+          <span className="lp-footer__brand">Salvida</span>
+          <div className="lp-footer__links">
+            <a href="#" className="lp-footer__link">Privacy Policy</a>
+            <a href="#" className="lp-footer__link">Terms of Service</a>
+            <a href="#" className="lp-footer__link">Contact Us</a>
+            <a href="#" className="lp-footer__link">Accessibility</a>
+          </div>
+          <span className="lp-footer__copy">© 2024 Salvida. Empowering mobility with care.</span>
+        </div>
+      </footer>
+    </div>
+  );
+}

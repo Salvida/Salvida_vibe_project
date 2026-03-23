@@ -3,10 +3,10 @@ import { LayoutDashboard, CalendarDays, Users, Settings, LogOut, HeartPulse } fr
 import './Sidebar.css';
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-  { icon: CalendarDays, label: 'Bookings', path: '/bookings' },
-  { icon: Users, label: 'Patients (PMRs)', path: '/patients' },
-  { icon: Settings, label: 'Settings', path: '/settings' },
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/app' },
+  { icon: CalendarDays, label: 'Bookings', path: '/app/bookings' },
+  { icon: Users, label: 'Patients (PMRs)', path: '/app/patients' },
+  { icon: Settings, label: 'Settings', path: '/app/settings' },
 ];
 
 export default function Sidebar() {
@@ -28,7 +28,7 @@ export default function Sidebar() {
         {navItems.map((item) => {
           const isActive =
             location.pathname === item.path ||
-            (item.path !== '/' && location.pathname.startsWith(item.path));
+            (item.path !== '/app' && location.pathname.startsWith(item.path));
           return (
             <Link
               key={item.path}
