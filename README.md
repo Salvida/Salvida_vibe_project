@@ -73,7 +73,7 @@ npm run dev
 
 #### Levantar el backend
 ```bash
-uvicorn backend.main:app --reload
+uvicorn main:app --app-dir backend --reload
 ```
 
 ## Cómo iniciar el backend
@@ -119,7 +119,7 @@ uvicorn backend.main:app --reload
      ```
    - Desde la raíz del proyecto, ejecuta:
      ```bash
-     uvicorn backend.main:app --reload
+     uvicorn main:app --app-dir backend --reload
      ```
    - Accede a la API en [http://127.0.0.1:8000](http://127.0.0.1:8000) y a la documentación en [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
