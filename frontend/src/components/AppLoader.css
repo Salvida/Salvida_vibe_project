@@ -1,0 +1,21 @@
+.app-loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+}
+
+.app-loader__spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid var(--color-slate-100);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

@@ -1,3 +1,5 @@
+import { useAuthStore } from '../store/useAuthStore';
+
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
 export class ApiError extends Error {
@@ -11,11 +13,12 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  // TODO: inject Supabase JWT when auth is wired up
-  // const token = supabaseClient.auth.session()?.access_token;
+  const token = useAuthStore.getState().session?.access_token;
+
   const response = await fetch(`${BASE_URL}${path}`, {
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
     ...options,

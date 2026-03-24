@@ -17,5 +17,18 @@ export default defineConfig(({ mode }) => {
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-leaflet':  ['leaflet', 'react-leaflet'],
+            'vendor-motion':   ['motion'],
+            'vendor-tanstack': ['@tanstack/react-query'],
+            'vendor-router':   ['react-router-dom'],
+            'vendor-supabase': ['@supabase/supabase-js'],
+          },
+        },
+      },
+    },
   };
 });

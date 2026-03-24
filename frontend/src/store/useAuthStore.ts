@@ -1,18 +1,33 @@
 import { create } from 'zustand';
-import { UserProfile } from '../types';
-import { MOCK_USER } from '../mockData';
+import type { Session } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabaseClient';
+import type { UserProfile } from '../types';
 
 interface AuthState {
+  session: Session | null;
   user: UserProfile | null;
+  setSession: (session: Session | null) => void;
   setUser: (user: UserProfile | null) => void;
   updateUser: (partial: Partial<UserProfile>) => void;
+  logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: MOCK_USER,
+  session: null,
+  user: null,
+  setSession: (session) =>
+    set({
+      session,
+      // Clear user when session is cleared so Sidebar shows nothing stale
+      user: session ? undefined : null,
+    }),
   setUser: (user) => set({ user }),
   updateUser: (partial) =>
     set((state) => ({
       user: state.user ? { ...state.user, ...partial } : null,
     })),
+  logout: async () => {
+    await supabase.auth.signOut();
+    set({ session: null, user: null });
+  },
 }));

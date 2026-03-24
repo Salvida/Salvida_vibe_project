@@ -17,6 +17,7 @@
     "dashboard": "Dashboard",
     "bookings": "Reservas",
     "patients": "Mis PRMs",
+    "addresses": "Direcciones",
     "settings": "Ajustes",
     "brand": "Salvida",
     "brandSubtitle": "Management Portal"
@@ -49,6 +50,23 @@
       "viewProfile": "Ver perfil",
       "edit": "Editar",
       "deactivate": "Desactivar"
+    },
+    "newPatient": {
+      "title": "Nuevo PRM",
+      "subtitle": "Registra un nuevo paciente de movilidad reducida",
+      "sections": {
+        "basic": "Información básica",
+        "medical": "Datos médicos",
+        "address": "Dirección (opcional)",
+        "contacts": "Contactos de urgencia"
+      },
+      "submit": "Guardar PRM",
+      "submitting": "Guardando...",
+      "cancel": "Cancelar",
+      "contactAdd": "Añadir contacto de urgencia",
+      "contactMax": "Máximo 2 contactos de urgencia",
+      "errorRequired": "El nombre es obligatorio",
+      "errorGeneric": "Error al guardar el PRM. Inténtalo de nuevo."
     }
   },
   "patientDetail": {
@@ -207,6 +225,48 @@
     "clearAll": "Limpiar todo",
     "recentActivities": "Actividad reciente",
     "viewOlder": "Ver notificaciones anteriores"
+  },
+  "login": {
+    "title": "Iniciar sesión",
+    "subtitle": "Accede a tu cuenta de Salvida",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "tu@email.com",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Tu contraseña",
+    "submit": "Entrar",
+    "submitting": "Entrando...",
+    "errorInvalid": "Correo o contraseña incorrectos",
+    "errorGeneric": "Error al iniciar sesión. Inténtalo de nuevo."
+  },
+  "addresses": {
+    "title": "Gestión de Direcciones",
+    "subtitle": "Revisa y valida las direcciones de los PRMs",
+    "filterAll": "Todas",
+    "filterPending": "Pendientes",
+    "filterValidated": "Validadas",
+    "filterRejected": "Rechazadas",
+    "columns": {
+      "address": "Dirección",
+      "accessible": "Accesible",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "accessible": "Sí",
+    "notAccessible": "No",
+    "actions": {
+      "validate": "Validar",
+      "reject": "Rechazar",
+      "resetPending": "Pendiente"
+    },
+    "status": {
+      "pending": "Pendiente",
+      "validated": "Validada",
+      "rejected": "Rechazada"
+    },
+    "empty": "No hay direcciones con este filtro",
+    "addAddress": "Añadir dirección",
+    "saveSuccess": "Dirección actualizada",
+    "saveError": "Error al actualizar la dirección"
   },
   "calendar": {
     "months": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
