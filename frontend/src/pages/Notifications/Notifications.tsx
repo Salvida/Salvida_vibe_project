@@ -1,19 +1,11 @@
-import { MOCK_NOTIFICATIONS } from '../../mockData';
-import { Calendar, Bell, User, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Bell, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import type { ComponentType } from 'react';
-import type { Notification } from '../../types';
+import { useTranslation } from 'react-i18next';
 import './Notifications.css';
-
-const iconMap: Record<Notification['type'], ComponentType<{ size?: number }>> = {
-  reservation: Calendar,
-  system: Bell,
-  profile: User,
-  confirmation: CheckCircle,
-};
 
 export default function Notifications() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="notifications">
@@ -24,41 +16,16 @@ export default function Notifications() {
         >
           <ArrowLeft size={20} />
         </button>
-        <h2 className="notifications__title">Notifications</h2>
-        <button className="notifications__clear-btn">Clear All</button>
+        <h2 className="notifications__title">{t('notifications.title')}</h2>
       </div>
 
       <div className="notifications__body">
         <div className="notifications__inner">
-
-          <div>
-            <h3 className="notif-section__heading">Recent Activities</h3>
-            <div className="notif-list">
-              {MOCK_NOTIFICATIONS.map((notif) => {
-                const Icon = iconMap[notif.type];
-                return (
-                  <div key={notif.id} className="notif-item">
-                    <div className="notif-item__icon">
-                      <Icon size={24} />
-                    </div>
-                    <div className="notif-item__content">
-                      <p className="notif-item__title">{notif.title}</p>
-                      <p className="notif-item__desc">{notif.description}</p>
-                      <span className="notif-item__time">{notif.time}</span>
-                    </div>
-                    {notif.unread && <div className="notif-item__unread" />}
-                  </div>
-                );
-              })}
-            </div>
+          <h3 className="notif-section__heading">{t('notifications.recentActivities')}</h3>
+          <div className="notif-list notif-list--empty">
+            <Bell size={32} className="notif-list__empty-icon" />
+            <p className="notif-list__empty-text">{t('notifications.empty')}</p>
           </div>
-
-          <div>
-            <button className="notif-older-btn">
-              View Older Notifications
-            </button>
-          </div>
-
         </div>
       </div>
     </div>

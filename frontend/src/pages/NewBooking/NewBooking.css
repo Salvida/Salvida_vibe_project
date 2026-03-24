@@ -5,6 +5,21 @@
   overflow: hidden;
 }
 
+.location-selectors {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.location-selector-block__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-slate-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
 .new-booking__header {
   height: 5rem;
   display: flex;

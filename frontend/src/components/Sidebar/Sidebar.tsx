@@ -1,15 +1,14 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, CalendarDays, Users, Settings, LogOut, HeartPulse, MapPin } from 'lucide-react';
+import { CalendarDays, Users, Settings, LogOut, HeartPulse, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
 import './Sidebar.css';
 
 const navItems = [
-  { icon: LayoutDashboard, labelKey: 'nav.dashboard', path: '/app' },
-  { icon: CalendarDays,    labelKey: 'nav.bookings',  path: '/app/bookings' },
-  { icon: Users,           labelKey: 'nav.patients',  path: '/app/patients' },
-  { icon: MapPin,          labelKey: 'nav.addresses', path: '/app/addresses' },
-  { icon: Settings,        labelKey: 'nav.settings',  path: '/app/settings' },
+  { icon: CalendarDays, labelKey: 'nav.bookings',  path: '/app/bookings' },
+  { icon: Users,        labelKey: 'nav.patients',  path: '/app/patients' },
+  { icon: MapPin,       labelKey: 'nav.addresses', path: '/app/addresses' },
+  { icon: Settings,     labelKey: 'nav.settings',  path: '/app/settings' },
 ];
 
 export default function Sidebar() {
@@ -45,7 +44,7 @@ export default function Sidebar() {
         {navItems.map((item) => {
           const isActive =
             location.pathname === item.path ||
-            (item.path !== '/app' && location.pathname.startsWith(item.path));
+            location.pathname.startsWith(item.path + '/');
           return (
             <Link
               key={item.path}

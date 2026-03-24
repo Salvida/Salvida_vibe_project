@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { Navigate } from 'react-router-dom';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AppLoader from './components/AppLoader';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -30,7 +31,7 @@ export default function App() {
           {/* Protected app */}
           <Route element={<ProtectedRoute />}>
             <Route path="/app" element={<Layout />}>
-              <Route index element={<Dashboard />} />
+              <Route index element={<Navigate to="/app/bookings" replace />} />
               <Route path="bookings" element={<Dashboard />} />
               <Route path="bookings/new" element={<NewBooking />} />
               <Route path="patients" element={<Patients />} />
