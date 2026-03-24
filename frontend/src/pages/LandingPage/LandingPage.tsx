@@ -1,3 +1,5 @@
+import { useState, useEffect, useRef } from 'react';
+import AuthModal from './AuthModal';
 import './LandingPage.css';
 
 const testimonials = [
@@ -48,7 +50,40 @@ const stats = [
   },
 ] as const;
 
+const SECTIONS = ['home', 'servicios', 'nosotros', 'testimonios'] as const;
+
+function scrollTo(id: string) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
 export default function LandingPage() {
+  const [authOpen, setAuthOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('home');
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        // Pick the entry with the highest intersection ratio that is currently intersecting
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible.length > 0) {
+          setActiveSection(visible[0].target.id);
+        }
+      },
+      { threshold: [0.3, 0.5], rootMargin: '-80px 0px 0px 0px' }
+    );
+
+    SECTIONS.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observerRef.current?.observe(el);
+    });
+
+    return () => observerRef.current?.disconnect();
+  }, []);
+
   return (
     <div className="lp">
       {/* ── Nav ── */}
@@ -57,20 +92,40 @@ export default function LandingPage() {
           <span className="lp-nav__logo">Salvida</span>
 
           <div className="lp-nav__links">
-            <a href="#" className="lp-nav__link lp-nav__link--active">Home</a>
-            <a href="#servicios" className="lp-nav__link">Servicios</a>
-            <a href="#nosotros" className="lp-nav__link">Nosotros</a>
-            <a href="#testimonios" className="lp-nav__link">Testimonios</a>
+            <button
+              className={`lp-nav__link${activeSection === 'home' ? ' lp-nav__link--active' : ''}`}
+              onClick={() => scrollTo('home')}
+            >
+              Home
+            </button>
+            <button
+              className={`lp-nav__link${activeSection === 'servicios' ? ' lp-nav__link--active' : ''}`}
+              onClick={() => scrollTo('servicios')}
+            >
+              Servicios
+            </button>
+            <button
+              className={`lp-nav__link${activeSection === 'nosotros' ? ' lp-nav__link--active' : ''}`}
+              onClick={() => scrollTo('nosotros')}
+            >
+              Nosotros
+            </button>
+            <button
+              className={`lp-nav__link${activeSection === 'testimonios' ? ' lp-nav__link--active' : ''}`}
+              onClick={() => scrollTo('testimonios')}
+            >
+              Testimonios
+            </button>
           </div>
 
-          <button className="lp-nav__cta">Login</button>
+          <button className="lp-nav__cta" onClick={() => setAuthOpen(true)}>Login</button>
         </div>
         <div className="lp-nav__divider" />
       </nav>
 
       <main className="lp-main">
         {/* ── Hero ── */}
-        <section className="lp-hero">
+        <section className="lp-hero" id="home">
           <div className="lp-hero__blobs" aria-hidden="true">
             <div className="lp-hero__blob lp-hero__blob--1" />
             <div className="lp-hero__blob lp-hero__blob--2" />
@@ -84,13 +139,17 @@ export default function LandingPage() {
           </p>
 
           <div className="lp-hero__actions">
-            <button className="lp-hero__btn-primary">Acceder a Reservas</button>
-            <button className="lp-hero__btn-secondary">Conocer más</button>
+            <button className="lp-hero__btn-primary" onClick={() => setAuthOpen(true)}>
+              Iniciar sesión
+            </button>
+            <button className="lp-hero__btn-secondary" onClick={() => scrollTo('nosotros')}>
+              Conocer más
+            </button>
           </div>
         </section>
 
         {/* ── Stats ── */}
-        <section className="lp-stats">
+        <section className="lp-stats" id="servicios">
           <div className="lp-stats__grid">
             {stats.map((s) => (
               <div key={s.icon} className="lp-stats__card">
@@ -130,7 +189,9 @@ export default function LandingPage() {
             <h2 className="lp-cta-band__title">
               ¿Listo para transformar tu experiencia de traslado?
             </h2>
-            <button className="lp-cta-band__btn">Acceder a Reservas</button>
+            <button className="lp-cta-band__btn" onClick={() => setAuthOpen(true)}>
+              Iniciar sesión
+            </button>
             <span className="lp-cta-band__note">(Requiere inicio de sesión)</span>
           </div>
         </section>
@@ -202,6 +263,8 @@ export default function LandingPage() {
           <span className="lp-footer__copy">© 2024 Salvida. Empowering mobility with care.</span>
         </div>
       </footer>
+
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }

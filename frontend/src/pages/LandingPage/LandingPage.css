@@ -97,6 +97,11 @@
   color: var(--lp-on-surface-variant);
   transition: color 0.2s;
   text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--lp-font);
+  padding: 0;
 }
 
 .lp-nav__link:hover {
@@ -703,4 +708,181 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--lp-on-surface-variant);
+}
+
+/* ============================================================
+   AUTH MODAL
+   ============================================================ */
+.lp-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(30, 18, 38, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.lp-modal {
+  width: 100%;
+  max-width: 440px;
+  background: var(--lp-surface-bright);
+  border-radius: 1.5rem;
+  box-shadow: 0 32px 64px rgba(30, 18, 38, 0.2);
+  overflow: hidden;
+  animation: lp-modal-in 0.2s ease;
+}
+
+@keyframes lp-modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.lp-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 0;
+}
+
+.lp-modal__logo {
+  font-family: var(--lp-font);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--lp-primary);
+  letter-spacing: -0.04em;
+}
+
+.lp-modal__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--lp-on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.lp-modal__close:hover {
+  background: var(--lp-surface-container-high);
+  color: var(--lp-on-surface);
+}
+
+.lp-modal__tabs {
+  display: flex;
+  gap: 0;
+  padding: 1rem 1.5rem 0;
+  border-bottom: 1px solid var(--lp-surface-container-low);
+}
+
+.lp-modal__tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.625rem 0;
+  font-family: var(--lp-font);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--lp-on-surface-variant);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+
+.lp-modal__tab:hover {
+  color: var(--lp-primary);
+}
+
+.lp-modal__tab--active {
+  color: var(--lp-primary);
+  border-bottom-color: var(--lp-primary);
+}
+
+.lp-modal__body {
+  padding: 1.5rem;
+}
+
+.lp-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.lp-modal__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--lp-on-surface);
+  letter-spacing: -0.01em;
+}
+
+.lp-modal__input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--lp-outline-variant);
+  border-radius: 0.75rem;
+  font-family: var(--lp-font);
+  font-size: 0.9375rem;
+  color: var(--lp-on-surface);
+  background: var(--lp-surface-container-lowest);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.lp-modal__input:focus {
+  border-color: var(--lp-primary);
+  box-shadow: 0 0 0 3px rgba(97, 51, 122, 0.1);
+}
+
+.lp-modal__error {
+  font-size: 0.8125rem;
+  color: #c0392b;
+  background: rgba(192, 57, 43, 0.08);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.lp-modal__success {
+  font-size: 0.8125rem;
+  color: #1a7a4a;
+  background: rgba(26, 122, 74, 0.08);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.lp-modal__submit {
+  width: 100%;
+  background: linear-gradient(135deg, var(--lp-primary) 0%, var(--lp-primary-container) 100%);
+  color: var(--lp-on-primary);
+  font-family: var(--lp-font);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  padding: 0.875rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(97, 51, 122, 0.2);
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  margin-top: 0.25rem;
+}
+
+.lp-modal__submit:hover:not(:disabled) {
+  transform: scale(1.02);
+  box-shadow: 0 12px 28px rgba(97, 51, 122, 0.28);
+}
+
+.lp-modal__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
