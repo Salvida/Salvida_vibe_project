@@ -32,7 +32,8 @@
     "completed": "Completados",
     "todayBookings": "Reservas de hoy",
     "requestNewBooking": "Solicitar nueva reserva",
-    "viewAll": "Ver todo"
+    "viewAll": "Ver todo",
+    "noBookingsToday": "No hay reservas para hoy"
   },
   "patients": {
     "title": "Mis PRMs",
@@ -224,7 +225,8 @@
     "title": "Notificaciones",
     "clearAll": "Limpiar todo",
     "recentActivities": "Actividad reciente",
-    "viewOlder": "Ver notificaciones anteriores"
+    "viewOlder": "Ver notificaciones anteriores",
+    "empty": "No hay notificaciones"
   },
   "login": {
     "title": "Iniciar sesión",

@@ -1,12 +1,19 @@
-import { ArrowLeft, MapPin, Navigation, Accessibility, Send, Clock, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Accessibility, Send, Clock, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import AddressSelector from '../../components/AddressSelector';
+import type { Address } from '../../types';
 import './NewBooking.css';
 
 export default function NewBooking() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
   const [step, setStep] = useState(1);
   const [urgency, setUrgency] = useState('routine');
+  const [pickupAddress, setPickupAddress] = useState<Partial<Address>>({});
+  const [destinationAddress, setDestinationAddress] = useState<Partial<Address>>({});
 
   return (
     <div className="new-booking">
@@ -17,7 +24,7 @@ export default function NewBooking() {
         >
           <ArrowLeft size={20} />
         </button>
-        <h2 className="new-booking__title">New Reservation</h2>
+        <h2 className="new-booking__title">{t('booking.title')}</h2>
       </div>
 
       <div className="new-booking__body">
@@ -37,33 +44,25 @@ export default function NewBooking() {
           <section className="booking-section">
             <div className="booking-section__heading">
               <span className="booking-section__num">1</span>
-              <h3 className="booking-section__title">Location Details</h3>
+              <h3 className="booking-section__title">{t('booking.locationDetails')}</h3>
             </div>
 
-            <div className="location-card">
-              <div className="location-card__line" />
-
-              <div className="location-field">
-                <span className="location-field__icon">
-                  <Navigation size={20} />
-                </span>
-                <label className="location-field__label">Pickup Address</label>
-                <input
-                  type="text"
-                  placeholder="Enter pickup location"
-                  className="location-field__input"
+            <div className="location-selectors">
+              <div className="location-selector-block">
+                <p className="location-selector-block__label">{t('booking.pickupAddress')}</p>
+                <AddressSelector
+                  value={pickupAddress}
+                  onChange={setPickupAddress}
+                  showValidation={false}
                 />
               </div>
 
-              <div className="location-field">
-                <span className="location-field__icon location-field__icon--muted">
-                  <MapPin size={20} />
-                </span>
-                <label className="location-field__label">Destination Address</label>
-                <input
-                  type="text"
-                  placeholder="Enter destination address"
-                  className="location-field__input"
+              <div className="location-selector-block">
+                <p className="location-selector-block__label">{t('booking.destinationAddress')}</p>
+                <AddressSelector
+                  value={destinationAddress}
+                  onChange={setDestinationAddress}
+                  showValidation={false}
                 />
               </div>
             </div>
@@ -73,7 +72,7 @@ export default function NewBooking() {
           <section className="booking-section">
             <div className="booking-section__heading">
               <span className="booking-section__num booking-section__num--inactive">2</span>
-              <h3 className="booking-section__title">Passenger Details</h3>
+              <h3 className="booking-section__title">{t('booking.passengerDetails')}</h3>
             </div>
 
             <div className="passenger-card">
@@ -82,8 +81,8 @@ export default function NewBooking() {
                   <Accessibility size={24} />
                 </div>
                 <div>
-                  <p className="passenger-card__title">PMR Status</p>
-                  <p className="passenger-card__sub">Reduced Mobility</p>
+                  <p className="passenger-card__title">{t('booking.pmrStatus')}</p>
+                  <p className="passenger-card__sub">{t('booking.reducedMobility')}</p>
                 </div>
               </div>
               <label className="toggle-label">
@@ -99,7 +98,7 @@ export default function NewBooking() {
           <section className="booking-section">
             <div className="booking-section__heading">
               <span className="booking-section__num booking-section__num--inactive">3</span>
-              <h3 className="booking-section__title">Urgency</h3>
+              <h3 className="booking-section__title">{t('booking.urgency')}</h3>
             </div>
 
             <div className="urgency-grid">
@@ -108,14 +107,14 @@ export default function NewBooking() {
                 className={`urgency-btn${urgency === 'routine' ? ' urgency-btn--routine-active' : ''}`}
               >
                 <Clock size={32} />
-                <span className="urgency-btn__label">Routine</span>
+                <span className="urgency-btn__label">{t('booking.routine')}</span>
               </button>
               <button
                 onClick={() => setUrgency('urgent')}
                 className={`urgency-btn${urgency === 'urgent' ? ' urgency-btn--urgent-active' : ''}`}
               >
                 <AlertCircle size={32} />
-                <span className="urgency-btn__label">Urgent</span>
+                <span className="urgency-btn__label">{t('booking.urgent')}</span>
               </button>
             </div>
           </section>
@@ -130,10 +129,10 @@ export default function NewBooking() {
             onClick={() => navigate(-1)}
             className="booking-actions__cancel"
           >
-            Cancel
+            {t('booking.cancel')}
           </button>
           <button className="booking-actions__submit">
-            <span>Submit Request</span>
+            <span>{t('booking.submit')}</span>
             <Send size={18} />
           </button>
         </div>

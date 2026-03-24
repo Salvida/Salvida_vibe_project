@@ -37,12 +37,17 @@ async def get_current_user(
         )
 
     try:
-        payload = jwt.decode(
-            credentials.credentials,
-            settings.supabase_anon_key,
-            algorithms=["HS256"],
-            options={"verify_aud": False},
-        )
+        if settings.debug:
+            # In debug mode, skip signature verification so you don't need the
+            # JWT secret locally. Claims are still parsed from the token.
+            payload = jwt.get_unverified_claims(credentials.credentials)
+        else:
+            payload = jwt.decode(
+                credentials.credentials,
+                settings.supabase_jwt_secret,
+                algorithms=["HS256"],
+                options={"verify_aud": False},
+            )
         return payload
     except JWTError:
         raise HTTPException(
