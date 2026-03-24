@@ -236,7 +236,16 @@
     "submit": "Entrar",
     "submitting": "Entrando...",
     "errorInvalid": "Correo o contraseña incorrectos",
-    "errorGeneric": "Error al iniciar sesión. Inténtalo de nuevo."
+    "errorGeneric": "Error al iniciar sesión. Inténtalo de nuevo.",
+    "loginTab": "Iniciar sesión",
+    "registerTab": "Crear cuenta",
+    "confirmPassword": "Confirmar contraseña",
+    "confirmPasswordPlaceholder": "Repite tu contraseña",
+    "registerSubmit": "Crear cuenta",
+    "registerSubmitting": "Creando cuenta...",
+    "registerSuccess": "¡Cuenta creada! Revisa tu email para confirmarla.",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "errorRegisterGeneric": "Error al crear la cuenta. Inténtalo de nuevo."
   },
   "addresses": {
     "title": "Gestión de Direcciones",
