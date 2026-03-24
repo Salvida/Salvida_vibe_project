@@ -1,0 +1,215 @@
+{
+  "common": {
+    "save": "Guardar cambios",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "viewAll": "Ver todo",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "administrator": "Administrador",
+    "logout": "Cerrar sesión",
+    "underDevelopment": "Esta sección está en desarrollo. Vuelve más tarde.",
+    "saveSuccess": "Guardado correctamente",
+    "saveError": "Error al guardar"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "bookings": "Reservas",
+    "patients": "Mis PRMs",
+    "settings": "Ajustes",
+    "brand": "Salvida",
+    "brandSubtitle": "Management Portal"
+  },
+  "dashboard": {
+    "title": "Gestión de Reservas",
+    "subtitle": "Gestiona y monitoriza los traslados programados",
+    "summary": "Resumen",
+    "todayTotal": "Total hoy",
+    "trips": "Traslados",
+    "pending": "Pendientes",
+    "completed": "Completados",
+    "todayBookings": "Reservas de hoy",
+    "requestNewBooking": "Solicitar nueva reserva",
+    "viewAll": "Ver todo"
+  },
+  "patients": {
+    "title": "Mis PRMs",
+    "subtitle": "Gestiona tus pacientes de movilidad reducida",
+    "search": "Buscar PRMs...",
+    "addPatient": "Añadir PRM",
+    "columns": {
+      "name": "Nombre",
+      "contact": "Contacto",
+      "bookings": "Reservas",
+      "lastVisit": "Última Visita",
+      "status": "Estado"
+    },
+    "menu": {
+      "viewProfile": "Ver perfil",
+      "edit": "Editar",
+      "deactivate": "Desactivar"
+    }
+  },
+  "patientDetail": {
+    "title": "Detalle del PRM",
+    "personalInfo": "Información personal",
+    "recentHistory": "Historial reciente",
+    "bookAppointment": "Reservar cita",
+    "edit": "Editar",
+    "editProfile": "Editar perfil",
+    "viewProfile": "Ver perfil",
+    "saveChanges": "Guardar cambios",
+    "cancelEdit": "Cancelar",
+    "viewAll": "Ver todo",
+    "blood": "Sangre",
+    "height": "Altura",
+    "weight": "Peso",
+    "email": "Email",
+    "phone": "Teléfono",
+    "birthdate": "Fecha de nacimiento",
+    "dni": "DNI / NIE",
+    "status": "Estado",
+    "notFound": "PRM no encontrado",
+    "goBack": "Volver",
+    "saveSuccess": "PRM actualizado correctamente",
+    "saveError": "Error al guardar los cambios",
+    "emergencyContacts": "Contactos de urgencia",
+    "addContact": "Añadir contacto",
+    "contactName": "Nombre",
+    "contactPhone": "Teléfono",
+    "contactRelationship": "Relación",
+    "contactNamePlaceholder": "Nombre del contacto",
+    "contactPhonePlaceholder": "+34 600 000 000",
+    "contactRelationshipPlaceholder": "Ej: Madre, Hermano, Cónyuge",
+    "maxContactsReached": "Máximo 2 contactos de urgencia",
+    "removeContact": "Eliminar contacto",
+    "address": "Dirección",
+    "addressFull": "Dirección completa",
+    "addressAccessible": "Accesible para PMR",
+    "addressValidation": "Validación",
+    "addressPending": "Pendiente de validación",
+    "addressValidated": "Validada",
+    "addressRejected": "Rechazada",
+    "noAddress": "Sin dirección registrada",
+    "form": {
+      "name": "Nombre completo",
+      "bloodType": "Grupo sanguíneo",
+      "height": "Altura",
+      "weight": "Peso",
+      "birthDate": "Fecha de nacimiento",
+      "statusLabel": "Estado"
+    },
+    "menu": {
+      "edit": "Editar",
+      "history": "Historial",
+      "delete": "Eliminar"
+    }
+  },
+  "booking": {
+    "title": "Nueva Reserva",
+    "locationDetails": "Detalles de ubicación",
+    "pickupAddress": "Dirección de recogida",
+    "pickupPlaceholder": "Introduce la dirección de recogida",
+    "destinationAddress": "Dirección de destino",
+    "destinationPlaceholder": "Introduce la dirección de destino",
+    "passengerDetails": "Detalles del pasajero",
+    "pmrStatus": "Estado PRM",
+    "reducedMobility": "Movilidad reducida",
+    "serviceReason": "Motivo del servicio",
+    "serviceReasonPlaceholder": "Selecciona un motivo",
+    "serviceReasonNotes": "Especifica el motivo",
+    "serviceReasonNotesPlaceholder": "Describe el motivo del traslado",
+    "urgency": "Urgencia",
+    "routine": "Rutina",
+    "urgent": "Urgente",
+    "selectPatient": "Seleccionar PRM",
+    "searchPatient": "Buscar PRM por nombre...",
+    "noPatientSelected": "Ningún PRM seleccionado",
+    "selectedPatient": "PRM seleccionado",
+    "submit": "Enviar solicitud",
+    "submitting": "Enviando...",
+    "cancel": "Cancelar",
+    "menu": {
+      "viewDetail": "Ver detalle",
+      "edit": "Editar",
+      "cancelBooking": "Cancelar reserva"
+    },
+    "reasons": {
+      "medical_appointment": "Cita médica",
+      "physiotherapy": "Fisioterapia",
+      "dialysis": "Diálisis",
+      "hospital_admission": "Ingreso hospitalario",
+      "administrative": "Gestión administrativa",
+      "other": "Otro"
+    },
+    "status": {
+      "Approved": "Aprobada",
+      "Pending": "Pendiente",
+      "Completed": "Completada",
+      "Cancelled": "Cancelada"
+    }
+  },
+  "settings": {
+    "title": "Ajustes",
+    "subtitle": "Configura tus preferencias y cuenta",
+    "sections": {
+      "profile": "Perfil",
+      "notifications": "Notificaciones",
+      "security": "Seguridad",
+      "appearance": "Apariencia",
+      "language": "Idioma"
+    },
+    "notifications": {
+      "title": "Preferencias de Notificaciones",
+      "emailLabel": "Notificaciones por email",
+      "emailDesc": "Recibe actualizaciones y alertas en tu correo electrónico",
+      "pushLabel": "Notificaciones push",
+      "pushDesc": "Recibe alertas en tiempo real en tu navegador",
+      "reminderLabel": "Recordatorio de reservas",
+      "reminderDesc": "Recibe un aviso antes de cada traslado programado",
+      "save": "Guardar preferencias",
+      "saveSuccess": "Preferencias guardadas correctamente",
+      "saveError": "Error al guardar las preferencias"
+    },
+    "security": {
+      "title": "Seguridad de la cuenta",
+      "changePassword": "Cambiar contraseña",
+      "currentPassword": "Contraseña actual",
+      "newPassword": "Nueva contraseña",
+      "confirmPassword": "Confirmar nueva contraseña",
+      "currentPasswordPlaceholder": "Introduce tu contraseña actual",
+      "newPasswordPlaceholder": "Mínimo 8 caracteres",
+      "confirmPasswordPlaceholder": "Repite la nueva contraseña",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+      "save": "Actualizar contraseña",
+      "saveSuccess": "Contraseña actualizada correctamente",
+      "saveError": "Error al actualizar la contraseña"
+    },
+    "profile": {
+      "title": "Ajustes de Perfil",
+      "changePhoto": "Cambiar foto",
+      "photoHint": "JPG, PNG o GIF. Máximo 2MB.",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "email": "Email",
+      "phone": "Teléfono",
+      "organization": "Organización",
+      "dni": "DNI / NIE",
+      "save": "Guardar cambios",
+      "saveSuccess": "Perfil actualizado correctamente",
+      "saveError": "Error al guardar el perfil"
+    }
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "clearAll": "Limpiar todo",
+    "recentActivities": "Actividad reciente",
+    "viewOlder": "Ver notificaciones anteriores"
+  },
+  "calendar": {
+    "months": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+    "weekdays": ["D", "L", "M", "X", "J", "V", "S"]
+  }
+}
