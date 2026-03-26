@@ -1,5 +1,5 @@
 node_modules/
-venv/
+.venv/
 __pycache__/
 *.pyc
 build/
@@ -9,3 +9,4 @@ coverage/
 *.log
 .env*
 !.env.example
+.claude/worktrees/
