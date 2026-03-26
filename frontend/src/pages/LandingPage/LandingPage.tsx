@@ -52,36 +52,40 @@ const stats = [
 
 const SECTIONS = ['home', 'servicios', 'nosotros', 'testimonios'] as const;
 
-function scrollTo(id: string) {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth' });
-}
-
 export default function LandingPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('home');
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  const scrollingTo = useRef<string | null>(null);
+  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function scrollTo(id: string) {
+    scrollingTo.current = id;
+    setActiveSection(id);
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (scrollTimer.current) clearTimeout(scrollTimer.current);
+    scrollTimer.current = setTimeout(() => { scrollingTo.current = null; }, 1000);
+  }
 
   useEffect(() => {
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
-        // Pick the entry with the highest intersection ratio that is currently intersecting
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible.length > 0) {
-          setActiveSection(visible[0].target.id);
-        }
+        if (scrollingTo.current) return; // ignore while programmatic scroll
+        entries.forEach((e) => {
+          if (e.isIntersecting && e.intersectionRatio >= 0.3) {
+            setActiveSection(e.target.id);
+          }
+        });
       },
-      { threshold: [0.3, 0.5], rootMargin: '-80px 0px 0px 0px' }
+      { threshold: 0.3, rootMargin: '-80px 0px 0px 0px' }
     );
 
     SECTIONS.forEach((id) => {
       const el = document.getElementById(id);
-      if (el) observerRef.current?.observe(el);
+      if (el) observer.observe(el);
     });
 
-    return () => observerRef.current?.disconnect();
+    return () => { observer.disconnect(); if (scrollTimer.current) clearTimeout(scrollTimer.current); };
   }, []);
 
   return (
