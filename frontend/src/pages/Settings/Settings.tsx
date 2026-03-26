@@ -1,7 +1,8 @@
 import Header from '../../components/Header/Header';
 import { User, Bell, Shield, Palette, Languages, Camera, Save } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import { useProfile, useUpdateProfile } from '../../hooks/useProfile';
 import './Settings.css';
 
 interface Section {
@@ -20,8 +21,44 @@ const sections: Section[] = [
 
 export default function Settings() {
   const [activeSection, setActiveSection] = useState('profile');
+  const { data: profile, isLoading } = useProfile();
+  const { mutate: updateProfile, isPending, isSuccess } = useUpdateProfile();
+
+  const [form, setForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    organization: '',
+  });
+
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        firstName: profile.firstName ?? '',
+        lastName: profile.lastName ?? '',
+        email: profile.email ?? '',
+        phone: profile.phone ?? '',
+        organization: profile.organization ?? '',
+      });
+    }
+  }, [profile]);
 
   const activeItem = sections.find((s) => s.id === activeSection);
+
+  const initials =
+    form.firstName || form.lastName
+      ? `${form.firstName.charAt(0)}${form.lastName.charAt(0)}`.toUpperCase()
+      : '?';
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    updateProfile(form);
+  }
 
   return (
     <div className="settings">
@@ -55,52 +92,96 @@ export default function Settings() {
               <div className="settings-profile">
                 <h3 className="settings-profile__title">Ajustes de Perfil</h3>
 
-                {/* Avatar */}
-                <div className="settings-avatar">
-                  <div className="settings-avatar__wrap">
-                    <div className="settings-avatar__circle">AJ</div>
-                    <button className="settings-avatar__btn">
-                      <Camera size={14} />
-                    </button>
-                  </div>
-                  <div className="settings-avatar__info">
-                    <button className="settings-avatar__change-btn">
-                      Cambiar foto
-                    </button>
-                    <p className="settings-avatar__hint">JPG, PNG o GIF. Máximo 2MB.</p>
-                  </div>
-                </div>
+                {isLoading ? (
+                  <p className="settings-profile__loading">Cargando perfil…</p>
+                ) : (
+                  <>
+                    {/* Avatar */}
+                    <div className="settings-avatar">
+                      <div className="settings-avatar__wrap">
+                        <div className="settings-avatar__circle">{initials}</div>
+                        <button type="button" className="settings-avatar__btn" disabled>
+                          <Camera size={14} />
+                        </button>
+                      </div>
+                      <div className="settings-avatar__info">
+                        <button type="button" className="settings-avatar__change-btn" disabled>
+                          Cambiar foto
+                        </button>
+                        <p className="settings-avatar__hint">JPG, PNG o GIF. Máximo 2MB.</p>
+                      </div>
+                    </div>
 
-                {/* Form */}
-                <form className="settings-form">
-                  <div className="settings-form__field">
-                    <label className="settings-form__label">Nombre</label>
-                    <input type="text" defaultValue="Alex" className="settings-form__input" />
-                  </div>
-                  <div className="settings-form__field">
-                    <label className="settings-form__label">Apellido</label>
-                    <input type="text" defaultValue="Johnson" className="settings-form__input" />
-                  </div>
-                  <div className="settings-form__field">
-                    <label className="settings-form__label">Email</label>
-                    <input type="email" defaultValue="alex.johnson@salvida.com" className="settings-form__input" />
-                  </div>
-                  <div className="settings-form__field">
-                    <label className="settings-form__label">Teléfono</label>
-                    <input type="tel" defaultValue="+34 612 345 678" className="settings-form__input" />
-                  </div>
-                  <div className="settings-form__field settings-form__field--full">
-                    <label className="settings-form__label">Organización</label>
-                    <input type="text" defaultValue="Salvida Management" className="settings-form__input" />
-                  </div>
-                </form>
+                    {/* Form */}
+                    <form className="settings-form" onSubmit={handleSubmit}>
+                      <div className="settings-form__field">
+                        <label className="settings-form__label">Nombre</label>
+                        <input
+                          type="text"
+                          name="firstName"
+                          value={form.firstName}
+                          onChange={handleChange}
+                          className="settings-form__input"
+                          placeholder="Tu nombre"
+                        />
+                      </div>
+                      <div className="settings-form__field">
+                        <label className="settings-form__label">Apellido</label>
+                        <input
+                          type="text"
+                          name="lastName"
+                          value={form.lastName}
+                          onChange={handleChange}
+                          className="settings-form__input"
+                          placeholder="Tu apellido"
+                        />
+                      </div>
+                      <div className="settings-form__field">
+                        <label className="settings-form__label">Email</label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={form.email}
+                          onChange={handleChange}
+                          className="settings-form__input"
+                          placeholder="tu@email.com"
+                        />
+                      </div>
+                      <div className="settings-form__field">
+                        <label className="settings-form__label">Teléfono</label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={form.phone}
+                          onChange={handleChange}
+                          className="settings-form__input"
+                          placeholder="+34 600 000 000"
+                        />
+                      </div>
+                      <div className="settings-form__field settings-form__field--full">
+                        <label className="settings-form__label">Organización</label>
+                        <input
+                          type="text"
+                          name="organization"
+                          value={form.organization}
+                          onChange={handleChange}
+                          className="settings-form__input"
+                          placeholder="Nombre de la organización"
+                        />
+                      </div>
 
-                <div className="settings-profile__footer">
-                  <button className="settings-save-btn">
-                    <Save size={20} />
-                    <span>Guardar cambios</span>
-                  </button>
-                </div>
+                      <div className="settings-profile__footer">
+                        {isSuccess && (
+                          <span className="settings-save-ok">Cambios guardados</span>
+                        )}
+                        <button type="submit" className="settings-save-btn" disabled={isPending}>
+                          <Save size={20} />
+                          <span>{isPending ? 'Guardando…' : 'Guardar cambios'}</span>
+                        </button>
+                      </div>
+                    </form>
+                  </>
+                )}
               </div>
             ) : (
               activeItem && (
@@ -108,9 +189,9 @@ export default function Settings() {
                   <div className="settings-placeholder__icon">
                     <activeItem.icon size={48} />
                   </div>
-                  <h3 className="settings-placeholder__title">{activeItem.label} Settings</h3>
+                  <h3 className="settings-placeholder__title">{activeItem.label}</h3>
                   <p className="settings-placeholder__desc">
-                    This section is currently under development. Please check back later.
+                    Esta sección está en desarrollo. Vuelve pronto.
                   </p>
                 </div>
               )

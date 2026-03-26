@@ -8,6 +8,7 @@
     "active": "Activo",
     "inactive": "Inactivo",
     "administrator": "Administrador",
+    "profileIncomplete": "Perfil sin completar",
     "logout": "Cerrar sesión",
     "underDevelopment": "Esta sección está en desarrollo. Vuelve más tarde.",
     "saveSuccess": "Guardado correctamente",
