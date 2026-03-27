@@ -11,16 +11,22 @@ function getFirstDayOfWeek(year: number, month: number) {
   return new Date(year, month, 1).getDay(); // 0=Sun
 }
 
-export default function CalendarWidget() {
+interface CalendarWidgetProps {
+  onDateSelect?: (date: Date) => void;
+}
+
+export default function CalendarWidget({ onDateSelect }: CalendarWidgetProps) {
   const { t } = useTranslation();
   const today = new Date();
 
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
+  const [selectedDay, setSelectedDay] = useState<number>(today.getDate());
+  const [selectedMonth, setSelectedMonth] = useState<number>(today.getMonth());
+  const [selectedYear, setSelectedYear] = useState<number>(today.getFullYear());
 
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOffset = getFirstDayOfWeek(year, month);
-  const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
 
   const months: string[] = t('calendar.months', { returnObjects: true });
   const weekdays: string[] = t('calendar.weekdays', { returnObjects: true });
@@ -33,6 +39,17 @@ export default function CalendarWidget() {
   function nextMonth() {
     if (month === 11) { setYear(y => y + 1); setMonth(0); }
     else setMonth(m => m + 1);
+  }
+
+  function handleDayClick(day: number) {
+    setSelectedDay(day);
+    setSelectedMonth(month);
+    setSelectedYear(year);
+    onDateSelect?.(new Date(year, month, day));
+  }
+
+  function isSelected(day: number) {
+    return day === selectedDay && month === selectedMonth && year === selectedYear;
   }
 
   return (
@@ -62,7 +79,8 @@ export default function CalendarWidget() {
         {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => (
           <button
             key={day}
-            className={`calendar__day${isCurrentMonth && day === today.getDate() ? ' calendar__day--selected' : ''}`}
+            onClick={() => handleDayClick(day)}
+            className={`calendar__day${isSelected(day) ? ' calendar__day--selected' : ''}`}
           >
             {day}
           </button>

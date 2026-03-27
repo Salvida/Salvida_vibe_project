@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import { Search, MapPin, Loader2, ShieldCheck, Clock, AlertTriangle, Accessibility } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -28,6 +28,16 @@ function MapRecenter({ lat, lng }: { lat: number; lng: number }) {
   useEffect(() => {
     map.setView([lat, lng], 16);
   }, [lat, lng, map]);
+  return null;
+}
+
+// Inner component to handle map clicks for reverse geocoding
+function MapClickHandler({ onMapClick }: { onMapClick: (lat: number, lng: number) => void }) {
+  useMapEvents({
+    click(e) {
+      onMapClick(e.latlng.lat, e.latlng.lng);
+    },
+  });
   return null;
 }
 
@@ -113,6 +123,29 @@ export default function AddressSelector({
       .finally(() => setLoading(false));
   }, [debouncedQuery, value?.full_address]);
 
+  const handleMapClick = useCallback(async (lat: number, lng: number) => {
+    setLoading(true);
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+      const res = await fetch(url, { headers: { 'Accept-Language': 'es' } });
+      const data = await res.json();
+      const address = data.display_name as string;
+      setQuery(address);
+      onChange({
+        ...value,
+        full_address: address,
+        lat,
+        lng,
+        validation_status: value?.validation_status ?? 'pending',
+        is_accessible: value?.is_accessible ?? false,
+      });
+    } catch {
+      // silently ignore
+    } finally {
+      setLoading(false);
+    }
+  }, [value, onChange]);
+
   const handleSelect = useCallback((result: NominatimResult) => {
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
@@ -154,7 +187,7 @@ export default function AddressSelector({
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => suggestions.length > 0 && setOpen(true)}
             placeholder="Buscar dirección..."
-            className="w-full pl-11 pr-11 py-3 rounded-xl border-none bg-slate-50 focus:ring-2 focus:ring-[#6b4691] outline-none font-medium text-sm"
+            className="w-full pl-11 pr-11 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-[#6b4691] focus:border-[#6b4691] outline-none font-medium text-sm transition-colors"
           />
           {loading && (
             <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 animate-spin" size={16} />
@@ -163,13 +196,13 @@ export default function AddressSelector({
 
         {/* Suggestions dropdown */}
         {open && suggestions.length > 0 && (
-          <ul className="absolute z-50 mt-1 w-full bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden">
-            {suggestions.map((result) => (
-              <li key={result.place_id}>
+          <ul className="absolute z-[100] mt-1 w-full bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">
+            {suggestions.map((result, idx) => (
+              <li key={result.place_id} className={idx > 0 ? 'border-t border-slate-100' : ''}>
                 <button
                   type="button"
                   onClick={() => handleSelect(result)}
-                  className="w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-[#6b4691]/5 transition-colors"
+                  className="w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-[#6b4691]/5 active:bg-[#6b4691]/10 transition-colors"
                 >
                   <MapPin size={14} className="text-[#6b4691] mt-0.5 shrink-0" />
                   <span className="text-sm text-slate-700 leading-snug">{result.display_name}</span>
@@ -182,13 +215,18 @@ export default function AddressSelector({
 
       {/* Map preview */}
       {hasCoords && (
-        <div className="rounded-xl overflow-hidden border border-slate-100 shadow-sm h-48">
+        <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm h-52 relative">
+          {loading && (
+            <div className="absolute inset-0 z-[200] flex items-center justify-center bg-white/60 backdrop-blur-sm">
+              <Loader2 className="text-[#6b4691] animate-spin" size={22} />
+            </div>
+          )}
           <MapContainer
             center={[value!.lat!, value!.lng!]}
             zoom={16}
-            style={{ height: '100%', width: '100%' }}
-            zoomControl={false}
-            scrollWheelZoom={false}
+            style={{ height: '100%', width: '100%', cursor: 'crosshair' }}
+            zoomControl={true}
+            scrollWheelZoom={true}
             attributionControl={false}
           >
             <TileLayer
@@ -197,6 +235,7 @@ export default function AddressSelector({
             />
             <Marker position={[value!.lat!, value!.lng!]} />
             <MapRecenter lat={value!.lat!} lng={value!.lng!} />
+            <MapClickHandler onMapClick={handleMapClick} />
           </MapContainer>
         </div>
       )}

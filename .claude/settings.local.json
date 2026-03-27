@@ -3,6 +3,19 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(npm run:*)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\luthe\\\\Desktop\\\\DEV\\\\Salvida_vibe_project\\\\.claude\\\\worktrees\\\\zealous-mahavira\\\\backend\\\\auth\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\luthe\\\\Desktop\\\\DEV\\\\Salvida_vibe_project\\\\.claude\\\\worktrees\\\\zealous-mahavira\\\\backend\\\\db\\\\migrations\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\luthe\\\\Desktop\\\\DEV\\\\Salvida_vibe_project\\\\.claude\\\\worktrees\\\\zealous-mahavira\\\\backend\\\\models\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\luthe\\\\Desktop\\\\DEV\\\\Salvida_vibe_project\\\\.claude\\\\worktrees\\\\zealous-mahavira\\\\backend\\\\routers\")",
+      "Bash(node -e \"const p = require\\(''./package.json''\\); console.log\\(JSON.stringify\\({leaflet: p.dependencies?.leaflet, ''react-leaflet'': p.dependencies?.[''react-leaflet''], ''@types/leaflet'': p.devDependencies?.[''@types/leaflet'']}, null, 2\\)\\)\")",
+      "Bash(find C:UserslutheDesktopDEVSalvida_vibe_projectbackend -maxdepth 1 -name *.sh -o -name *.bat -o -name *.ps1)",
+      "Bash(chmod +x \"C:\\\\Users\\\\luthe\\\\Desktop\\\\DEV\\\\Salvida_vibe_project\\\\.claude\\\\setup-worktree.sh\")",
+      "Read(//c/Users/luthe/Desktop/DEV/Salvida_vibe_project/**)",
+      "Bash(bash \".claude/setup-worktree.sh\")",
+      "Bash(\"C:\\\\Users\\\\luthe\\\\Desktop\\\\DEV\\\\Salvida_vibe_project\\\\.claude\\\\worktrees\\\\lucid-williams\\\\backend\\\\.venv\\\\Scripts\\\\pip.exe\" install:*)",
+      "Bash(\"C:\\\\Users\\\\luthe\\\\Desktop\\\\DEV\\\\Salvida_vibe_project\\\\.claude\\\\worktrees\\\\lucid-williams\\\\backend\\\\.venv\\\\Scripts\\\\pip.exe\" show:*)",
+      "Bash(C:UserslutheDesktopDEVSalvida_vibe_project.claudeworktreeslucid-williamsbackend.venvScriptspip.exe show:*)",
+      "Bash(\"C:\\\\Users\\\\luthe\\\\Desktop\\\\DEV\\\\Salvida_vibe_project\\\\.claude\\\\worktrees\\\\lucid-williams\\\\backend\\\\.venv\\\\Scripts\\\\python.exe\" -c \"from postgrest import APIError; print\\(''OK''\\)\")"
       "Bash(node -e \"const p = require\\(''./package.json''\\); console.log\\(JSON.stringify\\({leaflet: p.dependencies?.leaflet, ''react-leaflet'': p.dependencies?.[''react-leaflet''], ''@types/leaflet'': p.devDependencies?.[''@types/leaflet'']}, null, 2\\)\\)\")"
     ]
   },
