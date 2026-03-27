@@ -227,8 +227,28 @@
 .settings-profile__footer {
   padding-top: 2rem;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 1rem;
   margin-top: auto;
+}
+
+.settings-save-ok {
+  font-size: 0.85rem;
+  color: var(--color-success, #22c55e);
+  font-weight: 600;
+}
+
+.settings-profile__loading {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  padding: 2rem 0;
+}
+
+.settings-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .settings-save-btn {

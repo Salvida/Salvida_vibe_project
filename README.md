@@ -9,139 +9,64 @@ La misión de Salvida es facilitar el transporte accesible y el acompañamiento 
 
 ## Tech Stack
 
-**Frontend:** [React](https://react.dev/) 18.x ⚛
+**Frontend:** [React](https://react.dev/) 18 + Vite · Zustand · TanStack Query 5 · react-i18next · Vanilla CSS
 
-**Backend:** [Python&nbsp;3.12](https://www.python.org/) 🐍
+**Backend:** [Python 3.12](https://www.python.org/) · [FastAPI](https://fastapi.tiangolo.com/) · Supabase
 
-**Store:** [Zustand]
+**Base de datos:** [Supabase](https://supabase.com/) (PostgreSQL gestionado)
 
-**Data Fetching:** [TanStack Query](https://tanstack.com/query/latest) 5 🌴🌐
+**Autenticación:** Supabase Auth (JWT)
 
-**Authentication:** Por definir; se evalúa [Better&nbsp;Auth](https://better-auth.com/) 🔐
+**Mapas:** Leaflet + Nominatim (OpenStreetMap, sin coste)
 
-**DB:** [PostgreSQL](https://www.postgresql.org/) (versión por definir) 💾
+**Deployment:** Por definir
 
-**Deployment:** Por definir; opciones [Vercel](https://vercel.com/) o [Heroku](https://www.heroku.com/) 📟
+## Requisitos previos
 
-**UX/UI Design**: Figma · [ReactCalendar](https://www.react-calendar.com/) ✒️ 📐
-
-**Styling:** [HeroUI](https://www.heroui.com/) / [ShadCN](https://ui.shadcn.com/) 💎
-
-## Instalación
-
-### Requisitos previos
 - [Node.js](https://nodejs.org/) 20.x y npm
 - [Python](https://www.python.org/) 3.12
-- [PostgreSQL](https://www.postgresql.org/) (opcional para entorno local)
+- Cuenta en [Supabase](https://supabase.com/) con proyecto creado
 
-### Dependencias
-#### Frontend
+## Variables de entorno
+
+**Backend** — crea `backend/.env`:
+
+```
+SUPABASE_URL=https://<proyecto>.supabase.co
+SUPABASE_ANON_KEY=<anon-key>
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+```
+
+**Frontend** — crea `frontend/.env`:
+
+```
+VITE_SUPABASE_URL=https://<proyecto>.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon-key>
+VITE_API_URL=http://localhost:8000
+```
+
+Los valores se obtienen en el dashboard de Supabase: **Settings → API**.
+
+## Instalación y arranque
+
+### Frontend
+
 ```bash
 cd frontend
 npm install
-```
-
-#### Backend
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-pip install httpx  # Necesario para ejecutar pruebas automáticas con pytest
-```
-
-## Uso
-
-### Frontend
-```bash
-cd frontend
-npm run dev
+npm run dev        # http://localhost:3000
 ```
 
 ### Backend
 
-#### Activar entorno virtual
-
-- En Windows (cmd):
-  ```cmd
-  backend\.venv\Scripts\activate
-  ```
-- En Bash (Git Bash, WSL, etc.):
-  ```bash
-  source backend/.venv/Scripts/activate
-  ```
-
-#### Levantar el backend
 ```bash
-uvicorn main:app --app-dir backend --reload
+cd backend
+bash start.sh      # crea el venv, instala dependencias y arranca en el puerto 8000
 ```
 
-## Cómo iniciar el backend
+El script `start.sh` gestiona el entorno virtual automáticamente. En el servidor de producción usa el mismo comando; el script detecta si el venv ya existe y solo instala dependencias nuevas.
 
-### Instalación y configuración de PostgreSQL
-
-1. **Instala PostgreSQL**
-   - Descarga e instala desde https://www.postgresql.org/download/
-   - Elige una contraseña para el usuario superusuario `postgres`.
-
-2. **Crea usuario y base de datos**
-   - Abre la consola de PostgreSQL (`SQL Shell (psql)` o PowerShell en la carpeta de instalación).
-   - Conéctate como superusuario:
-     ```powershell
-     .\psql -U postgres
-     ```
-   - Ejecuta los siguientes comandos, eligiendo el nombre de usuario, contraseña y base de datos que prefieras:
-     ```sql
-     CREATE USER <usuario> WITH PASSWORD '<contraseña>';
-     CREATE DATABASE <nombre_db> OWNER <usuario>;
-     ```
-   - Guarda el usuario, contraseña y nombre de la base de datos para usarlos en la configuración del backend.
-
-3. **Configura las variables de entorno**
-   - Crea el archivo `backend/.env` con:
-     ```
-     DATABASE_URL=postgresql://<usuario>:<contraseña>@localhost:5432/<nombre_db>
-     SECRET_KEY=tu-clave-secreta
-     ALGORITHM=HS256
-     ACCESS_TOKEN_EXPIRE_MINUTES=30
-     ```
-   - Reemplaza `<usuario>`, `<contraseña>` y `<nombre_db>` por los valores que elegiste.
-   - El valor de `SECRET_KEY` puede ser cualquier cadena segura.
-
-4. **Instala dependencias y levanta el backend**
-   - Activa el entorno virtual:
-     ```bash
-     source backend/.venv/Scripts/activate
-     ```
-   - Instala dependencias:
-     ```bash
-     pip install -r backend/requirements.txt
-     ```
-   - Desde la raíz del proyecto, ejecuta:
-     ```bash
-     uvicorn main:app --app-dir backend --reload
-     ```
-   - Accede a la API en [http://127.0.0.1:8000](http://127.0.0.1:8000) y a la documentación en [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-
-#### Variables de entorno
-
-Antes de iniciar los servicios, copia los archivos de ejemplo y ajusta los valores según tu entorno local:
-
-```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
-```
-
-**Backend** (`backend/.env`)
-
-- `DATABASE_URL`: URL de conexión a la base de datos.
-- `SECRET_KEY`: clave secreta para firmar los tokens.
-- `ALGORITHM`: algoritmo de firma (por defecto `HS256`).
-- `ACCESS_TOKEN_EXPIRE_MINUTES`: tiempo de expiración del token en minutos.
-
-**Frontend** (`frontend/.env`)
-
-- `VITE_API_URL`: URL base del backend.
+Documentación interactiva de la API: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ## Pages
 

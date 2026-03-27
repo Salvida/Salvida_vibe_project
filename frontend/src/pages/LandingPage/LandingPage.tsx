@@ -73,7 +73,7 @@ export default function LandingPage() {
   }
 
   useEffect(() => {
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         // Ignore observer updates triggered by programmatic scrolls
         if (isScrollingRef.current) return;
@@ -84,12 +84,12 @@ export default function LandingPage() {
           setActiveSection(visible[0].target.id);
         }
       },
-      { threshold: [0.3, 0.5], rootMargin: '-80px 0px 0px 0px' }
+      { threshold: 0.3, rootMargin: '-80px 0px 0px 0px' }
     );
 
     SECTIONS.forEach((id) => {
       const el = document.getElementById(id);
-      if (el) observerRef.current?.observe(el);
+      if (el) observer.observe(el);
     });
 
     return () => {

@@ -23,7 +23,7 @@ def _row_to_profile(row: dict) -> UserProfile:
 
 @router.get("", response_model=UserProfile)
 async def get_profile(user: dict = Depends(get_current_user)):
-    """Get the authenticated user's profile."""
+    """Get the authenticated user's profile, creating it if it doesn't exist yet."""
     supabase = get_supabase()
     try:
         result = supabase.table("profiles").select("*").eq("id", user["sub"]).single().execute()
@@ -32,10 +32,24 @@ async def get_profile(user: dict = Depends(get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Unexpected error: {type(e).__name__}: {e}")
 
-    if not result.data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+    if result.data:
+        return _row_to_profile(result.data)
 
-    return _row_to_profile(result.data)
+    # First login — auto-create a bare profile from JWT claims
+    new_row = {
+        "id": user["sub"],
+        "email": user.get("email", ""),
+        "first_name": "",
+        "last_name": "",
+        "phone": "",
+        "organization": "",
+        "role": "staff",
+    }
+    created = supabase.table("profiles").insert(new_row).execute()
+    if not created.data:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Could not create profile")
+
+    return _row_to_profile(created.data[0])
 
 
 @router.put("", response_model=UserProfile)

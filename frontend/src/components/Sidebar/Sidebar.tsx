@@ -18,10 +18,13 @@ export default function Sidebar() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
-  const fullName = user ? `${user.firstName} ${user.lastName}` : '—';
-  const initials = user
+  const hasName = user && (user.firstName || user.lastName);
+  const fullName = hasName
+    ? `${user.firstName} ${user.lastName}`.trim()
+    : user?.email ?? t('common.profileIncomplete');
+  const initials = hasName
     ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
-    : '?';
+    : (user?.email?.charAt(0) ?? '?').toUpperCase();
 
   async function handleLogout() {
     await logout();
@@ -64,7 +67,7 @@ export default function Sidebar() {
             <div className="sidebar__user-avatar">{initials}</div>
             <div>
               <p className="sidebar__user-name">{fullName}</p>
-              <p className="sidebar__user-role">{user?.role ?? t('common.administrator')}</p>
+              <p className="sidebar__user-role">{user?.role ?? ''}</p>
             </div>
           </div>
           <button className="sidebar__logout-btn" onClick={handleLogout} title={t('common.logout')}>
