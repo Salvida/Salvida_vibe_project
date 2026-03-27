@@ -14,13 +14,13 @@ class ProfileUpdate(BaseModel):
 
 class UserProfile(BaseModel):
     id: str
-    firstName: str
-    lastName: str
-    email: str
-    phone: str
-    organization: str
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    organization: Optional[str] = None
     dni: Optional[str] = None
-    role: str
+    role: Optional[str] = None
     avatar: Optional[str] = None
 
     model_config = {"from_attributes": True}
