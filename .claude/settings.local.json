@@ -13,7 +13,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"../../setup-worktree.sh\""
+            "command": "bash \".claude/setup-worktree.sh\""
           }
         ]
       }
