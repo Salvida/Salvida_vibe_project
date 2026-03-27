@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
+from postgrest import APIError as PostgrestAPIError
 from db.supabase_client import get_supabase
 from models.profile import UserProfile, ProfileUpdate
 from auth.dependencies import get_current_user
@@ -9,11 +10,11 @@ router = APIRouter()
 def _row_to_profile(row: dict) -> UserProfile:
     return UserProfile(
         id=row["id"],
-        firstName=row.get("first_name", ""),
-        lastName=row.get("last_name", ""),
-        email=row.get("email", ""),
-        phone=row.get("phone", ""),
-        organization=row.get("organization", ""),
+        firstName=row.get("first_name"),
+        lastName=row.get("last_name"),
+        email=row.get("email"),
+        phone=row.get("phone"),
+        organization=row.get("organization"),
         dni=row.get("dni"),
         role=row.get("role", "staff"),
         avatar=row.get("avatar"),
@@ -24,7 +25,12 @@ def _row_to_profile(row: dict) -> UserProfile:
 async def get_profile(user: dict = Depends(get_current_user)):
     """Get the authenticated user's profile, creating it if it doesn't exist yet."""
     supabase = get_supabase()
-    result = supabase.table("profiles").select("*").eq("id", user["sub"]).maybe_single().execute()
+    try:
+        result = supabase.table("profiles").select("*").eq("id", user["sub"]).single().execute()
+    except PostgrestAPIError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Profile not found: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Unexpected error: {type(e).__name__}: {e}")
 
     if result.data:
         return _row_to_profile(result.data)
@@ -72,13 +78,16 @@ async def update_profile(body: ProfileUpdate, user: dict = Depends(get_current_u
         # Nothing to update — return current profile
         return await get_profile(user)
 
-    result = (
-        supabase.table("profiles")
-        .update(updates)
-        .eq("id", user["sub"])
-        .single()
-        .execute()
-    )
+    try:
+        result = (
+            supabase.table("profiles")
+            .update(updates)
+            .eq("id", user["sub"])
+            .single()
+            .execute()
+        )
+    except PostgrestAPIError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
 
     if not result.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")

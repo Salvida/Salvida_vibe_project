@@ -55,27 +55,34 @@ const SECTIONS = ['home', 'servicios', 'nosotros', 'testimonios'] as const;
 export default function LandingPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('home');
-  const scrollingTo = useRef<string | null>(null);
-  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const isScrollingRef = useRef(false);
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function scrollTo(id: string) {
-    scrollingTo.current = id;
+  function handleNavClick(id: string) {
+    // Update active state immediately on click
     setActiveSection(id);
+    // Suppress observer updates while smooth scroll is in progress (~1s)
+    isScrollingRef.current = true;
+    if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
+    scrollTimerRef.current = setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 1000);
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
-    if (scrollTimer.current) clearTimeout(scrollTimer.current);
-    scrollTimer.current = setTimeout(() => { scrollingTo.current = null; }, 1000);
   }
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (scrollingTo.current) return; // ignore while programmatic scroll
-        entries.forEach((e) => {
-          if (e.isIntersecting && e.intersectionRatio >= 0.3) {
-            setActiveSection(e.target.id);
-          }
-        });
+        // Ignore observer updates triggered by programmatic scrolls
+        if (isScrollingRef.current) return;
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible.length > 0) {
+          setActiveSection(visible[0].target.id);
+        }
       },
       { threshold: 0.3, rootMargin: '-80px 0px 0px 0px' }
     );
@@ -85,7 +92,10 @@ export default function LandingPage() {
       if (el) observer.observe(el);
     });
 
-    return () => { observer.disconnect(); if (scrollTimer.current) clearTimeout(scrollTimer.current); };
+    return () => {
+      observerRef.current?.disconnect();
+      if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
+    };
   }, []);
 
   return (
@@ -98,25 +108,25 @@ export default function LandingPage() {
           <div className="lp-nav__links">
             <button
               className={`lp-nav__link${activeSection === 'home' ? ' lp-nav__link--active' : ''}`}
-              onClick={() => scrollTo('home')}
+              onClick={() => handleNavClick('home')}
             >
               Home
             </button>
             <button
               className={`lp-nav__link${activeSection === 'servicios' ? ' lp-nav__link--active' : ''}`}
-              onClick={() => scrollTo('servicios')}
+              onClick={() => handleNavClick('servicios')}
             >
               Servicios
             </button>
             <button
               className={`lp-nav__link${activeSection === 'nosotros' ? ' lp-nav__link--active' : ''}`}
-              onClick={() => scrollTo('nosotros')}
+              onClick={() => handleNavClick('nosotros')}
             >
               Nosotros
             </button>
             <button
               className={`lp-nav__link${activeSection === 'testimonios' ? ' lp-nav__link--active' : ''}`}
-              onClick={() => scrollTo('testimonios')}
+              onClick={() => handleNavClick('testimonios')}
             >
               Testimonios
             </button>

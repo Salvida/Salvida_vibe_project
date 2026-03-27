@@ -1,19 +1,51 @@
-import { ArrowLeft, Accessibility, Send, Clock, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Accessibility, Send, Clock, AlertCircle, CalendarDays, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AddressSelector from '../../components/AddressSelector';
+import { useCreateBooking } from '../../hooks/useBookings';
 import type { Address } from '../../types';
 import './NewBooking.css';
+
+function todayIso() {
+  return new Date().toISOString().split('T')[0];
+}
 
 export default function NewBooking() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const createBooking = useCreateBooking();
 
   const [step, setStep] = useState(1);
-  const [urgency, setUrgency] = useState('routine');
+  const [urgency, setUrgency] = useState<'routine' | 'urgent'>('routine');
   const [pickupAddress, setPickupAddress] = useState<Partial<Address>>({});
   const [destinationAddress, setDestinationAddress] = useState<Partial<Address>>({});
+  const [date, setDate] = useState(todayIso());
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+
+  async function handleSubmit() {
+    if (!pickupAddress.full_address || !destinationAddress.full_address || !date || !startTime) return;
+    try {
+      await createBooking.mutateAsync({
+        patientId: 'self',
+        date,
+        startTime,
+        endTime: endTime || startTime,
+        location: pickupAddress.full_address,
+        urgency,
+      });
+      navigate(-1);
+    } catch {
+      // error handled silently; backend not yet wired
+    }
+  }
+
+  const canSubmit =
+    !!pickupAddress.full_address &&
+    !!destinationAddress.full_address &&
+    !!date &&
+    !!startTime;
 
   return (
     <div className="new-booking">
@@ -94,10 +126,60 @@ export default function NewBooking() {
             </div>
           </section>
 
-          {/* Step 3: Urgency */}
+          {/* Step 3: Date & Time */}
           <section className="booking-section">
             <div className="booking-section__heading">
               <span className="booking-section__num booking-section__num--inactive">3</span>
+              <h3 className="booking-section__title">Fecha y hora</h3>
+            </div>
+
+            <div className="datetime-card">
+              <div className="datetime-card__field">
+                <label className="datetime-card__label">
+                  <CalendarDays size={14} />
+                  Fecha
+                </label>
+                <input
+                  type="date"
+                  value={date}
+                  min={todayIso()}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="location-field__input"
+                />
+              </div>
+              <div className="datetime-card__row">
+                <div className="datetime-card__field">
+                  <label className="datetime-card__label">
+                    <Clock size={14} />
+                    Hora de recogida
+                  </label>
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="location-field__input"
+                  />
+                </div>
+                <div className="datetime-card__field">
+                  <label className="datetime-card__label">
+                    <Clock size={14} />
+                    Hora estimada de llegada
+                  </label>
+                  <input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="location-field__input"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Step 4: Urgency */}
+          <section className="booking-section">
+            <div className="booking-section__heading">
+              <span className="booking-section__num booking-section__num--inactive">4</span>
               <h3 className="booking-section__title">{t('booking.urgency')}</h3>
             </div>
 
@@ -131,9 +213,22 @@ export default function NewBooking() {
           >
             {t('booking.cancel')}
           </button>
-          <button className="booking-actions__submit">
-            <span>{t('booking.submit')}</span>
-            <Send size={18} />
+          <button
+            onClick={handleSubmit}
+            disabled={!canSubmit || createBooking.isPending}
+            className={`booking-actions__submit${!canSubmit || createBooking.isPending ? ' booking-actions__submit--disabled' : ''}`}
+          >
+            {createBooking.isPending ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                <span>{t('booking.submitting')}</span>
+              </>
+            ) : (
+              <>
+                <span>{t('booking.submit')}</span>
+                <Send size={18} />
+              </>
+            )}
           </button>
         </div>
       </div>
