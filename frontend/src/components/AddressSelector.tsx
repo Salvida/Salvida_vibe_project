@@ -213,32 +213,51 @@ export default function AddressSelector({
         )}
       </div>
 
-      {/* Map preview */}
-      {hasCoords && (
-        <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm h-52 relative">
-          {loading && (
-            <div className="absolute inset-0 z-[200] flex items-center justify-center bg-white/60 backdrop-blur-sm">
-              <Loader2 className="text-[#6b4691] animate-spin" size={22} />
-            </div>
-          )}
-          <MapContainer
-            center={[value!.lat!, value!.lng!]}
-            zoom={16}
-            style={{ height: '100%', width: '100%', cursor: 'crosshair' }}
-            zoomControl={true}
-            scrollWheelZoom={true}
-            attributionControl={false}
+      {/* Map preview — always visible */}
+      <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm relative" style={{ height: '13rem' }}>
+        {loading && (
+          <div className="absolute inset-0 z-[200] flex items-center justify-center bg-white/60 backdrop-blur-sm">
+            <Loader2 className="text-[#6b4691] animate-spin" size={22} />
+          </div>
+        )}
+        {!hasCoords && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 500,
+              pointerEvents: 'none',
+              background: 'rgba(255,255,255,0.75)',
+              borderRadius: '9999px',
+              padding: '0.35rem 1rem',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              color: '#374151',
+              whiteSpace: 'nowrap',
+            }}
           >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            />
-            <Marker position={[value!.lat!, value!.lng!]} />
-            <MapRecenter lat={value!.lat!} lng={value!.lng!} />
-            <MapClickHandler onMapClick={handleMapClick} />
-          </MapContainer>
-        </div>
-      )}
+            Haz clic en el mapa para seleccionar la ubicación
+          </div>
+        )}
+        <MapContainer
+          center={hasCoords ? [value!.lat!, value!.lng!] : [40.4168, -3.7038]}
+          zoom={hasCoords ? 16 : 6}
+          style={{ height: '100%', width: '100%', cursor: 'crosshair' }}
+          zoomControl={true}
+          scrollWheelZoom={true}
+          attributionControl={false}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          />
+          {hasCoords && <Marker position={[value!.lat!, value!.lng!]} />}
+          {hasCoords && <MapRecenter lat={value!.lat!} lng={value!.lng!} />}
+          <MapClickHandler onMapClick={handleMapClick} />
+        </MapContainer>
+      </div>
 
       {/* Options row (accessible + validation) */}
       {value?.full_address && (

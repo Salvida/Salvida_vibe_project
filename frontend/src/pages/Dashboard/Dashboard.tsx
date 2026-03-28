@@ -9,7 +9,9 @@ import type { Booking } from '../../types';
 import './Dashboard.css';
 
 function formatDateISO(date: Date): string {
-  return date.toISOString().split('T')[0];
+  return date.getFullYear() + '-' +
+    String(date.getMonth() + 1).padStart(2, '0') + '-' +
+    String(date.getDate()).padStart(2, '0');
 }
 
 const STATUS_LABEL: Record<Booking['status'], string> = {
@@ -139,7 +141,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            <Link to="/app/bookings/new" className="new-booking-btn">
+            <Link to="/app/bookings/new" state={{ date: dateStr }} className="new-booking-btn">
               <PlusCircle size={20} />
               <span>{t('dashboard.requestNewBooking')}</span>
             </Link>

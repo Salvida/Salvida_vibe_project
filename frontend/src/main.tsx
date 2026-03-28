@@ -9,9 +9,11 @@ import { useAuthStore } from './store/useAuthStore';
 import './i18n/index';
 import './index.css';
 
-// Hydrate session from localStorage on page load
+// Hydrate session from localStorage on page load, then mark auth as initialized.
+// This prevents ProtectedRoute from redirecting to /login before the session is known.
 supabase.auth.getSession().then(({ data: { session } }) => {
   useAuthStore.getState().setSession(session);
+  useAuthStore.getState().setInitialized();
 });
 
 // Keep Zustand in sync when Supabase auth state changes (login / logout / token refresh)

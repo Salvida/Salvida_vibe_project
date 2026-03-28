@@ -6,14 +6,14 @@ import { useAuthStore } from '../store/useAuthStore';
 export const PROFILE_KEY = ['profile'] as const;
 
 export function useProfile() {
-  const updateUser = useAuthStore((s) => s.updateUser);
+  const setUser = useAuthStore((s) => s.setUser);
 
   return useQuery<UserProfile>({
     queryKey: PROFILE_KEY,
     queryFn: async () => {
       const profile = await apiClient.get<UserProfile>('/api/profile');
-      // Keep Zustand in sync with the server value
-      updateUser(profile);
+      // Use setUser (not updateUser) so the profile is set even when user is null/undefined
+      setUser(profile);
       return profile;
     },
   });

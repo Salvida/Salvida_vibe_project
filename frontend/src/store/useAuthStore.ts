@@ -5,8 +5,10 @@ import type { UserProfile } from '../types';
 
 interface AuthState {
   session: Session | null;
+  isInitialized: boolean;
   user: UserProfile | null;
   setSession: (session: Session | null) => void;
+  setInitialized: () => void;
   setUser: (user: UserProfile | null) => void;
   updateUser: (partial: Partial<UserProfile>) => void;
   logout: () => Promise<void>;
@@ -14,13 +16,16 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set) => ({
   session: null,
+  isInitialized: false,
   user: null,
   setSession: (session) =>
-    set({
+    set((state) => ({
       session,
-      // Clear user when session is cleared so Sidebar shows nothing stale
-      user: session ? undefined : null,
-    }),
+      // Only clear user on logout; leave it untouched on login/token-refresh
+      // so that onAuthStateChange doesn't wipe the profile fetched by useProfile
+      user: session ? state.user : null,
+    })),
+  setInitialized: () => set({ isInitialized: true }),
   setUser: (user) => set({ user }),
   updateUser: (partial) =>
     set((state) => ({

@@ -248,7 +248,21 @@
     "registerSubmitting": "Creando cuenta...",
     "registerSuccess": "¡Cuenta creada! Revisa tu email para confirmarla.",
     "passwordMismatch": "Las contraseñas no coinciden",
-    "errorRegisterGeneric": "Error al crear la cuenta. Inténtalo de nuevo."
+    "errorRegisterGeneric": "Error al crear la cuenta. Inténtalo de nuevo.",
+    "firstName": "Nombre",
+    "firstNamePlaceholder": "Tu nombre",
+    "lastName": "Apellidos",
+    "lastNamePlaceholder": "Tus apellidos",
+    "dni": "DNI",
+    "dniPlaceholder": "12345678A",
+    "phone": "Teléfono",
+    "phonePlaceholder": "612 345 678",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "goToLogin": "Ir a iniciar sesión",
+    "backToHome": "Volver al inicio",
+    "alreadyHaveAccount": "¿Ya tienes cuenta?",
+    "noAccount": "¿No tienes cuenta?"
   },
   "addresses": {
     "title": "Gestión de Direcciones",

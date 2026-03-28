@@ -23,26 +23,45 @@ def _row_to_profile(row: dict) -> UserProfile:
 
 @router.get("", response_model=UserProfile)
 async def get_profile(user: dict = Depends(get_current_user)):
-    """Get the authenticated user's profile, creating it if it doesn't exist yet."""
+    """Get the authenticated user's profile, creating or enriching it from user_metadata if needed."""
     supabase = get_supabase()
     try:
-        result = supabase.table("profiles").select("*").eq("id", user["sub"]).single().execute()
-    except PostgrestAPIError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Profile not found: {e}")
+        result = supabase.table("profiles").select("*").eq("id", user["sub"]).execute()
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Unexpected error: {type(e).__name__}: {e}")
 
-    if result.data:
-        return _row_to_profile(result.data)
+    # user_metadata is populated when options.data is passed to supabase.auth.signUp()
+    user_meta = user.get("user_metadata", {})
 
-    # First login — auto-create a bare profile from JWT claims
+    if result.data:
+        profile = result.data[0]
+        # Supabase triggers often create an empty profile row on signup.
+        # Enrich any empty fields from user_metadata on first authenticated request.
+        updates: dict = {}
+        if not profile.get("first_name") and user_meta.get("first_name"):
+            updates["first_name"] = user_meta["first_name"]
+        if not profile.get("last_name") and user_meta.get("last_name"):
+            updates["last_name"] = user_meta["last_name"]
+        if not profile.get("phone") and user_meta.get("phone"):
+            updates["phone"] = user_meta["phone"]
+        if not profile.get("dni") and user_meta.get("dni"):
+            updates["dni"] = user_meta["dni"]
+        if not profile.get("email") and user.get("email"):
+            updates["email"] = user["email"]
+        if updates:
+            supabase.table("profiles").update(updates).eq("id", user["sub"]).execute()
+            profile.update(updates)
+        return _row_to_profile(profile)
+
+    # No profile row at all — create from JWT claims + user_metadata
     new_row = {
         "id": user["sub"],
         "email": user.get("email", ""),
-        "first_name": "",
-        "last_name": "",
-        "phone": "",
+        "first_name": user_meta.get("first_name", ""),
+        "last_name": user_meta.get("last_name", ""),
+        "phone": user_meta.get("phone", ""),
         "organization": "",
+        "dni": user_meta.get("dni", ""),
         "role": "staff",
     }
     created = supabase.table("profiles").insert(new_row).execute()

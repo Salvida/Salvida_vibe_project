@@ -1,85 +1,54 @@
-import { useState, useEffect, useRef, type FormEvent } from 'react';
+import { useEffect, useRef, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useAuthFormStore } from '../../store/useAuthFormStore';
 
 interface AuthModalProps {
   open: boolean;
   onClose: () => void;
 }
 
-type Tab = 'login' | 'register';
-
 export default function AuthModal({ open, onClose }: AuthModalProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const setSession = useAuthStore((s) => s.setSession);
 
-  const [tab, setTab] = useState<Tab>('login');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const {
+    email, setEmail,
+    password, setPassword,
+    confirmPassword, setConfirmPassword,
+    firstName, setFirstName,
+    lastName, setLastName,
+    dni, setDni,
+    phone, setPhone,
+    showRegPassword, toggleShowRegPassword,
+    showConfirmPassword, toggleShowConfirmPassword,
+    loading, setLoading,
+    error, setError,
+    success, setSuccess,
+    reset,
+  } = useAuthFormStore();
 
   const backdropRef = useRef<HTMLDivElement>(null);
 
-  // Reset form when tab changes or modal opens/closes
-  useEffect(() => {
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setError(null);
-    setSuccess(null);
-  }, [tab, open]);
+  useEffect(() => { reset(); }, [open]);
 
-  // ESC to close
   useEffect(() => {
     if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [open, onClose]);
 
-  // Prevent body scroll when open
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = open ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
   if (!open) return null;
-
-  async function handleLogin(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-
-    if (authError) {
-      const msg =
-        authError.message === 'Invalid login credentials'
-          ? t('login.errorInvalid')
-          : t('login.errorGeneric');
-      setError(msg);
-      return;
-    }
-
-    if (data.session) {
-      setSession(data.session);
-      onClose();
-      navigate('/app');
-    }
-  }
 
   async function handleRegister(e: FormEvent) {
     e.preventDefault();
@@ -91,11 +60,24 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
     }
 
     setLoading(true);
-    const { error: authError } = await supabase.auth.signUp({ email, password });
+    const { data, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { first_name: firstName, last_name: lastName, dni, phone },
+      },
+    });
     setLoading(false);
 
     if (authError) {
       setError(t('login.errorRegisterGeneric'));
+      return;
+    }
+
+    if (data.session) {
+      setSession(data.session);
+      onClose();
+      navigate('/app');
       return;
     }
 
@@ -109,7 +91,6 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
       onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
     >
       <div className="lp-modal" role="dialog" aria-modal="true">
-        {/* Header */}
         <div className="lp-modal__header">
           <span className="lp-modal__logo">Salvida</span>
           <button className="lp-modal__close" onClick={onClose} aria-label="Cerrar">
@@ -117,85 +98,91 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="lp-modal__tabs">
-          <button
-            className={`lp-modal__tab${tab === 'login' ? ' lp-modal__tab--active' : ''}`}
-            onClick={() => setTab('login')}
-          >
-            {t('login.loginTab')}
-          </button>
-          <button
-            className={`lp-modal__tab${tab === 'register' ? ' lp-modal__tab--active' : ''}`}
-            onClick={() => setTab('register')}
-          >
-            {t('login.registerTab')}
-          </button>
-        </div>
-
-        {/* Body */}
         <div className="lp-modal__body">
-          {tab === 'login' ? (
-            <form onSubmit={handleLogin}>
+          <h2 className="lp-modal__title">{t('login.registerTab')}</h2>
+
+          <form onSubmit={handleRegister}>
+            <div className="lp-modal__field-row">
               <div className="lp-modal__field">
-                <label className="lp-modal__label" htmlFor="modal-email">
-                  {t('login.email')}
+                <label className="lp-modal__label" htmlFor="modal-reg-firstname">
+                  {t('login.firstName')}
                 </label>
                 <input
-                  id="modal-email"
-                  type="email"
+                  id="modal-reg-firstname"
+                  type="text"
                   className="lp-modal__input"
-                  placeholder={t('login.emailPlaceholder')}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t('login.firstNamePlaceholder')}
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
                   required
-                  autoComplete="email"
+                  autoComplete="given-name"
                 />
               </div>
               <div className="lp-modal__field">
-                <label className="lp-modal__label" htmlFor="modal-password">
-                  {t('login.password')}
+                <label className="lp-modal__label" htmlFor="modal-reg-lastname">
+                  {t('login.lastName')}
                 </label>
                 <input
-                  id="modal-password"
-                  type="password"
+                  id="modal-reg-lastname"
+                  type="text"
                   className="lp-modal__input"
-                  placeholder={t('login.passwordPlaceholder')}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t('login.lastNamePlaceholder')}
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
                   required
-                  autoComplete="current-password"
+                  autoComplete="family-name"
                 />
               </div>
-              {error && <p className="lp-modal__error">{error}</p>}
-              <button type="submit" className="lp-modal__submit" disabled={loading}>
-                {loading ? t('login.submitting') : t('login.submit')}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleRegister}>
-              <div className="lp-modal__field">
-                <label className="lp-modal__label" htmlFor="modal-reg-email">
-                  {t('login.email')}
-                </label>
-                <input
-                  id="modal-reg-email"
-                  type="email"
-                  className="lp-modal__input"
-                  placeholder={t('login.emailPlaceholder')}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                />
-              </div>
-              <div className="lp-modal__field">
-                <label className="lp-modal__label" htmlFor="modal-reg-password">
-                  {t('login.password')}
-                </label>
+            </div>
+
+            <div className="lp-modal__field">
+              <label className="lp-modal__label" htmlFor="modal-reg-dni">{t('login.dni')}</label>
+              <input
+                id="modal-reg-dni"
+                type="text"
+                className="lp-modal__input"
+                placeholder={t('login.dniPlaceholder')}
+                value={dni}
+                onChange={(e) => setDni(e.target.value)}
+                required
+                autoComplete="off"
+              />
+            </div>
+
+            <div className="lp-modal__field">
+              <label className="lp-modal__label" htmlFor="modal-reg-phone">{t('login.phone')}</label>
+              <input
+                id="modal-reg-phone"
+                type="tel"
+                className="lp-modal__input"
+                placeholder={t('login.phonePlaceholder')}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+                autoComplete="tel"
+              />
+            </div>
+
+            <div className="lp-modal__field">
+              <label className="lp-modal__label" htmlFor="modal-reg-email">{t('login.email')}</label>
+              <input
+                id="modal-reg-email"
+                type="email"
+                className="lp-modal__input"
+                placeholder={t('login.emailPlaceholder')}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </div>
+
+            <div className="lp-modal__field">
+              <label className="lp-modal__label" htmlFor="modal-reg-password">{t('login.password')}</label>
+              <div className="lp-modal__input-wrapper">
                 <input
                   id="modal-reg-password"
-                  type="password"
+                  type={showRegPassword ? 'text' : 'password'}
                   className="lp-modal__input"
                   placeholder={t('login.passwordPlaceholder')}
                   value={password}
@@ -203,14 +190,24 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
                   required
                   autoComplete="new-password"
                 />
+                <button
+                  type="button"
+                  className="lp-modal__eye-btn"
+                  onClick={toggleShowRegPassword}
+                  tabIndex={-1}
+                  aria-label={showRegPassword ? t('login.hidePassword') : t('login.showPassword')}
+                >
+                  {showRegPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
-              <div className="lp-modal__field">
-                <label className="lp-modal__label" htmlFor="modal-reg-confirm">
-                  {t('login.confirmPassword')}
-                </label>
+            </div>
+
+            <div className="lp-modal__field">
+              <label className="lp-modal__label" htmlFor="modal-reg-confirm">{t('login.confirmPassword')}</label>
+              <div className="lp-modal__input-wrapper">
                 <input
                   id="modal-reg-confirm"
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   className="lp-modal__input"
                   placeholder={t('login.confirmPasswordPlaceholder')}
                   value={confirmPassword}
@@ -218,16 +215,39 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
                   required
                   autoComplete="new-password"
                 />
-              </div>
-              {error && <p className="lp-modal__error">{error}</p>}
-              {success && <p className="lp-modal__success">{success}</p>}
-              {!success && (
-                <button type="submit" className="lp-modal__submit" disabled={loading}>
-                  {loading ? t('login.registerSubmitting') : t('login.registerSubmit')}
+                <button
+                  type="button"
+                  className="lp-modal__eye-btn"
+                  onClick={toggleShowConfirmPassword}
+                  tabIndex={-1}
+                  aria-label={showConfirmPassword ? t('login.hidePassword') : t('login.showPassword')}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
-              )}
-            </form>
-          )}
+              </div>
+            </div>
+
+            {error && <p className="lp-modal__error">{error}</p>}
+            {success ? (
+              <>
+                <p className="lp-modal__success">{success}</p>
+                <button type="button" className="lp-modal__submit" onClick={() => { onClose(); navigate('/login'); }}>
+                  {t('login.goToLogin')}
+                </button>
+              </>
+            ) : (
+              <button type="submit" className="lp-modal__submit" disabled={loading}>
+                {loading ? t('login.registerSubmitting') : t('login.registerSubmit')}
+              </button>
+            )}
+          </form>
+
+          <p className="lp-modal__login-link">
+            {t('login.alreadyHaveAccount')}{' '}
+            <button type="button" onClick={() => { onClose(); navigate('/login'); }}>
+              {t('login.loginTab')}
+            </button>
+          </p>
         </div>
       </div>
     </div>
