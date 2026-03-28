@@ -1,18 +1,25 @@
-import { ArrowLeft, Accessibility, Send, Clock, AlertCircle, CalendarDays, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { ArrowLeft, Accessibility, Send, Clock, AlertCircle, CalendarDays, Loader2, Search, User } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import AddressSelector from '../../components/AddressSelector';
 import { useCreateBooking } from '../../hooks/useBookings';
 import type { Address } from '../../types';
+import { apiClient } from '../../lib/api';
 import './NewBooking.css';
 
+type PatientResult = { id: string; name: string; avatar?: string; dni?: string };
+
 function todayIso() {
-  return new Date().toISOString().split('T')[0];
+  const d = new Date();
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
 }
 
 export default function NewBooking() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const createBooking = useCreateBooking();
 
@@ -20,19 +27,48 @@ export default function NewBooking() {
   const [urgency, setUrgency] = useState<'routine' | 'urgent'>('routine');
   const [pickupAddress, setPickupAddress] = useState<Partial<Address>>({});
   const [destinationAddress, setDestinationAddress] = useState<Partial<Address>>({});
-  const [date, setDate] = useState(todayIso());
+  const [date, setDate] = useState(() => (location.state as { date?: string } | null)?.date || todayIso());
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
 
+  // Patient search state
+  const [patientQuery, setPatientQuery] = useState('');
+  const [patientResults, setPatientResults] = useState<PatientResult[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<PatientResult | null>(null);
+  const [patientSearchOpen, setPatientSearchOpen] = useState(false);
+  const [patientSearchLoading, setPatientSearchLoading] = useState(false);
+
+  // Debounced patient search
+  useEffect(() => {
+    if (patientQuery.length < 2) {
+      setPatientResults([]);
+      setPatientSearchOpen(false);
+      return;
+    }
+    setPatientSearchLoading(true);
+    const timer = setTimeout(() => {
+      apiClient
+        .get<PatientResult[]>('/api/patients?q=' + encodeURIComponent(patientQuery))
+        .then((data) => {
+          setPatientResults(data);
+          setPatientSearchOpen(data.length > 0);
+        })
+        .catch(() => setPatientResults([]))
+        .finally(() => setPatientSearchLoading(false));
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [patientQuery]);
+
   async function handleSubmit() {
-    if (!pickupAddress.full_address || !destinationAddress.full_address || !date || !startTime) return;
+    if (!selectedPatient || !pickupAddress.full_address || !destinationAddress.full_address || !date || !startTime) return;
     try {
       await createBooking.mutateAsync({
-        patientId: 'self',
+        patientId: selectedPatient.id,
         date,
         startTime,
         endTime: endTime || startTime,
-        location: pickupAddress.full_address,
+        location: pickupAddress.full_address ?? '',
+        destination: destinationAddress.full_address ?? '',
         urgency,
       });
       navigate(-1);
@@ -42,6 +78,7 @@ export default function NewBooking() {
   }
 
   const canSubmit =
+    !!selectedPatient &&
     !!pickupAddress.full_address &&
     !!destinationAddress.full_address &&
     !!date &&
@@ -64,7 +101,7 @@ export default function NewBooking() {
 
           {/* Progress */}
           <div className="step-progress">
-            {[1, 2, 3].map((s) => (
+            {[1, 2, 3, 4, 5].map((s) => (
               <div
                 key={s}
                 className={`step-dot${s === step ? ' step-dot--active' : ''}`}
@@ -72,10 +109,180 @@ export default function NewBooking() {
             ))}
           </div>
 
-          {/* Step 1: Location */}
+          {/* Step 1: Patient */}
           <section className="booking-section">
             <div className="booking-section__heading">
               <span className="booking-section__num">1</span>
+              <h3 className="booking-section__title">Paciente</h3>
+            </div>
+
+            {selectedPatient ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '0.75rem',
+                  border: '1px solid #e2e8f0',
+                  background: '#f8fafc',
+                }}
+              >
+                {selectedPatient.avatar ? (
+                  <img
+                    src={selectedPatient.avatar}
+                    alt={selectedPatient.name}
+                    style={{ width: '2.25rem', height: '2.25rem', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: '2.25rem',
+                      height: '2.25rem',
+                      borderRadius: '50%',
+                      background: '#6b4691',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    {selectedPatient.name[0]}
+                  </div>
+                )}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>{selectedPatient.name}</div>
+                  {selectedPatient.dni && (
+                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>DNI: {selectedPatient.dni}</div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPatient(null);
+                    setPatientQuery('');
+                    setPatientResults([]);
+                    setPatientSearchOpen(false);
+                  }}
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    color: '#6b4691',
+                    background: 'none',
+                    border: '1px solid #6b4691',
+                    borderRadius: '0.5rem',
+                    padding: '0.25rem 0.6rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cambiar
+                </button>
+              </div>
+            ) : (
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'relative' }}>
+                  <Search
+                    size={15}
+                    style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}
+                  />
+                  <input
+                    type="text"
+                    value={patientQuery}
+                    onChange={(e) => setPatientQuery(e.target.value)}
+                    placeholder="Buscar paciente por nombre..."
+                    className="location-field__input"
+                    style={{ paddingLeft: '2.4rem', paddingRight: '2.4rem' }}
+                  />
+                  {patientSearchLoading && (
+                    <Loader2
+                      size={15}
+                      style={{ position: 'absolute', right: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', animation: 'spin 1s linear infinite' }}
+                    />
+                  )}
+                </div>
+                {patientSearchOpen && patientResults.length > 0 && (
+                  <ul
+                    style={{
+                      position: 'absolute',
+                      zIndex: 100,
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      marginTop: '0.25rem',
+                      background: '#fff',
+                      borderRadius: '0.75rem',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                      border: '1px solid #e2e8f0',
+                      overflow: 'hidden',
+                      listStyle: 'none',
+                      padding: 0,
+                      margin: 0,
+                    }}
+                  >
+                    {patientResults.map((p, idx) => (
+                      <li key={p.id} style={{ borderTop: idx > 0 ? '1px solid #f1f5f9' : 'none' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedPatient(p);
+                            setPatientQuery(p.name);
+                            setPatientSearchOpen(false);
+                          }}
+                          style={{
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: '0.65rem 1rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.6rem',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem',
+                            color: '#1e293b',
+                          }}
+                        >
+                          {p.avatar ? (
+                            <img
+                              src={p.avatar}
+                              alt={p.name}
+                              style={{ width: '1.75rem', height: '1.75rem', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                            />
+                          ) : (
+                            <div
+                              style={{
+                                width: '1.75rem',
+                                height: '1.75rem',
+                                borderRadius: '50%',
+                                background: '#ede9f6',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                              }}
+                            >
+                              <User size={13} color="#6b4691" />
+                            </div>
+                          )}
+                          <div>
+                            <div style={{ fontWeight: 600 }}>{p.name}</div>
+                            {p.dni && <div style={{ fontSize: '0.72rem', color: '#64748b' }}>DNI: {p.dni}</div>}
+                          </div>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* Step 2: Location */}
+          <section className="booking-section">
+            <div className="booking-section__heading">
+              <span className="booking-section__num booking-section__num--inactive">2</span>
               <h3 className="booking-section__title">{t('booking.locationDetails')}</h3>
             </div>
 
@@ -100,10 +307,10 @@ export default function NewBooking() {
             </div>
           </section>
 
-          {/* Step 2: Passenger */}
+          {/* Step 3: Passenger */}
           <section className="booking-section">
             <div className="booking-section__heading">
-              <span className="booking-section__num booking-section__num--inactive">2</span>
+              <span className="booking-section__num booking-section__num--inactive">3</span>
               <h3 className="booking-section__title">{t('booking.passengerDetails')}</h3>
             </div>
 
@@ -126,10 +333,10 @@ export default function NewBooking() {
             </div>
           </section>
 
-          {/* Step 3: Date & Time */}
+          {/* Step 4: Date & Time */}
           <section className="booking-section">
             <div className="booking-section__heading">
-              <span className="booking-section__num booking-section__num--inactive">3</span>
+              <span className="booking-section__num booking-section__num--inactive">4</span>
               <h3 className="booking-section__title">Fecha y hora</h3>
             </div>
 
@@ -176,10 +383,10 @@ export default function NewBooking() {
             </div>
           </section>
 
-          {/* Step 4: Urgency */}
+          {/* Step 5: Urgency */}
           <section className="booking-section">
             <div className="booking-section__heading">
-              <span className="booking-section__num booking-section__num--inactive">4</span>
+              <span className="booking-section__num booking-section__num--inactive">5</span>
               <h3 className="booking-section__title">{t('booking.urgency')}</h3>
             </div>
 

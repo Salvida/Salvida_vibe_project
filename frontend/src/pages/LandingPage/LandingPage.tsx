@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import AuthModal from './AuthModal';
+import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 
 const testimonials = [
@@ -53,7 +53,7 @@ const stats = [
 const SECTIONS = ['home', 'servicios', 'nosotros', 'testimonios'] as const;
 
 export default function LandingPage() {
-  const [authOpen, setAuthOpen] = useState(false);
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<string>('home');
   const observerRef = useRef<IntersectionObserver | null>(null);
   const isScrollingRef = useRef(false);
@@ -132,7 +132,7 @@ export default function LandingPage() {
             </button>
           </div>
 
-          <button className="lp-nav__cta" onClick={() => setAuthOpen(true)}>Login</button>
+          <button className="lp-nav__cta" onClick={() => navigate('/login')}>Iniciar sesión</button>
         </div>
         <div className="lp-nav__divider" />
       </nav>
@@ -153,11 +153,11 @@ export default function LandingPage() {
           </p>
 
           <div className="lp-hero__actions">
-            <button className="lp-hero__btn-primary" onClick={() => setAuthOpen(true)}>
+            <button className="lp-hero__btn-primary" onClick={() => navigate('/login')}>
               Iniciar sesión
             </button>
-            <button className="lp-hero__btn-secondary" onClick={() => scrollTo('nosotros')}>
-              Conocer más
+            <button className="lp-hero__btn-secondary" onClick={() => navigate('/login?register=true')}>
+              Crear cuenta
             </button>
           </div>
         </section>
@@ -203,7 +203,7 @@ export default function LandingPage() {
             <h2 className="lp-cta-band__title">
               ¿Listo para transformar tu experiencia de traslado?
             </h2>
-            <button className="lp-cta-band__btn" onClick={() => setAuthOpen(true)}>
+            <button className="lp-cta-band__btn" onClick={() => navigate('/login')}>
               Iniciar sesión
             </button>
             <span className="lp-cta-band__note">(Requiere inicio de sesión)</span>
@@ -278,7 +278,6 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }

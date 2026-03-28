@@ -49,6 +49,7 @@ export interface Booking {
   endTime: string;
   date: string;
   location: string;
+  destination?: string;
   status: 'Approved' | 'Pending' | 'Completed' | 'Cancelled';
   service_reason?: ServiceReason;
   service_reason_notes?: string;

@@ -20,6 +20,7 @@ def _row_to_booking(row: dict, patient_name: str = "", patient_avatar: Optional[
         endTime=row.get("end_time", ""),
         date=str(row["date"]),
         location=row.get("location", ""),
+        destination=row.get("destination", ""),
         status=row.get("status", "Pending"),
         service_reason=row.get("service_reason"),
         service_reason_notes=row.get("service_reason_notes"),
@@ -98,8 +99,14 @@ async def create_booking(body: BookingCreate, user: dict = Depends(get_current_u
     supabase = get_supabase()
 
     # Validate patient exists
-    patient = supabase.table("patients").select("id, name, avatar").eq("id", body.patientId).single().execute()
-    if not patient.data:
+    try:
+        patient_res = supabase.table("patients").select("id, name, avatar").eq("id", body.patientId).single().execute()
+        if not patient_res.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
+        patient_data = patient_res.data
+    except HTTPException:
+        raise
+    except Exception:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
 
     payload = {
@@ -108,6 +115,7 @@ async def create_booking(body: BookingCreate, user: dict = Depends(get_current_u
         "end_time": body.endTime,
         "date": body.date,
         "location": body.location,
+        "destination": body.destination,
         "service_reason": body.service_reason,
         "service_reason_notes": body.service_reason_notes,
         "urgency": body.urgency,
@@ -115,7 +123,7 @@ async def create_booking(body: BookingCreate, user: dict = Depends(get_current_u
     }
 
     result = supabase.table("bookings").insert(payload).single().execute()
-    return _row_to_booking(result.data, patient.data["name"], patient.data.get("avatar"))
+    return _row_to_booking(result.data, patient_data["name"], patient_data.get("avatar"))
 
 
 # ---------------------------------------------------------------------------
@@ -134,6 +142,7 @@ async def update_booking(
         "endTime": "end_time",
         "date": "date",
         "location": "location",
+        "destination": "destination",
         "status": "status",
         "service_reason": "service_reason",
         "service_reason_notes": "service_reason_notes",
