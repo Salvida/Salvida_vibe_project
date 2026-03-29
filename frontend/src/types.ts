@@ -15,7 +15,7 @@ export interface EmergencyContact {
   relationship: string;
 }
 
-export interface Patient {
+export interface Prm {
   id: string;
   name: string;
   email: string;
@@ -42,9 +42,9 @@ export type ServiceReason =
 
 export interface Booking {
   id: string;
-  patientId: string;
-  patientName: string;
-  patientAvatar?: string;
+  prmId: string;
+  prmName: string;
+  prmAvatar?: string;
   startTime: string;
   endTime: string;
   date: string;

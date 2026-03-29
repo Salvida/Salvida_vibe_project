@@ -55,7 +55,7 @@ interface AddressSelectorProps {
   value: Partial<Address> | undefined;
   onChange: (address: Partial<Address>) => void;
   onValidationChange?: (status: Address['validation_status']) => void;
-  /** Show the validation status toggle (for admin users editing a patient) */
+  /** Show the validation status toggle (for admin users editing a prm) */
   showValidation?: boolean;
 }
 

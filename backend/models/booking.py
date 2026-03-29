@@ -14,7 +14,7 @@ BookingUrgency = Literal["routine", "urgent"]
 
 
 class BookingBase(BaseModel):
-    patientId: str
+    prmId: str
     startTime: str          # 'HH:MM'
     endTime: str            # 'HH:MM'
     date: str               # 'YYYY-MM-DD'
@@ -51,8 +51,8 @@ class BookingCancel(BaseModel):
 
 class Booking(BookingBase):
     id: str
-    patientName: str
-    patientAvatar: Optional[str] = None
+    prmName: str
+    prmAvatar: Optional[str] = None
     status: BookingStatus = "Pending"
     is_demo: bool = False
 

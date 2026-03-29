@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Literal, Optional
 from .address import Address
 
-PatientStatus = Literal["Activo", "Inactivo"]
+PrmStatus = Literal["Activo", "Inactivo"]
 
 
 class EmergencyContactCreate(BaseModel):
@@ -17,7 +17,7 @@ class EmergencyContact(EmergencyContactCreate):
     model_config = {"from_attributes": True}
 
 
-class PatientBase(BaseModel):
+class PrmBase(BaseModel):
     name: str
     email: str = ""
     phone: str = ""
@@ -26,17 +26,17 @@ class PatientBase(BaseModel):
     bloodType: str = ""
     height: str = ""
     weight: str = ""
-    status: PatientStatus = "Activo"
+    status: PrmStatus = "Activo"
     avatar: Optional[str] = None
     dni: Optional[str] = None
     is_demo: bool = False
 
 
-class PatientCreate(PatientBase):
+class PrmCreate(PrmBase):
     emergency_contacts: list[EmergencyContactCreate] = []
 
 
-class PatientUpdate(BaseModel):
+class PrmUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
@@ -44,24 +44,24 @@ class PatientUpdate(BaseModel):
     bloodType: Optional[str] = None
     height: Optional[str] = None
     weight: Optional[str] = None
-    status: Optional[PatientStatus] = None
+    status: Optional[PrmStatus] = None
     avatar: Optional[str] = None
     dni: Optional[str] = None
 
 
-class PatientListItem(BaseModel):
+class PrmListItem(BaseModel):
     """Lightweight model for list endpoints — no nested relations."""
     id: str
     name: str
     email: str
     phone: str
-    status: PatientStatus
+    status: PrmStatus
     avatar: Optional[str] = None
     dni: Optional[str] = None
     is_demo: bool = False
 
 
-class Patient(PatientBase):
+class Prm(PrmBase):
     id: str
     address: Optional[Address] = None
     emergency_contacts: list[EmergencyContact] = []

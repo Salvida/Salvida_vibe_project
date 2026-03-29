@@ -2,9 +2,9 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useCreatePatient } from '../../hooks/usePatients';
+import { useCreatePrm } from '../../hooks/usePrms';
 import type { EmergencyContact } from '../../types';
-import './NewPatient.css';
+import './NewPrm.css';
 
 interface ContactDraft {
   name: string;
@@ -12,10 +12,10 @@ interface ContactDraft {
   relationship: string;
 }
 
-export default function NewPatient() {
+export default function NewPrm() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const createPatient = useCreatePatient();
+  const createPrm = useCreatePrm();
 
   // Basic fields
   const [name, setName] = useState('');
@@ -56,7 +56,7 @@ export default function NewPatient() {
     setFormError('');
 
     if (!name.trim()) {
-      setNameError(t('patients.newPatient.errorRequired'));
+      setNameError(t('prms.newPrm.errorRequired'));
       return;
     }
 
@@ -65,7 +65,7 @@ export default function NewPatient() {
       .map((c) => ({ ...c, id: '' })) as EmergencyContact[];
 
     try {
-      const newPatient = await createPatient.mutateAsync({
+      const newPrm = await createPrm.mutateAsync({
         name: name.trim(),
         email,
         phone,
@@ -78,102 +78,102 @@ export default function NewPatient() {
         avatar: undefined,
         emergency_contacts: emergencyContacts,
         is_demo: false,
-      } as Parameters<typeof createPatient.mutateAsync>[0]);
+      } as Parameters<typeof createPrm.mutateAsync>[0]);
 
-      navigate(`/app/patients/${newPatient.id}`);
+      navigate(`/app/prms/${newPrm.id}`);
     } catch {
-      setFormError(t('patients.newPatient.errorGeneric'));
+      setFormError(t('prms.newPrm.errorGeneric'));
     }
   }
 
   return (
-    <div className="new-patient">
-      <div className="new-patient__header">
-        <Link to="/app/patients" className="new-patient__back-btn">
+    <div className="new-prm">
+      <div className="new-prm__header">
+        <Link to="/app/prms" className="new-prm__back-btn">
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="new-patient__title">{t('patients.newPatient.title')}</h1>
-          <p className="new-patient__subtitle">{t('patients.newPatient.subtitle')}</p>
+          <h1 className="new-prm__title">{t('prms.newPrm.title')}</h1>
+          <p className="new-prm__subtitle">{t('prms.newPrm.subtitle')}</p>
         </div>
       </div>
 
-      <div className="new-patient__body">
-        <form className="new-patient__form" onSubmit={handleSubmit} noValidate>
+      <div className="new-prm__body">
+        <form className="new-prm__form" onSubmit={handleSubmit} noValidate>
 
           {/* Section: Información básica */}
-          <section className="new-patient__section">
-            <h2 className="new-patient__section-title">
-              {t('patients.newPatient.sections.basic')}
+          <section className="new-prm__section">
+            <h2 className="new-prm__section-title">
+              {t('prms.newPrm.sections.basic')}
             </h2>
-            <div className="new-patient__grid">
-              <div className="new-patient__field new-patient__field--full">
-                <label className="new-patient__label" htmlFor="name">
-                  Nombre completo <span className="new-patient__required">*</span>
+            <div className="new-prm__grid">
+              <div className="new-prm__field new-prm__field--full">
+                <label className="new-prm__label" htmlFor="name">
+                  Nombre completo <span className="new-prm__required">*</span>
                 </label>
                 <input
                   id="name"
                   type="text"
-                  className={`new-patient__input${nameError ? ' new-patient__input--error' : ''}`}
+                  className={`new-prm__input${nameError ? ' new-prm__input--error' : ''}`}
                   placeholder="Nombre y apellidos"
                   value={name}
                   onChange={(e) => { setName(e.target.value); setNameError(''); }}
                 />
-                {nameError && <p className="new-patient__field-error">{nameError}</p>}
+                {nameError && <p className="new-prm__field-error">{nameError}</p>}
               </div>
 
-              <div className="new-patient__field">
-                <label className="new-patient__label" htmlFor="email">Email</label>
+              <div className="new-prm__field">
+                <label className="new-prm__label" htmlFor="email">Email</label>
                 <input
                   id="email"
                   type="email"
-                  className="new-patient__input"
+                  className="new-prm__input"
                   placeholder="correo@ejemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
 
-              <div className="new-patient__field">
-                <label className="new-patient__label" htmlFor="phone">Teléfono</label>
+              <div className="new-prm__field">
+                <label className="new-prm__label" htmlFor="phone">Teléfono</label>
                 <input
                   id="phone"
                   type="tel"
-                  className="new-patient__input"
+                  className="new-prm__input"
                   placeholder="+34 600 000 000"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
               </div>
 
-              <div className="new-patient__field">
-                <label className="new-patient__label" htmlFor="dni">DNI / NIE</label>
+              <div className="new-prm__field">
+                <label className="new-prm__label" htmlFor="dni">DNI / NIE</label>
                 <input
                   id="dni"
                   type="text"
-                  className="new-patient__input"
+                  className="new-prm__input"
                   placeholder="12345678A"
                   value={dni}
                   onChange={(e) => setDni(e.target.value)}
                 />
               </div>
 
-              <div className="new-patient__field">
-                <label className="new-patient__label" htmlFor="birthDate">Fecha de nacimiento</label>
+              <div className="new-prm__field">
+                <label className="new-prm__label" htmlFor="birthDate">Fecha de nacimiento</label>
                 <input
                   id="birthDate"
                   type="date"
-                  className="new-patient__input"
+                  className="new-prm__input"
                   value={birthDate}
                   onChange={(e) => setBirthDate(e.target.value)}
                 />
               </div>
 
-              <div className="new-patient__field">
-                <label className="new-patient__label" htmlFor="status">Estado</label>
+              <div className="new-prm__field">
+                <label className="new-prm__label" htmlFor="status">Estado</label>
                 <select
                   id="status"
-                  className="new-patient__select"
+                  className="new-prm__select"
                   value={status}
                   onChange={(e) => setStatus(e.target.value as 'Activo' | 'Inactivo')}
                 >
@@ -185,16 +185,16 @@ export default function NewPatient() {
           </section>
 
           {/* Section: Datos médicos */}
-          <section className="new-patient__section">
-            <h2 className="new-patient__section-title">
-              {t('patients.newPatient.sections.medical')}
+          <section className="new-prm__section">
+            <h2 className="new-prm__section-title">
+              {t('prms.newPrm.sections.medical')}
             </h2>
-            <div className="new-patient__grid">
-              <div className="new-patient__field">
-                <label className="new-patient__label" htmlFor="bloodType">Grupo sanguíneo</label>
+            <div className="new-prm__grid">
+              <div className="new-prm__field">
+                <label className="new-prm__label" htmlFor="bloodType">Grupo sanguíneo</label>
                 <select
                   id="bloodType"
-                  className="new-patient__select"
+                  className="new-prm__select"
                   value={bloodType}
                   onChange={(e) => setBloodType(e.target.value)}
                 >
@@ -205,24 +205,24 @@ export default function NewPatient() {
                 </select>
               </div>
 
-              <div className="new-patient__field">
-                <label className="new-patient__label" htmlFor="height">Altura (cm)</label>
+              <div className="new-prm__field">
+                <label className="new-prm__label" htmlFor="height">Altura (cm)</label>
                 <input
                   id="height"
                   type="text"
-                  className="new-patient__input"
+                  className="new-prm__input"
                   placeholder="Ej: 165"
                   value={height}
                   onChange={(e) => setHeight(e.target.value)}
                 />
               </div>
 
-              <div className="new-patient__field">
-                <label className="new-patient__label" htmlFor="weight">Peso (kg)</label>
+              <div className="new-prm__field">
+                <label className="new-prm__label" htmlFor="weight">Peso (kg)</label>
                 <input
                   id="weight"
                   type="text"
-                  className="new-patient__input"
+                  className="new-prm__input"
                   placeholder="Ej: 62"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
@@ -232,39 +232,39 @@ export default function NewPatient() {
           </section>
 
           {/* Section: Contactos de urgencia */}
-          <section className="new-patient__section">
-            <h2 className="new-patient__section-title">
-              {t('patients.newPatient.sections.contacts')}
+          <section className="new-prm__section">
+            <h2 className="new-prm__section-title">
+              {t('prms.newPrm.sections.contacts')}
             </h2>
 
             {contacts.map((contact, index) => (
-              <div key={index} className="new-patient__contact-row">
-                <div className="new-patient__grid">
-                  <div className="new-patient__field">
-                    <label className="new-patient__label">Nombre</label>
+              <div key={index} className="new-prm__contact-row">
+                <div className="new-prm__grid">
+                  <div className="new-prm__field">
+                    <label className="new-prm__label">Nombre</label>
                     <input
                       type="text"
-                      className="new-patient__input"
+                      className="new-prm__input"
                       placeholder="Nombre del contacto"
                       value={contact.name}
                       onChange={(e) => updateContact(index, 'name', e.target.value)}
                     />
                   </div>
-                  <div className="new-patient__field">
-                    <label className="new-patient__label">Teléfono</label>
+                  <div className="new-prm__field">
+                    <label className="new-prm__label">Teléfono</label>
                     <input
                       type="tel"
-                      className="new-patient__input"
+                      className="new-prm__input"
                       placeholder="+34 600 000 000"
                       value={contact.phone}
                       onChange={(e) => updateContact(index, 'phone', e.target.value)}
                     />
                   </div>
-                  <div className="new-patient__field">
-                    <label className="new-patient__label">Relación</label>
+                  <div className="new-prm__field">
+                    <label className="new-prm__label">Relación</label>
                     <input
                       type="text"
-                      className="new-patient__input"
+                      className="new-prm__input"
                       placeholder="Ej: Madre, Hermano"
                       value={contact.relationship}
                       onChange={(e) => updateContact(index, 'relationship', e.target.value)}
@@ -273,7 +273,7 @@ export default function NewPatient() {
                 </div>
                 <button
                   type="button"
-                  className="new-patient__contact-remove"
+                  className="new-prm__contact-remove"
                   onClick={() => removeContact(index)}
                   title="Eliminar contacto"
                 >
@@ -283,29 +283,29 @@ export default function NewPatient() {
             ))}
 
             {contacts.length < 2 ? (
-              <button type="button" className="new-patient__add-contact-btn" onClick={addContact}>
+              <button type="button" className="new-prm__add-contact-btn" onClick={addContact}>
                 <Plus size={16} />
-                {t('patients.newPatient.contactAdd')}
+                {t('prms.newPrm.contactAdd')}
               </button>
             ) : (
-              <p className="new-patient__contact-max">{t('patients.newPatient.contactMax')}</p>
+              <p className="new-prm__contact-max">{t('prms.newPrm.contactMax')}</p>
             )}
           </section>
 
-          {formError && <p className="new-patient__form-error">{formError}</p>}
+          {formError && <p className="new-prm__form-error">{formError}</p>}
 
-          <div className="new-patient__actions">
-            <Link to="/app/patients" className="new-patient__cancel-btn">
-              {t('patients.newPatient.cancel')}
+          <div className="new-prm__actions">
+            <Link to="/app/prms" className="new-prm__cancel-btn">
+              {t('prms.newPrm.cancel')}
             </Link>
             <button
               type="submit"
-              className="new-patient__submit-btn"
-              disabled={createPatient.isPending}
+              className="new-prm__submit-btn"
+              disabled={createPrm.isPending}
             >
-              {createPatient.isPending
-                ? t('patients.newPatient.submitting')
-                : t('patients.newPatient.submit')}
+              {createPrm.isPending
+                ? t('prms.newPrm.submitting')
+                : t('prms.newPrm.submit')}
             </button>
           </div>
         </form>

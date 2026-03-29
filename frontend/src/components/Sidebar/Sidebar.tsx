@@ -6,7 +6,7 @@ import './Sidebar.css';
 
 const navItems = [
   { icon: CalendarDays, labelKey: 'nav.bookings',  path: '/app/bookings' },
-  { icon: Users,        labelKey: 'nav.patients',  path: '/app/patients' },
+  { icon: Users,        labelKey: 'nav.prms',  path: '/app/prms' },
   { icon: MapPin,       labelKey: 'nav.addresses', path: '/app/addresses' },
   { icon: Settings,     labelKey: 'nav.settings',  path: '/app/settings' },
 ];
