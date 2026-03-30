@@ -92,6 +92,8 @@ async def update_profile(body: ProfileUpdate, user: dict = Depends(get_current_u
         updates["dni"] = body.dni
     if body.avatar is not None:
         updates["avatar"] = body.avatar
+    # Note: role is intentionally not included in user updates
+    # Role can only be changed by database administrators
 
     if not updates:
         # Nothing to update — return current profile
