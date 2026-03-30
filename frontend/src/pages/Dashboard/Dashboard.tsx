@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Header from '../../components/Header/Header';
 import CalendarWidget from '../../components/CalendarWidget/CalendarWidget';
-import { PlusCircle, Clock, MapPin, MoreVertical } from 'lucide-react';
+import { PlusCircle, Clock, MapPin, MoreVertical, Navigation } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useBookings } from '../../hooks/useBookings';
@@ -55,6 +55,18 @@ function BookingCard({ booking }: { booking: Booking }) {
         <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
           {STATUS_LABEL[booking.status]}
         </span>
+        {booking.location && booking.destination && (
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(booking.location)}&destination=${encodeURIComponent(booking.destination)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="booking-card__maps-btn"
+            aria-label="Abrir ruta en Google Maps"
+            title="Abrir en Google Maps"
+          >
+            <Navigation size={15} />
+          </a>
+        )}
         <button className="booking-card__more-btn" aria-label="Más opciones">
           <MoreVertical size={16} />
         </button>
