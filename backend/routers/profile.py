@@ -21,6 +21,19 @@ def _row_to_profile(row: dict) -> UserProfile:
     )
 
 
+@router.get("/users", response_model=list[UserProfile])
+async def get_users(user: dict = Depends(get_current_user)):
+    """Get all non-admin profiles. Requires the caller to be an admin."""
+    supabase = get_supabase()
+
+    caller = supabase.table("profiles").select("role").eq("id", user["sub"]).single().execute()
+    if not caller.data or caller.data.get("role") != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+
+    result = supabase.table("profiles").select("*").neq("role", "admin").execute()
+    return [_row_to_profile(row) for row in result.data]
+
+
 @router.get("", response_model=UserProfile)
 async def get_profile(user: dict = Depends(get_current_user)):
     """Get the authenticated user's profile, creating or enriching it from user_metadata if needed."""

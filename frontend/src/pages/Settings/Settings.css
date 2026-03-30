@@ -304,6 +304,40 @@
   max-width: 20rem;
 }
 
+/* User selector (admin only) */
+.settings-user-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-user-selector__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-slate-400);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.settings-user-selector__select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: none;
+  background-color: var(--color-slate-50);
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--color-slate-900);
+  outline: none;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+  appearance: auto;
+}
+
+.settings-user-selector__select:focus {
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
 /* Admin Panel */
 .settings-admin {
   display: flex;

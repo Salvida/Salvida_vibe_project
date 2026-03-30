@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { LucideIcon } from "lucide-react";
-import { useProfile, useUpdateProfile } from "../../hooks/useProfile";
+import { useProfile, useUpdateProfile, useUsers } from "../../hooks/useProfile";
 import { useCurrentUserStore } from "../../store/useCurrentUserStore";
 import { useSyncCurrentUser } from "../../hooks/useSyncCurrentUser";
 import "./Settings.css";
@@ -45,8 +45,10 @@ export default function Settings() {
   );
 
   const [activeSection, setActiveSection] = useState("profile");
+  const [selectedUserId, setSelectedUserId] = useState("");
   const { data: profile, isLoading } = useProfile();
   const { mutate: updateProfile, isPending, isSuccess } = useUpdateProfile();
+  const { data: users } = useUsers(isAdminUser && activeSection === "profile");
 
   const [form, setForm] = useState({
     firstName: "",
@@ -110,6 +112,26 @@ export default function Settings() {
           <div className="settings-panel">
             {activeSection === "profile" ? (
               <div className="settings-profile">
+                {isAdminUser && (
+                  <div className="settings-user-selector">
+                    <label className="settings-user-selector__label">
+                      Usuario
+                    </label>
+                    <select
+                      className="settings-user-selector__select"
+                      value={selectedUserId}
+                      onChange={(e) => setSelectedUserId(e.target.value)}
+                    >
+                      <option value="">Seleccionar usuario…</option>
+                      {users?.map((u) => (
+                        <option key={u.id} value={u.id}>
+                          {u.firstName} {u.lastName}
+                          {u.email ? ` — ${u.email}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <h3 className="settings-profile__title">Ajustes de Perfil</h3>
 
                 {isLoading ? (

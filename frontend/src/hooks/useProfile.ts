@@ -4,6 +4,7 @@ import type { UserProfile } from '../types';
 import { useAuthStore } from '../store/useAuthStore';
 
 export const PROFILE_KEY = ['profile'] as const;
+export const USERS_KEY = ['users'] as const;
 
 export function useProfile() {
   const setUser = useAuthStore((s) => s.setUser);
@@ -16,6 +17,14 @@ export function useProfile() {
       setUser(profile);
       return profile;
     },
+  });
+}
+
+export function useUsers(enabled: boolean) {
+  return useQuery<UserProfile[]>({
+    queryKey: USERS_KEY,
+    queryFn: () => apiClient.get<UserProfile[]>('/api/profile/users'),
+    enabled,
   });
 }
 
