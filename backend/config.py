@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     supabase_jwt_secret: str = ""
     cors_origins: list[str] = ["http://localhost:3000"]
     debug: bool = True
+    supabase_mcp_connection: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",
