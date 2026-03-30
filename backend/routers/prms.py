@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from typing import Optional
 from db.supabase_client import get_supabase
-from models.patient import (
-    Patient, PatientListItem, PatientCreate, PatientUpdate,
+from models.prm import (
+    Prm, PrmListItem, PrmCreate, PrmUpdate,
     EmergencyContact, EmergencyContactCreate,
 )
 from models.address import Address, AddressCreate
@@ -11,8 +11,8 @@ from auth.dependencies import get_current_user
 router = APIRouter()
 
 
-def _row_to_list_item(row: dict) -> PatientListItem:
-    return PatientListItem(
+def _row_to_list_item(row: dict) -> PrmListItem:
+    return PrmListItem(
         id=row["id"],
         name=row["name"],
         email=row.get("email", ""),
@@ -24,7 +24,7 @@ def _row_to_list_item(row: dict) -> PatientListItem:
     )
 
 
-def _row_to_patient(row: dict, address_row: Optional[dict], contacts: list[dict]) -> Patient:
+def _row_to_prm(row: dict, address_row: Optional[dict], contacts: list[dict]) -> Prm:
     address = None
     if address_row:
         address = Address(
@@ -47,7 +47,7 @@ def _row_to_patient(row: dict, address_row: Optional[dict], contacts: list[dict]
         for c in contacts
     ]
 
-    return Patient(
+    return Prm(
         id=row["id"],
         name=row["name"],
         email=row.get("email", ""),
@@ -65,10 +65,10 @@ def _row_to_patient(row: dict, address_row: Optional[dict], contacts: list[dict]
     )
 
 
-def _fetch_full_patient(patient_id: str, supabase) -> Patient:
-    row = supabase.table("patients").select("*").eq("id", patient_id).single().execute()
+def _fetch_full_prm(prm_id: str, supabase) -> Prm:
+    row = supabase.table("prms").select("*").eq("id", prm_id).single().execute()
     if not row.data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prm not found")
 
     address_row = None
     if row.data.get("address_id"):
@@ -84,19 +84,19 @@ def _fetch_full_patient(patient_id: str, supabase) -> Patient:
     contacts_result = (
         supabase.table("emergency_contacts")
         .select("*")
-        .eq("patient_id", patient_id)
+        .eq("patient_id", prm_id)
         .execute()
     )
     contacts = contacts_result.data or []
 
-    return _row_to_patient(row.data, address_row, contacts)
+    return _row_to_prm(row.data, address_row, contacts)
 
 
 # ---------------------------------------------------------------------------
-# GET /api/patients
+# GET /api/prms
 # ---------------------------------------------------------------------------
-@router.get("", response_model=list[PatientListItem])
-async def list_patients(
+@router.get("", response_model=list[PrmListItem])
+async def list_prms(
     q: Optional[str] = Query(None, description="Search by name, email or phone"),
     status: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=200),
@@ -104,7 +104,7 @@ async def list_patients(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
-    query = supabase.table("patients").select("*").order("name")
+    query = supabase.table("prms").select("*").order("name")
 
     if status:
         query = query.eq("status", status)
@@ -118,22 +118,22 @@ async def list_patients(
 
 
 # ---------------------------------------------------------------------------
-# GET /api/patients/{id}
+# GET /api/prms/{id}
 # ---------------------------------------------------------------------------
-@router.get("/{patient_id}", response_model=Patient)
-async def get_patient(patient_id: str, user: dict = Depends(get_current_user)):
+@router.get("/{prm_id}", response_model=Prm)
+async def get_prm(prm_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
-    return _fetch_full_patient(patient_id, supabase)
+    return _fetch_full_prm(prm_id, supabase)
 
 
 # ---------------------------------------------------------------------------
-# POST /api/patients
+# POST /api/prms
 # ---------------------------------------------------------------------------
-@router.post("", response_model=Patient, status_code=status.HTTP_201_CREATED)
-async def create_patient(body: PatientCreate, user: dict = Depends(get_current_user)):
+@router.post("", response_model=Prm, status_code=status.HTTP_201_CREATED)
+async def create_prm(body: PrmCreate, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
 
-    patient_payload = {
+    prm_payload = {
         "name": body.name,
         "email": body.email,
         "phone": body.phone,
@@ -148,28 +148,28 @@ async def create_patient(body: PatientCreate, user: dict = Depends(get_current_u
         "created_by": user["sub"],
     }
 
-    result = supabase.table("patients").insert(patient_payload).execute()
-    patient_id = result.data[0]["id"]
+    result = supabase.table("prms").insert(prm_payload).single().execute()
+    prm_id = result.data["id"]
 
     # Insert emergency contacts if provided
     for ec in body.emergency_contacts:
         supabase.table("emergency_contacts").insert({
-            "patient_id": patient_id,
+            "patient_id": prm_id,
             "name": ec.name,
             "phone": ec.phone,
             "relationship": ec.relationship,
         }).execute()
 
-    return _fetch_full_patient(patient_id, supabase)
+    return _fetch_full_prm(prm_id, supabase)
 
 
 # ---------------------------------------------------------------------------
-# PUT /api/patients/{id}
+# PUT /api/prms/{id}
 # ---------------------------------------------------------------------------
-@router.put("/{patient_id}", response_model=Patient)
-async def update_patient(
-    patient_id: str,
-    body: PatientUpdate,
+@router.put("/{prm_id}", response_model=Prm)
+async def update_prm(
+    prm_id: str,
+    body: PrmUpdate,
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
@@ -192,72 +192,72 @@ async def update_patient(
     updates = {field_map[k]: v for k, v in raw.items() if k in field_map}
 
     if updates:
-        supabase.table("patients").update(updates).eq("id", patient_id).execute()
+        supabase.table("prms").update(updates).eq("id", prm_id).execute()
 
-    return _fetch_full_patient(patient_id, supabase)
+    return _fetch_full_prm(prm_id, supabase)
 
 
 # ---------------------------------------------------------------------------
-# DELETE /api/patients/{id}
+# DELETE /api/prms/{id}
 # ---------------------------------------------------------------------------
-@router.delete("/{patient_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_patient(patient_id: str, user: dict = Depends(get_current_user)):
+@router.delete("/{prm_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_prm(prm_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
 
-    # Block deletion if patient has active bookings
+    # Block deletion if prm has active bookings
     active = (
         supabase.table("bookings")
         .select("id")
-        .eq("patient_id", patient_id)
+        .eq("patient_id", prm_id)
         .in_("status", ["Approved", "Pending"])
         .execute()
     )
     if active.data:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Cannot delete patient: has active bookings",
+            detail="Cannot delete prm: has active bookings",
         )
 
-    supabase.table("patients").delete().eq("id", patient_id).execute()
+    supabase.table("prms").delete().eq("id", prm_id).execute()
 
 
 # ---------------------------------------------------------------------------
-# POST /api/patients/{id}/address
+# POST /api/prms/{id}/address
 # ---------------------------------------------------------------------------
-@router.post("/{patient_id}/address", response_model=Patient)
+@router.post("/{prm_id}/address", response_model=Prm)
 async def assign_address(
-    patient_id: str,
+    prm_id: str,
     body: AddressCreate,
     user: dict = Depends(get_current_user),
 ):
-    """Create a new address and link it to this patient."""
+    """Create a new address and link it to this prm."""
     supabase = get_supabase()
 
     addr_payload = body.model_dump()
     addr_payload["created_by"] = user["sub"]
     addr_result = supabase.table("addresses").insert(addr_payload).execute()
 
-    supabase.table("patients").update({"address_id": addr_result.data[0]["id"]}).eq("id", patient_id).execute()
+    supabase.table("prms").update({"address_id": addr_result.data["id"]}).eq("id", prm_id).execute()
 
-    return _fetch_full_patient(patient_id, supabase)
+    return _fetch_full_prm(prm_id, supabase)
 
 
 # ---------------------------------------------------------------------------
-# POST /api/patients/{id}/emergency-contacts
+# POST /api/prms/{id}/emergency-contacts
 # ---------------------------------------------------------------------------
 @router.post(
-    "/{patient_id}/emergency-contacts",
+    "/{prm_id}/emergency-contacts",
     response_model=EmergencyContact,
     status_code=status.HTTP_201_CREATED,
 )
 async def add_emergency_contact(
-    patient_id: str,
+    prm_id: str,
     body: EmergencyContactCreate,
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
     result = supabase.table("emergency_contacts").insert({
-        "patient_id": patient_id,
+        "patient_id": prm_id,
         "name": body.name,
         "phone": body.phone,
         "relationship": body.relationship,
@@ -268,16 +268,16 @@ async def add_emergency_contact(
 
 
 # ---------------------------------------------------------------------------
-# DELETE /api/patients/{id}/emergency-contacts/{ec_id}
+# DELETE /api/prms/{id}/emergency-contacts/{ec_id}
 # ---------------------------------------------------------------------------
 @router.delete(
-    "/{patient_id}/emergency-contacts/{ec_id}",
+    "/{prm_id}/emergency-contacts/{ec_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_emergency_contact(
-    patient_id: str,
+    prm_id: str,
     ec_id: str,
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
-    supabase.table("emergency_contacts").delete().eq("id", ec_id).eq("patient_id", patient_id).execute()
+    supabase.table("emergency_contacts").delete().eq("id", ec_id).eq("patient_id", prm_id).execute()

@@ -101,17 +101,17 @@ async def validate_address(
 async def delete_address(address_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
 
-    # Check no patients are linked to this address
-    patients = (
-        supabase.table("patients")
+    # Check no prms are linked to this address
+    prms = (
+        supabase.table("prms")
         .select("id")
         .eq("address_id", address_id)
         .execute()
     )
-    if patients.data:
+    if prms.data:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Cannot delete address: it is linked to one or more patients",
+            detail="Cannot delete address: it is linked to one or more prms",
         )
 
     supabase.table("addresses").delete().eq("id", address_id).execute()

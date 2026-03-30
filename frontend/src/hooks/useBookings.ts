@@ -10,7 +10,7 @@ export const bookingsByDateKey = (date: string) => ['bookings', 'date', date] as
 export interface BookingFilters {
   date?: string;
   status?: string;
-  patientId?: string;
+  prmId?: string;
 }
 
 // ---- Hooks ----
@@ -19,7 +19,7 @@ export function useBookings(filters?: BookingFilters) {
   const params = new URLSearchParams();
   if (filters?.date) params.set('date', filters.date);
   if (filters?.status) params.set('status', filters.status);
-  if (filters?.patientId) params.set('patient_id', filters.patientId);
+  if (filters?.prmId) params.set('prm_id', filters.prmId);
 
   return useQuery<Booking[]>({
     queryKey: [...BOOKINGS_KEY, filters],
@@ -30,7 +30,7 @@ export function useBookings(filters?: BookingFilters) {
 export function useCreateBooking() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: Omit<Booking, 'id' | 'patientName' | 'patientAvatar' | 'status'>) =>
+    mutationFn: (body: Omit<Booking, 'id' | 'prmName' | 'prmAvatar' | 'status'>) =>
       apiClient.post<Booking>('/api/bookings', body),
     onSuccess: () => qc.invalidateQueries({ queryKey: BOOKINGS_KEY }),
   });

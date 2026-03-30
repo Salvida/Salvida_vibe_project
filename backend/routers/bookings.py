@@ -10,12 +10,12 @@ from auth.dependencies import get_current_user
 router = APIRouter()
 
 
-def _row_to_booking(row: dict, patient_name: str = "", patient_avatar: Optional[str] = None) -> Booking:
+def _row_to_booking(row: dict, prm_name: str = "", prm_avatar: Optional[str] = None) -> Booking:
     return Booking(
         id=str(row["id"]),
-        patientId=row["patient_id"],
-        patientName=patient_name,
-        patientAvatar=patient_avatar,
+        prmId=row["patient_id"],
+        prmName=prm_name,
+        prmAvatar=prm_avatar,
         startTime=row.get("start_time", ""),
         endTime=row.get("end_time", ""),
         date=str(row["date"]),
@@ -32,7 +32,7 @@ def _row_to_booking(row: dict, patient_name: str = "", patient_avatar: Optional[
 def _fetch_full_booking(booking_id: str, supabase) -> Booking:
     result = (
         supabase.table("bookings")
-        .select("*, patients(name, avatar)")
+        .select("*, prms(name, avatar)")
         .eq("id", booking_id)
         .single()
         .execute()
@@ -41,8 +41,8 @@ def _fetch_full_booking(booking_id: str, supabase) -> Booking:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
 
     row = result.data
-    patient = row.get("patients") or {}
-    return _row_to_booking(row, patient.get("name", ""), patient.get("avatar"))
+    prm = row.get("prms") or {}
+    return _row_to_booking(row, prm.get("name", ""), prm.get("avatar"))
 
 
 # ---------------------------------------------------------------------------
@@ -52,7 +52,7 @@ def _fetch_full_booking(booking_id: str, supabase) -> Booking:
 async def list_bookings(
     date: Optional[str] = Query(None, description="Filter by date (YYYY-MM-DD)"),
     booking_status: Optional[str] = Query(None, alias="status"),
-    patient_id: Optional[str] = Query(None),
+    prm_id: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     user: dict = Depends(get_current_user),
@@ -60,7 +60,7 @@ async def list_bookings(
     supabase = get_supabase()
     query = (
         supabase.table("bookings")
-        .select("*, patients(name, avatar)")
+        .select("*, prms(name, avatar)")
         .order("start_time")
     )
 
@@ -68,16 +68,16 @@ async def list_bookings(
         query = query.eq("date", date)
     if booking_status:
         query = query.eq("status", booking_status)
-    if patient_id:
-        query = query.eq("patient_id", patient_id)
+    if prm_id:
+        query = query.eq("patient_id", prm_id)
 
     query = query.range(offset, offset + limit - 1)
     result = query.execute()
 
     bookings = []
     for row in (result.data or []):
-        patient = row.get("patients") or {}
-        bookings.append(_row_to_booking(row, patient.get("name", ""), patient.get("avatar")))
+        prm = row.get("prms") or {}
+        bookings.append(_row_to_booking(row, prm.get("name", ""), prm.get("avatar")))
 
     return bookings
 
@@ -98,19 +98,19 @@ async def get_booking(booking_id: str, user: dict = Depends(get_current_user)):
 async def create_booking(body: BookingCreate, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
 
-    # Validate patient exists
+    # Validate prm exists
     try:
-        patient_res = supabase.table("patients").select("id, name, avatar").eq("id", body.patientId).single().execute()
-        if not patient_res.data:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
-        patient_data = patient_res.data
+        prm_res = supabase.table("prms").select("id, name, avatar").eq("id", body.prmId).single().execute()
+        if not prm_res.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prm not found")
+        prm_data = prm_res.data
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prm not found")
 
     payload = {
-        "patient_id": body.patientId,
+        "patient_id": body.prmId,
         "start_time": body.startTime,
         "end_time": body.endTime,
         "date": body.date,
@@ -123,7 +123,7 @@ async def create_booking(body: BookingCreate, user: dict = Depends(get_current_u
     }
 
     result = supabase.table("bookings").insert(payload).single().execute()
-    return _row_to_booking(result.data, patient_data["name"], patient_data.get("avatar"))
+    return _row_to_booking(result.data, prm_data["name"], prm_data.get("avatar"))
 
 
 # ---------------------------------------------------------------------------

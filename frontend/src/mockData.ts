@@ -1,4 +1,4 @@
-import { Patient, Booking, Notification, UserProfile } from './types';
+import { Prm, Booking, Notification, UserProfile } from './types';
 
 export const MOCK_USER: UserProfile = {
   id: 'user-1',
@@ -16,7 +16,7 @@ export const MOCK_USER: UserProfile = {
   },
 };
 
-export const MOCK_PATIENTS: Patient[] = [
+export const MOCK_PRMS: Prm[] = [
   {
     id: '12345',
     name: 'María García',
@@ -100,9 +100,9 @@ export const MOCK_PATIENTS: Patient[] = [
 export const MOCK_BOOKINGS: Booking[] = [
   {
     id: '1',
-    patientId: '12345',
-    patientName: 'María García',
-    patientAvatar: MOCK_PATIENTS[0].avatar,
+    prmId: '12345',
+    prmName: 'María García',
+    prmAvatar: MOCK_PRMS[0].avatar,
     startTime: '10:00',
     endTime: '12:00',
     date: '2026-03-23',
@@ -113,8 +113,8 @@ export const MOCK_BOOKINGS: Booking[] = [
   },
   {
     id: '2',
-    patientId: 'SLV-8821',
-    patientName: 'Carlos Rodríguez',
+    prmId: 'SLV-8821',
+    prmName: 'Carlos Rodríguez',
     startTime: '13:30',
     endTime: '14:45',
     date: '2026-03-23',
@@ -125,8 +125,8 @@ export const MOCK_BOOKINGS: Booking[] = [
   },
   {
     id: '3',
-    patientId: 'SLV-8822',
-    patientName: 'Ana Martínez',
+    prmId: 'SLV-8822',
+    prmName: 'Ana Martínez',
     startTime: '16:00',
     endTime: '17:30',
     date: '2026-03-23',

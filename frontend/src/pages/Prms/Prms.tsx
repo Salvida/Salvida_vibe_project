@@ -1,0 +1,136 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Search, Plus, Mail, Phone } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import Header from '../../components/Header/Header';
+import DropdownMenu from '../../components/DropdownMenu';
+import { usePrms } from '../../hooks/usePrms';
+import './Prms.css';
+
+function useDebounce(value: string, delay: number) {
+  const [debounced, setDebounced] = useState(value);
+  useState(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  });
+  return debounced;
+}
+
+export default function Prms() {
+  const { t } = useTranslation();
+  const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query, 300);
+  const { data: prms = [], isLoading } = usePrms(debouncedQuery);
+
+  return (
+    <div className="prms">
+      <Header
+        title={t('prms.title')}
+        subtitle={t('prms.subtitle')}
+      />
+
+      <div className="prms__body">
+        <div className="prms__inner">
+
+          <div className="prms__toolbar">
+            <div className="prms__search-wrap">
+              <span className="prms__search-icon">
+                <Search size={18} />
+              </span>
+              <input
+                type="text"
+                placeholder={t('prms.search')}
+                className="prms__search-input"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
+            <Link to="/app/prms/new" className="prms__add-btn">
+              <Plus size={20} />
+              <span>{t('prms.addPrm')}</span>
+            </Link>
+          </div>
+
+          <div className="prms__table-wrap">
+            <div className="prms__table-scroll">
+              <table className="prms__table">
+                <thead>
+                  <tr>
+                    <th>{t('prms.columns.name')}</th>
+                    <th>{t('prms.columns.contact')}</th>
+                    <th className="center">{t('prms.columns.bookings')}</th>
+                    <th>{t('prms.columns.lastVisit')}</th>
+                    <th>{t('prms.columns.status')}</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {isLoading ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <tr key={i} className="prms__skeleton-row">
+                        <td><div className="prms__skeleton" style={{ width: '180px' }} /></td>
+                        <td><div className="prms__skeleton" style={{ width: '140px' }} /></td>
+                        <td><div className="prms__skeleton" style={{ width: '40px', margin: '0 auto' }} /></td>
+                        <td><div className="prms__skeleton" style={{ width: '80px' }} /></td>
+                        <td><div className="prms__skeleton" style={{ width: '60px' }} /></td>
+                        <td />
+                      </tr>
+                    ))
+                  ) : prms.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="prms__empty">
+                        No se encontraron PRMs
+                      </td>
+                    </tr>
+                  ) : (
+                    prms.map((prm) => (
+                      <tr key={prm.id}>
+                        <td>
+                          <Link to={`/app/prms/${prm.id}`} className="prm-link">
+                            <div className="prm-link__avatar">
+                              {prm.name.charAt(0)}
+                            </div>
+                            <span className="prm-link__name">{prm.name}</span>
+                          </Link>
+                        </td>
+                        <td>
+                          <div className="prm-contact">
+                            <div className="prm-contact__item">
+                              <Mail size={12} />
+                              <span>{prm.email}</span>
+                            </div>
+                            <div className="prm-contact__item">
+                              <Phone size={12} />
+                              <span>{prm.phone}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="prm-bookings">—</td>
+                        <td className="prm-date">—</td>
+                        <td>
+                          <span className={`prm-status ${prm.status === 'Activo' ? 'prm-status--active' : 'prm-status--inactive'}`}>
+                            {prm.status}
+                          </span>
+                        </td>
+                        <td>
+                          <DropdownMenu
+                            items={[
+                              { label: t('prms.menu.viewProfile'), onClick: () => {} },
+                              { label: t('prms.menu.edit'), onClick: () => {} },
+                              { label: t('prms.menu.deactivate'), onClick: () => {}, variant: 'danger' },
+                            ]}
+                          />
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}

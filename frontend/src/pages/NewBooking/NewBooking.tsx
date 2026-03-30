@@ -9,7 +9,7 @@ import type { Address } from '../../types';
 import { apiClient } from '../../lib/api';
 import './NewBooking.css';
 
-type PatientResult = { id: string; name: string; avatar?: string; dni?: string };
+type PrmResult = { id: string; name: string; avatar?: string; dni?: string };
 
 function todayIso() {
   const d = new Date();
@@ -32,42 +32,40 @@ export default function NewBooking() {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
 
-  // Patient search state
-  const [patientQuery, setPatientQuery] = useState('');
-  const [patientResults, setPatientResults] = useState<PatientResult[]>([]);
-  const [selectedPatient, setSelectedPatient] = useState<PatientResult | null>(null);
-  const [patientSearchOpen, setPatientSearchOpen] = useState(false);
-  const [patientSearchLoading, setPatientSearchLoading] = useState(false);
-  const [patientNoResults, setPatientNoResults] = useState(false);
+  // Prm search state
+  const [prmQuery, setPrmQuery] = useState('');
+  const [prmResults, setPrmResults] = useState<PrmResult[]>([]);
+  const [selectedPrm, setSelectedPrm] = useState<PrmResult | null>(null);
+  const [prmSearchOpen, setPrmSearchOpen] = useState(false);
+  const [prmSearchLoading, setPrmSearchLoading] = useState(false);
+  const [prmNoResults, setPrmNoResults] = useState(false);
 
-  // Debounced patient search
+  // Debounced prm search
   useEffect(() => {
-    if (patientQuery.length < 2) {
-      setPatientResults([]);
-      setPatientNoResults(false);
-      setPatientSearchOpen(false);
+    if (prmQuery.length < 2) {
+      setPrmResults([]);
+      setPrmSearchOpen(false);
       return;
     }
-    setPatientSearchLoading(true);
+    setPrmSearchLoading(true);
     const timer = setTimeout(() => {
       apiClient
-        .get<PatientResult[]>('/api/patients?q=' + encodeURIComponent(patientQuery))
+        .get<PrmResult[]>('/api/prms?q=' + encodeURIComponent(prmQuery))
         .then((data) => {
-          setPatientResults(data);
-          setPatientNoResults(data.length === 0);
-          setPatientSearchOpen(true);
+          setPrmResults(data);
+          setPrmSearchOpen(data.length > 0);
         })
-        .catch(() => { setPatientResults([]); setPatientNoResults(false); })
-        .finally(() => setPatientSearchLoading(false));
+        .catch(() => setPrmResults([]))
+        .finally(() => setPrmSearchLoading(false));
     }, 350);
     return () => clearTimeout(timer);
-  }, [patientQuery]);
+  }, [prmQuery]);
 
   async function handleSubmit() {
-    if (!selectedPatient || !pickupAddress.full_address || !destinationAddress.full_address || !date || !startTime) return;
+    if (!selectedPrm || !pickupAddress.full_address || !destinationAddress.full_address || !date || !startTime) return;
     try {
       await createBooking.mutateAsync({
-        patientId: selectedPatient.id,
+        prmId: selectedPrm.id,
         date,
         startTime,
         endTime: endTime || startTime,
@@ -82,7 +80,7 @@ export default function NewBooking() {
   }
 
   const canSubmit =
-    !!selectedPatient &&
+    !!selectedPrm &&
     !!pickupAddress.full_address &&
     !!destinationAddress.full_address &&
     !!date &&
@@ -113,14 +111,14 @@ export default function NewBooking() {
             ))}
           </div>
 
-          {/* Step 1: Patient */}
+          {/* Step 1: Prm */}
           <section className="booking-section">
             <div className="booking-section__heading">
               <span className="booking-section__num">1</span>
-              <h3 className="booking-section__title">Paciente</h3>
+              <h3 className="booking-section__title">PRM</h3>
             </div>
 
-            {selectedPatient ? (
+            {selectedPrm ? (
               <div
                 style={{
                   display: 'flex',
@@ -132,10 +130,10 @@ export default function NewBooking() {
                   background: '#f8fafc',
                 }}
               >
-                {selectedPatient.avatar ? (
+                {selectedPrm.avatar ? (
                   <img
-                    src={selectedPatient.avatar}
-                    alt={selectedPatient.name}
+                    src={selectedPrm.avatar}
+                    alt={selectedPrm.name}
                     style={{ width: '2.25rem', height: '2.25rem', borderRadius: '50%', objectFit: 'cover' }}
                   />
                 ) : (
@@ -153,22 +151,22 @@ export default function NewBooking() {
                       fontSize: '0.9rem',
                     }}
                   >
-                    {selectedPatient.name[0]}
+                    {selectedPrm.name[0]}
                   </div>
                 )}
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>{selectedPatient.name}</div>
-                  {selectedPatient.dni && (
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>DNI: {selectedPatient.dni}</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>{selectedPrm.name}</div>
+                  {selectedPrm.dni && (
+                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>DNI: {selectedPrm.dni}</div>
                   )}
                 </div>
                 <button
                   type="button"
                   onClick={() => {
-                    setSelectedPatient(null);
-                    setPatientQuery('');
-                    setPatientResults([]);
-                    setPatientSearchOpen(false);
+                    setSelectedPrm(null);
+                    setPrmQuery('');
+                    setPrmResults([]);
+                    setPrmSearchOpen(false);
                   }}
                   style={{
                     fontSize: '0.75rem',
@@ -193,20 +191,20 @@ export default function NewBooking() {
                   />
                   <input
                     type="text"
-                    value={patientQuery}
-                    onChange={(e) => setPatientQuery(e.target.value)}
-                    placeholder="Buscar paciente por nombre..."
+                    value={prmQuery}
+                    onChange={(e) => setPrmQuery(e.target.value)}
+                    placeholder="Buscar PRM por nombre..."
                     className="location-field__input"
                     style={{ paddingLeft: '2.4rem', paddingRight: '2.4rem' }}
                   />
-                  {patientSearchLoading && (
+                  {prmSearchLoading && (
                     <Loader2
                       size={15}
                       style={{ position: 'absolute', right: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', animation: 'spin 1s linear infinite' }}
                     />
                   )}
                 </div>
-                {patientSearchOpen && (patientResults.length > 0 || patientNoResults) && (
+                {prmSearchOpen && (prmResults.length > 0 || prmNoResults) && (
                   <ul
                     style={{
                       position: 'absolute',
@@ -225,16 +223,16 @@ export default function NewBooking() {
                       margin: 0,
                     }}
                   >
-                    {patientResults.length > 0
-                      ? patientResults.map((p, idx) => (
+                    {prmResults.length > 0
+                      ? prmResults.map((p, idx) => (
                           <li key={p.id} style={{ borderTop: idx > 0 ? '1px solid #f1f5f9' : 'none' }}>
                             <button
                               type="button"
                               onClick={() => {
-                                setSelectedPatient(p);
-                                setPatientQuery(p.name);
-                                setPatientSearchOpen(false);
-                                setPatientNoResults(false);
+                                setSelectedPrm(p);
+                                setPrmQuery(p.name);
+                                setPrmSearchOpen(false);
+                                setPrmNoResults(false);
                               }}
                               style={{
                                 width: '100%',
@@ -437,8 +435,8 @@ export default function NewBooking() {
           <div className="booking-requirements">
             <p className="booking-requirements__title">Para enviar la solicitud necesitas:</p>
             <ul className="booking-requirements__list">
-              <li className={selectedPatient ? 'req--ok' : 'req--missing'}>
-                {selectedPatient ? '✓' : '○'} Paciente seleccionado
+              <li className={selectedPrm ? 'req--ok' : 'req--missing'}>
+                {selectedPrm ? '✓' : '○'} Paciente seleccionado
               </li>
               <li className={pickupAddress.full_address ? 'req--ok' : 'req--missing'}>
                 {pickupAddress.full_address ? '✓' : '○'} Dirección de recogida

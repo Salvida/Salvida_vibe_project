@@ -31,15 +31,15 @@ const STATUS_CLASS: Record<Booking['status'], string> = {
 function BookingCard({ booking }: { booking: Booking }) {
   return (
     <div className="booking-card">
-      {booking.patientAvatar ? (
-        <img className="booking-card__avatar" src={booking.patientAvatar} alt={booking.patientName} />
+      {booking.prmAvatar ? (
+        <img className="booking-card__avatar" src={booking.prmAvatar} alt={booking.prmName} />
       ) : (
         <div className="booking-card__avatar booking-card__avatar--placeholder">
-          {booking.patientName?.[0] ?? '?'}
+          {booking.prmName?.[0] ?? '?'}
         </div>
       )}
       <div className="booking-card__info">
-        <div className="booking-card__name">{booking.patientName}</div>
+        <div className="booking-card__name">{booking.prmName}</div>
         <div className="booking-card__meta">
           <span className="booking-card__meta-item">
             <Clock size={13} />

@@ -1,5 +1,14 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, MapPin, Loader2, ShieldCheck, Clock, AlertTriangle, Accessibility, X } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  Search,
+  MapPin,
+  Loader2,
+  ShieldCheck,
+  Clock,
+  AlertTriangle,
+  Accessibility,
+  X,
+} from 'lucide-react';
 import type { Address } from '../types';
 import { cn } from '../utils';
 
@@ -28,6 +37,14 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced;
 }
 
+interface AddressSelectorProps {
+  value: Partial<Address> | undefined;
+  onChange: (address: Partial<Address>) => void;
+  onValidationChange?: (status: Address['validation_status']) => void;
+  /** Show the validation status toggle (for admin users editing a prm) */
+  showValidation?: boolean;
+}
+
 const VALIDATION_LABELS: Record<Address['validation_status'], string> = {
   pending: 'Pendiente de validación',
   validated: 'Validada',
@@ -40,18 +57,14 @@ const VALIDATION_STYLES: Record<Address['validation_status'], string> = {
   rejected: 'bg-red-50 text-red-500 border-red-200',
 };
 
-const VALIDATION_ICONS: Record<Address['validation_status'], React.ElementType> = {
+const VALIDATION_ICONS: Record<
+  Address['validation_status'],
+  React.ElementType
+> = {
   pending: Clock,
   validated: ShieldCheck,
   rejected: AlertTriangle,
 };
-
-interface AddressSelectorProps {
-  value: Partial<Address> | undefined;
-  onChange: (address: Partial<Address>) => void;
-  onValidationChange?: (status: Address['validation_status']) => void;
-  showValidation?: boolean;
-}
 
 function composeFullAddress(base: string, floor: string, door: string): string {
   const extras = [floor, door].filter(Boolean).join(', ');
@@ -78,7 +91,10 @@ export default function AddressSelector({
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -97,7 +113,7 @@ export default function AddressSelector({
 
     setLoading(true);
     fetch(
-      `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(debouncedQuery)}&lang=es&filter=countrycode:es&limit=6&apiKey=${GEOAPIFY_KEY}`
+      `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(debouncedQuery)}&lang=es&filter=countrycode:es&limit=6&apiKey=${GEOAPIFY_KEY}`,
     )
       .then((r) => r.json())
       .then((data: { features?: GeoapifyFeature[] }) => {
@@ -106,32 +122,38 @@ export default function AddressSelector({
         setNoResults(items.length === 0);
         setOpen(true);
       })
-      .catch(() => { setSuggestions([]); setNoResults(false); })
+      .catch(() => {
+        setSuggestions([]);
+        setNoResults(false);
+      })
       .finally(() => setLoading(false));
   }, [debouncedQuery, selected]);
 
-  const handleSelect = useCallback((feature: GeoapifyFeature) => {
-    const [lng, lat] = feature.geometry.coordinates;
-    const label = feature.properties.formatted;
+  const handleSelect = useCallback(
+    (feature: GeoapifyFeature) => {
+      const [lng, lat] = feature.geometry.coordinates;
+      const label = feature.properties.formatted;
 
-    setQuery(label);
-    setBaseAddress(label);
-    setSuggestions([]);
-    setNoResults(false);
-    setSelected(true);
-    setOpen(false);
+      setQuery(label);
+      setBaseAddress(label);
+      setSuggestions([]);
+      setNoResults(false);
+      setSelected(true);
+      setOpen(false);
 
-    onChange({
-      ...value,
-      full_address: composeFullAddress(label, floor, door),
-      lat,
-      lng,
-      validation_status: value?.validation_status ?? 'pending',
-      is_accessible: value?.is_accessible ?? false,
-      floor: floor || undefined,
-      door: door || undefined,
-    });
-  }, [value, onChange, floor, door]);
+      onChange({
+        ...value,
+        full_address: composeFullAddress(label, floor, door),
+        lat,
+        lng,
+        validation_status: value?.validation_status ?? 'pending',
+        is_accessible: value?.is_accessible ?? false,
+        floor: floor || undefined,
+        door: door || undefined,
+      });
+    },
+    [value, onChange, floor, door],
+  );
 
   const handleClear = useCallback(() => {
     setQuery('');
@@ -151,13 +173,21 @@ export default function AddressSelector({
   const handleFloorChange = (newFloor: string) => {
     setFloor(newFloor);
     if (!selected || !baseAddress) return;
-    onChange({ ...value, full_address: composeFullAddress(baseAddress, newFloor, door), floor: newFloor || undefined });
+    onChange({
+      ...value,
+      full_address: composeFullAddress(baseAddress, newFloor, door),
+      floor: newFloor || undefined,
+    });
   };
 
   const handleDoorChange = (newDoor: string) => {
     setDoor(newDoor);
     if (!selected || !baseAddress) return;
-    onChange({ ...value, full_address: composeFullAddress(baseAddress, floor, newDoor), door: newDoor || undefined });
+    onChange({
+      ...value,
+      full_address: composeFullAddress(baseAddress, floor, newDoor),
+      door: newDoor || undefined,
+    });
   };
 
   const validationStatus = value?.validation_status ?? 'pending';
@@ -168,7 +198,10 @@ export default function AddressSelector({
       {/* Search input */}
       <div ref={containerRef} className="relative">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+            size={16}
+          />
           <input
             type="text"
             value={query}
@@ -192,11 +225,14 @@ export default function AddressSelector({
               'w-full pl-11 pr-11 py-3 rounded-xl border bg-slate-50 outline-none font-medium text-sm transition-colors',
               selected
                 ? 'border-emerald-300 bg-emerald-50/50 text-slate-700 cursor-default'
-                : 'border-slate-200 focus:ring-2 focus:ring-[#6b4691] focus:border-[#6b4691]'
+                : 'border-slate-200 focus:ring-2 focus:ring-[#6b4691] focus:border-[#6b4691]',
             )}
           />
           {loading && (
-            <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 animate-spin" size={16} />
+            <Loader2
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 animate-spin"
+              size={16}
+            />
           )}
           {selected && !loading && (
             <button
@@ -213,52 +249,63 @@ export default function AddressSelector({
         {/* Dropdown */}
         {open && (suggestions.length > 0 || noResults) && (
           <ul className="absolute z-[100] mt-1 w-full bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">
-            {suggestions.length > 0
-              ? suggestions.map((f, idx) => (
-                  <li key={f.properties.place_id} className={idx > 0 ? 'border-t border-slate-100' : ''}>
-                    <button
-                      type="button"
-                      onClick={() => handleSelect(f)}
-                      className="w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-[#6b4691]/5 active:bg-[#6b4691]/10 transition-colors"
-                    >
-                      <MapPin size={14} className="text-[#6b4691] mt-0.5 shrink-0" />
-                      <div>
-                        <div className="text-sm text-slate-700 leading-snug font-medium">
-                          {f.properties.address_line1}
-                        </div>
-                        <div className="text-xs text-slate-400 mt-0.5 leading-snug">
-                          {f.properties.address_line2}
-                        </div>
-                      </div>
-                    </button>
-                  </li>
-                ))
-              : (
-                <li className="px-4 py-3">
-                  <p className="text-xs text-slate-500 mb-2">Sin resultados para "{debouncedQuery}"</p>
+            {suggestions.length > 0 ? (
+              suggestions.map((f, idx) => (
+                <li
+                  key={f.properties.place_id}
+                  className={idx > 0 ? 'border-t border-slate-100' : ''}
+                >
                   <button
                     type="button"
-                    onClick={() => {
-                      setBaseAddress(debouncedQuery);
-                      setSelected(true);
-                      setOpen(false);
-                      setNoResults(false);
-                      onChange({
-                        ...value,
-                        full_address: composeFullAddress(debouncedQuery, floor, door),
-                        lat: undefined,
-                        lng: undefined,
-                        validation_status: value?.validation_status ?? 'pending',
-                        is_accessible: value?.is_accessible ?? false,
-                      });
-                    }}
-                    className="text-xs font-semibold text-[#6b4691] hover:underline"
+                    onClick={() => handleSelect(f)}
+                    className="w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-[#6b4691]/5 active:bg-[#6b4691]/10 transition-colors"
                   >
-                    Usar "{debouncedQuery}" como dirección
+                    <MapPin
+                      size={14}
+                      className="text-[#6b4691] mt-0.5 shrink-0"
+                    />
+                    <div>
+                      <div className="text-sm text-slate-700 leading-snug font-medium">
+                        {f.properties.address_line1}
+                      </div>
+                      <div className="text-xs text-slate-400 mt-0.5 leading-snug">
+                        {f.properties.address_line2}
+                      </div>
+                    </div>
                   </button>
                 </li>
-              )
-            }
+              ))
+            ) : (
+              <li className="px-4 py-3">
+                <p className="text-xs text-slate-500 mb-2">
+                  Sin resultados para "{debouncedQuery}"
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBaseAddress(debouncedQuery);
+                    setSelected(true);
+                    setOpen(false);
+                    setNoResults(false);
+                    onChange({
+                      ...value,
+                      full_address: composeFullAddress(
+                        debouncedQuery,
+                        floor,
+                        door,
+                      ),
+                      lat: undefined,
+                      lng: undefined,
+                      validation_status: value?.validation_status ?? 'pending',
+                      is_accessible: value?.is_accessible ?? false,
+                    });
+                  }}
+                  className="text-xs font-semibold text-[#6b4691] hover:underline"
+                >
+                  Usar "{debouncedQuery}" como dirección
+                </button>
+              </li>
+            )}
           </ul>
         )}
       </div>
@@ -288,12 +335,14 @@ export default function AddressSelector({
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
-            onClick={() => onChange({ ...value, is_accessible: !value?.is_accessible })}
+            onClick={() =>
+              onChange({ ...value, is_accessible: !value?.is_accessible })
+            }
             className={cn(
               'inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold transition-all',
               value?.is_accessible
                 ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300'
+                : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300',
             )}
           >
             <Accessibility size={13} />
@@ -302,7 +351,13 @@ export default function AddressSelector({
 
           {showValidation && (
             <div className="flex items-center gap-2">
-              {(['pending', 'validated', 'rejected'] as Address['validation_status'][]).map((status) => {
+              {(
+                [
+                  'pending',
+                  'validated',
+                  'rejected',
+                ] as Address['validation_status'][]
+              ).map((status) => {
                 const Icon = VALIDATION_ICONS[status];
                 return (
                   <button
@@ -316,7 +371,7 @@ export default function AddressSelector({
                       'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all',
                       validationStatus === status
                         ? VALIDATION_STYLES[status]
-                        : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300'
+                        : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300',
                     )}
                   >
                     <Icon size={11} />
@@ -328,10 +383,12 @@ export default function AddressSelector({
           )}
 
           {!showValidation && (
-            <span className={cn(
-              'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-widest',
-              VALIDATION_STYLES[validationStatus]
-            )}>
+            <span
+              className={cn(
+                'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-widest',
+                VALIDATION_STYLES[validationStatus],
+              )}
+            >
               <ValidationIcon size={11} />
               {VALIDATION_LABELS[validationStatus]}
             </span>

@@ -17,7 +17,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "bookings": "Reservas",
-    "patients": "Mis PRMs",
+    "prms": "Mis PRMs",
     "addresses": "Direcciones",
     "settings": "Ajustes",
     "brand": "Salvida",
@@ -36,11 +36,11 @@
     "viewAll": "Ver todo",
     "noBookingsToday": "No hay reservas para hoy"
   },
-  "patients": {
+  "prms": {
     "title": "Mis PRMs",
     "subtitle": "Gestiona tus pacientes de movilidad reducida",
     "search": "Buscar PRMs...",
-    "addPatient": "Añadir PRM",
+    "addPrm": "Añadir PRM",
     "columns": {
       "name": "Nombre",
       "contact": "Contacto",
@@ -53,7 +53,7 @@
       "edit": "Editar",
       "deactivate": "Desactivar"
     },
-    "newPatient": {
+    "newPrm": {
       "title": "Nuevo PRM",
       "subtitle": "Registra un nuevo paciente de movilidad reducida",
       "sections": {
@@ -71,7 +71,7 @@
       "errorGeneric": "Error al guardar el PRM. Inténtalo de nuevo."
     }
   },
-  "patientDetail": {
+  "prmDetail": {
     "title": "Detalle del PRM",
     "personalInfo": "Información personal",
     "recentHistory": "Historial reciente",
@@ -143,10 +143,10 @@
     "urgency": "Urgencia",
     "routine": "Rutina",
     "urgent": "Urgente",
-    "selectPatient": "Seleccionar PRM",
-    "searchPatient": "Buscar PRM por nombre...",
-    "noPatientSelected": "Ningún PRM seleccionado",
-    "selectedPatient": "PRM seleccionado",
+    "selectPrm": "Seleccionar PRM",
+    "searchPrm": "Buscar PRM por nombre...",
+    "noPrmSelected": "Ningún PRM seleccionado",
+    "selectedPrm": "PRM seleccionado",
     "submit": "Enviar solicitud",
     "submitting": "Enviando...",
     "cancel": "Cancelar",

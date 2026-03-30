@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
-from routers import profile, addresses, patients, bookings
+from routers import profile, addresses, prms, bookings
 
 settings = get_settings()
 
@@ -22,7 +22,7 @@ app.add_middleware(
 
 app.include_router(profile.router,   prefix="/api/profile",   tags=["profile"])
 app.include_router(addresses.router, prefix="/api/addresses", tags=["addresses"])
-app.include_router(patients.router,  prefix="/api/patients",  tags=["patients"])
+app.include_router(prms.router,  prefix="/api/prms",  tags=["prms"])
 app.include_router(bookings.router,  prefix="/api/bookings",  tags=["bookings"])
 
 
