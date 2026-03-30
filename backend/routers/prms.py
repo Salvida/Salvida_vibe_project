@@ -235,7 +235,7 @@ async def assign_address(
 
     addr_payload = body.model_dump()
     addr_payload["created_by"] = user["sub"]
-    addr_result = supabase.table("addresses").insert(addr_payload).single().execute()
+    addr_result = supabase.table("addresses").insert(addr_payload).execute()
 
     supabase.table("prms").update({"address_id": addr_result.data["id"]}).eq("id", prm_id).execute()
 
@@ -261,9 +261,9 @@ async def add_emergency_contact(
         "name": body.name,
         "phone": body.phone,
         "relationship": body.relationship,
-    }).single().execute()
+    }).execute()
 
-    row = result.data
+    row = result.data[0]
     return EmergencyContact(id=str(row["id"]), name=row["name"], phone=row["phone"], relationship=row["relationship"])
 
 

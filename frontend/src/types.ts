@@ -6,6 +6,8 @@ export interface Address {
   validation_status: 'pending' | 'validated' | 'rejected';
   validation_notes?: string;
   is_accessible: boolean;
+  floor?: string;
+  door?: string;
 }
 
 export interface EmergencyContact {

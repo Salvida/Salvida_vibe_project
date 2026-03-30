@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import AddressSelector from '../../components/AddressSelector';
+import RouteMap from '../../components/RouteMap';
 import { useCreateBooking } from '../../hooks/useBookings';
 import type { Address } from '../../types';
 import { apiClient } from '../../lib/api';
@@ -37,6 +38,7 @@ export default function NewBooking() {
   const [selectedPrm, setSelectedPrm] = useState<PrmResult | null>(null);
   const [prmSearchOpen, setPrmSearchOpen] = useState(false);
   const [prmSearchLoading, setPrmSearchLoading] = useState(false);
+  const [prmNoResults, setPrmNoResults] = useState(false);
 
   // Debounced prm search
   useEffect(() => {
@@ -202,7 +204,7 @@ export default function NewBooking() {
                     />
                   )}
                 </div>
-                {prmSearchOpen && prmResults.length > 0 && (
+                {prmSearchOpen && (prmResults.length > 0 || prmNoResults) && (
                   <ul
                     style={{
                       position: 'absolute',
@@ -221,58 +223,66 @@ export default function NewBooking() {
                       margin: 0,
                     }}
                   >
-                    {prmResults.map((p, idx) => (
-                      <li key={p.id} style={{ borderTop: idx > 0 ? '1px solid #f1f5f9' : 'none' }}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedPrm(p);
-                            setPrmQuery(p.name);
-                            setPrmSearchOpen(false);
-                          }}
-                          style={{
-                            width: '100%',
-                            textAlign: 'left',
-                            padding: '0.65rem 1rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.6rem',
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            color: '#1e293b',
-                          }}
-                        >
-                          {p.avatar ? (
-                            <img
-                              src={p.avatar}
-                              alt={p.name}
-                              style={{ width: '1.75rem', height: '1.75rem', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                            />
-                          ) : (
-                            <div
+                    {prmResults.length > 0
+                      ? prmResults.map((p, idx) => (
+                          <li key={p.id} style={{ borderTop: idx > 0 ? '1px solid #f1f5f9' : 'none' }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedPrm(p);
+                                setPrmQuery(p.name);
+                                setPrmSearchOpen(false);
+                                setPrmNoResults(false);
+                              }}
                               style={{
-                                width: '1.75rem',
-                                height: '1.75rem',
-                                borderRadius: '50%',
-                                background: '#ede9f6',
+                                width: '100%',
+                                textAlign: 'left',
+                                padding: '0.65rem 1rem',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                flexShrink: 0,
+                                gap: '0.6rem',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontSize: '0.875rem',
+                                color: '#1e293b',
                               }}
                             >
-                              <User size={13} color="#6b4691" />
-                            </div>
-                          )}
-                          <div>
-                            <div style={{ fontWeight: 600 }}>{p.name}</div>
-                            {p.dni && <div style={{ fontSize: '0.72rem', color: '#64748b' }}>DNI: {p.dni}</div>}
-                          </div>
-                        </button>
-                      </li>
-                    ))}
+                              {p.avatar ? (
+                                <img
+                                  src={p.avatar}
+                                  alt={p.name}
+                                  style={{ width: '1.75rem', height: '1.75rem', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                                />
+                              ) : (
+                                <div
+                                  style={{
+                                    width: '1.75rem',
+                                    height: '1.75rem',
+                                    borderRadius: '50%',
+                                    background: '#ede9f6',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  <User size={13} color="#6b4691" />
+                                </div>
+                              )}
+                              <div>
+                                <div style={{ fontWeight: 600 }}>{p.name}</div>
+                                {p.dni && <div style={{ fontSize: '0.72rem', color: '#64748b' }}>DNI: {p.dni}</div>}
+                              </div>
+                            </button>
+                          </li>
+                        ))
+                      : (
+                        <li style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', color: '#64748b' }}>
+                          No se encontró ningún PRM con ese nombre
+                        </li>
+                      )
+                    }
                   </ul>
                 )}
               </div>
@@ -305,6 +315,14 @@ export default function NewBooking() {
                 />
               </div>
             </div>
+
+            {pickupAddress.lat != null && pickupAddress.lng != null &&
+             destinationAddress.lat != null && destinationAddress.lng != null && (
+              <RouteMap
+                pickup={{ lat: pickupAddress.lat, lng: pickupAddress.lng }}
+                destination={{ lat: destinationAddress.lat, lng: destinationAddress.lng }}
+              />
+            )}
           </section>
 
           {/* Step 3: Passenger */}
@@ -413,6 +431,28 @@ export default function NewBooking() {
 
       {/* Bottom Actions */}
       <div className="booking-actions">
+        {!canSubmit && (
+          <div className="booking-requirements">
+            <p className="booking-requirements__title">Para enviar la solicitud necesitas:</p>
+            <ul className="booking-requirements__list">
+              <li className={selectedPrm ? 'req--ok' : 'req--missing'}>
+                {selectedPrm ? '✓' : '○'} Paciente seleccionado
+              </li>
+              <li className={pickupAddress.full_address ? 'req--ok' : 'req--missing'}>
+                {pickupAddress.full_address ? '✓' : '○'} Dirección de recogida
+              </li>
+              <li className={destinationAddress.full_address ? 'req--ok' : 'req--missing'}>
+                {destinationAddress.full_address ? '✓' : '○'} Dirección de destino
+              </li>
+              <li className={date ? 'req--ok' : 'req--missing'}>
+                {date ? '✓' : '○'} Fecha
+              </li>
+              <li className={startTime ? 'req--ok' : 'req--missing'}>
+                {startTime ? '✓' : '○'} Hora de recogida
+              </li>
+            </ul>
+          </div>
+        )}
         <div className="booking-actions__inner">
           <button
             onClick={() => navigate(-1)}

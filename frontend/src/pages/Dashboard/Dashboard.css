@@ -216,6 +216,20 @@
   color: var(--color-primary);
 }
 
+.booking-card__maps-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-slate-400);
+  transition: color 0.15s;
+  border-radius: 0.375rem;
+  padding: 0.15rem;
+}
+
+.booking-card__maps-btn:hover {
+  color: #1a73e8;
+}
+
 .booking-card__avatar--placeholder {
   display: flex;
   align-items: center;
