@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev:frontend": "cd frontend && npm run dev",
-    "dev:backend": "uvicorn main:app --app-dir backend --reload",
+    "dev:backend": "cd backend && bash start.sh",
     "start": "npm run dev:backend & npm run dev:frontend",
     "install:frontend": "cd frontend && npm install",
     "build": "cd frontend && npm run build"
