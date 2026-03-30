@@ -148,8 +148,8 @@ async def create_patient(body: PatientCreate, user: dict = Depends(get_current_u
         "created_by": user["sub"],
     }
 
-    result = supabase.table("patients").insert(patient_payload).single().execute()
-    patient_id = result.data["id"]
+    result = supabase.table("patients").insert(patient_payload).execute()
+    patient_id = result.data[0]["id"]
 
     # Insert emergency contacts if provided
     for ec in body.emergency_contacts:
@@ -235,9 +235,9 @@ async def assign_address(
 
     addr_payload = body.model_dump()
     addr_payload["created_by"] = user["sub"]
-    addr_result = supabase.table("addresses").insert(addr_payload).single().execute()
+    addr_result = supabase.table("addresses").insert(addr_payload).execute()
 
-    supabase.table("patients").update({"address_id": addr_result.data["id"]}).eq("id", patient_id).execute()
+    supabase.table("patients").update({"address_id": addr_result.data[0]["id"]}).eq("id", patient_id).execute()
 
     return _fetch_full_patient(patient_id, supabase)
 
@@ -261,9 +261,9 @@ async def add_emergency_contact(
         "name": body.name,
         "phone": body.phone,
         "relationship": body.relationship,
-    }).single().execute()
+    }).execute()
 
-    row = result.data
+    row = result.data[0]
     return EmergencyContact(id=str(row["id"]), name=row["name"], phone=row["phone"], relationship=row["relationship"])
 
 
