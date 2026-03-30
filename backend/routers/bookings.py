@@ -13,7 +13,7 @@ router = APIRouter()
 def _row_to_booking(row: dict, prm_name: str = "", prm_avatar: Optional[str] = None) -> Booking:
     return Booking(
         id=str(row["id"]),
-        prmId=row["patient_id"],
+        prmId=row["prm_id"],
         prmName=prm_name,
         prmAvatar=prm_avatar,
         startTime=row.get("start_time", ""),
@@ -69,7 +69,7 @@ async def list_bookings(
     if booking_status:
         query = query.eq("status", booking_status)
     if prm_id:
-        query = query.eq("patient_id", prm_id)
+        query = query.eq("prm_id", prm_id)
 
     query = query.range(offset, offset + limit - 1)
     result = query.execute()
@@ -110,7 +110,7 @@ async def create_booking(body: BookingCreate, user: dict = Depends(get_current_u
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prm not found")
 
     payload = {
-        "patient_id": body.prmId,
+        "prm_id": body.prmId,
         "start_time": body.startTime,
         "end_time": body.endTime,
         "date": body.date,

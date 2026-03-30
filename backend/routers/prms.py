@@ -84,7 +84,7 @@ def _fetch_full_prm(prm_id: str, supabase) -> Prm:
     contacts_result = (
         supabase.table("emergency_contacts")
         .select("*")
-        .eq("patient_id", prm_id)
+        .eq("prm_id", prm_id)
         .execute()
     )
     contacts = contacts_result.data or []
@@ -154,7 +154,7 @@ async def create_prm(body: PrmCreate, user: dict = Depends(get_current_user)):
     # Insert emergency contacts if provided
     for ec in body.emergency_contacts:
         supabase.table("emergency_contacts").insert({
-            "patient_id": prm_id,
+            "prm_id": prm_id,
             "name": ec.name,
             "phone": ec.phone,
             "relationship": ec.relationship,
@@ -208,7 +208,7 @@ async def delete_prm(prm_id: str, user: dict = Depends(get_current_user)):
     active = (
         supabase.table("bookings")
         .select("id")
-        .eq("patient_id", prm_id)
+        .eq("prm_id", prm_id)
         .in_("status", ["Approved", "Pending"])
         .execute()
     )
@@ -257,7 +257,7 @@ async def add_emergency_contact(
 ):
     supabase = get_supabase()
     result = supabase.table("emergency_contacts").insert({
-        "patient_id": prm_id,
+        "prm_id": prm_id,
         "name": body.name,
         "phone": body.phone,
         "relationship": body.relationship,
@@ -280,4 +280,4 @@ async def delete_emergency_contact(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
-    supabase.table("emergency_contacts").delete().eq("id", ec_id).eq("patient_id", prm_id).execute()
+    supabase.table("emergency_contacts").delete().eq("id", ec_id).eq("prm_id", prm_id).execute()

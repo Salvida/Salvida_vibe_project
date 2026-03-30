@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- =============================================================
 -- ENUM TYPES
 -- =============================================================
-CREATE TYPE patient_status AS ENUM ('Activo', 'Inactivo');
+CREATE TYPE prm_status AS ENUM ('Activo', 'Inactivo');
 CREATE TYPE address_validation_status AS ENUM ('pending', 'validated', 'rejected');
 CREATE TYPE booking_status AS ENUM ('Approved', 'Pending', 'Completed', 'Cancelled');
 CREATE TYPE service_reason AS ENUM (
@@ -40,7 +40,7 @@ CREATE TABLE profiles (
 
 -- =============================================================
 -- TABLE: addresses
--- Standalone reusable addresses linked to patients.
+-- Standalone reusable addresses linked to prms.
 -- =============================================================
 CREATE TABLE addresses (
   id                UUID                      PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -56,11 +56,11 @@ CREATE TABLE addresses (
 );
 
 -- =============================================================
--- TABLE: patients (PRMs)
+-- TABLE: prms (Patient Resource Management)
 -- NOTE: id is TEXT (not UUID) to support legacy IDs like
 --       '12345', 'SLV-8821'. New records default to uuid::text.
 -- =============================================================
-CREATE TABLE patients (
+CREATE TABLE prms (
   id          TEXT           PRIMARY KEY DEFAULT uuid_generate_v4()::TEXT,
   name        TEXT           NOT NULL,
   email       TEXT           NOT NULL DEFAULT '',
@@ -69,12 +69,12 @@ CREATE TABLE patients (
   blood_type  TEXT           NOT NULL DEFAULT '',
   height      TEXT           NOT NULL DEFAULT '',
   weight      TEXT           NOT NULL DEFAULT '',
-  status      patient_status NOT NULL DEFAULT 'Activo',
+  status      prm_status NOT NULL DEFAULT 'Activo',
   avatar      TEXT,
   dni         TEXT,
   address_id  UUID           REFERENCES addresses(id) ON DELETE SET NULL,
   is_demo     BOOLEAN        NOT NULL DEFAULT FALSE,
-  created_by  UUID           REFERENCES profiles(id) ON DELETE SET NULL,
+  created_by  UUID           NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
   created_at  TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ    NOT NULL DEFAULT NOW()
 );
@@ -84,7 +84,7 @@ CREATE TABLE patients (
 -- =============================================================
 CREATE TABLE emergency_contacts (
   id           UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
-  patient_id   TEXT        NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+  prm_id        TEXT        NOT NULL REFERENCES prms(id) ON DELETE CASCADE,
   name         TEXT        NOT NULL,
   phone        TEXT        NOT NULL,
   relationship TEXT        NOT NULL DEFAULT '',
@@ -96,7 +96,7 @@ CREATE TABLE emergency_contacts (
 -- =============================================================
 CREATE TABLE bookings (
   id                   UUID            PRIMARY KEY DEFAULT uuid_generate_v4(),
-  patient_id           TEXT            NOT NULL REFERENCES patients(id) ON DELETE RESTRICT,
+  prm_id               TEXT            NOT NULL REFERENCES prms(id) ON DELETE RESTRICT,
   start_time           TEXT            NOT NULL DEFAULT '',
   end_time             TEXT            NOT NULL DEFAULT '',
   date                 DATE            NOT NULL,
@@ -114,13 +114,13 @@ CREATE TABLE bookings (
 -- =============================================================
 -- INDEXES
 -- =============================================================
-CREATE INDEX idx_patients_status      ON patients(status);
-CREATE INDEX idx_patients_created_by  ON patients(created_by);
-CREATE INDEX idx_bookings_patient_id  ON bookings(patient_id);
+CREATE INDEX idx_prms_status      ON prms(status);
+CREATE INDEX idx_prms_created_by  ON prms(created_by);
+CREATE INDEX idx_bookings_prm_id  ON bookings(prm_id);
 CREATE INDEX idx_bookings_date        ON bookings(date);
 CREATE INDEX idx_bookings_status      ON bookings(status);
 CREATE INDEX idx_bookings_created_by  ON bookings(created_by);
-CREATE INDEX idx_emergency_contacts_patient_id ON emergency_contacts(patient_id);
+CREATE INDEX idx_emergency_contacts_prm_id ON emergency_contacts(prm_id);
 
 -- =============================================================
 -- UPDATED_AT TRIGGER
@@ -141,8 +141,8 @@ CREATE TRIGGER set_updated_at_addresses
   BEFORE UPDATE ON addresses
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER set_updated_at_patients
-  BEFORE UPDATE ON patients
+CREATE TRIGGER set_updated_at_prms
+  BEFORE UPDATE ON prms
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER set_updated_at_bookings

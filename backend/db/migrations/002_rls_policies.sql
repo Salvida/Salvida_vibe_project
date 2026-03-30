@@ -5,7 +5,7 @@
 
 ALTER TABLE profiles           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE addresses          ENABLE ROW LEVEL SECURITY;
-ALTER TABLE patients           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE prms               ENABLE ROW LEVEL SECURITY;
 ALTER TABLE emergency_contacts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bookings           ENABLE ROW LEVEL SECURITY;
 
@@ -26,9 +26,9 @@ CREATE POLICY "addresses_all_authenticated"
   USING (auth.role() = 'authenticated')
   WITH CHECK (auth.role() = 'authenticated');
 
--- ---- patients ------------------------------------------------
-CREATE POLICY "patients_all_authenticated"
-  ON patients FOR ALL
+-- ---- prms ----------------------------------------------------
+CREATE POLICY "prms_all_authenticated"
+  ON prms FOR ALL
   USING (auth.role() = 'authenticated')
   WITH CHECK (auth.role() = 'authenticated');
 
