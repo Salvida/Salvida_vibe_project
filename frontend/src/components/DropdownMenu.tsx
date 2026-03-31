@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { MoreVertical } from 'lucide-react';
+import './DropdownMenu.css';
 
 export interface DropdownItem {
   label: string;
@@ -15,7 +16,9 @@ interface DropdownMenuProps {
 
 export default function DropdownMenu({ items, align = 'right' }: DropdownMenuProps) {
   const [open, setOpen] = useState(false);
+  const [menuStyle, setMenuStyle] = useState<React.CSSProperties>({});
   const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -27,14 +30,31 @@ export default function DropdownMenu({ items, align = 'right' }: DropdownMenuPro
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open]);
 
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOpen((prev) => {
+      if (!prev && triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        const style: React.CSSProperties = {
+          top: rect.bottom + 4,
+        };
+        if (align === 'right') {
+          style.right = window.innerWidth - rect.right;
+        } else {
+          style.left = rect.left;
+        }
+        setMenuStyle(style);
+      }
+      return !prev;
+    });
+  };
+
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="dropdown">
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((prev) => !prev);
-        }}
-        className="text-slate-400 hover:text-[#6b4691] transition-colors p-1 rounded-lg hover:bg-slate-50"
+        ref={triggerRef}
+        onClick={handleToggle}
+        className="dropdown__trigger"
         aria-label="Más opciones"
       >
         <MoreVertical size={18} />
@@ -42,9 +62,8 @@ export default function DropdownMenu({ items, align = 'right' }: DropdownMenuPro
 
       {open && (
         <div
-          className={`absolute z-50 mt-1 min-w-[160px] bg-white rounded-xl shadow-lg border border-slate-100 py-1 ${
-            align === 'right' ? 'right-0' : 'left-0'
-          }`}
+          className="dropdown__menu"
+          style={menuStyle}
           role="menu"
         >
           {items.map((item, idx) => (
@@ -55,14 +74,10 @@ export default function DropdownMenu({ items, align = 'right' }: DropdownMenuPro
                 item.onClick();
                 setOpen(false);
               }}
-              className={`flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-left transition-colors ${
-                item.variant === 'danger'
-                  ? 'text-red-500 hover:bg-red-50'
-                  : 'text-slate-700 hover:bg-slate-50 hover:text-[#6b4691]'
-              }`}
+              className={`dropdown__item ${item.variant === 'danger' ? 'dropdown__item--danger' : ''}`}
               role="menuitem"
             >
-              {item.icon && <span className="shrink-0">{item.icon}</span>}
+              {item.icon && <span className="dropdown__item-icon">{item.icon}</span>}
               {item.label}
             </button>
           ))}

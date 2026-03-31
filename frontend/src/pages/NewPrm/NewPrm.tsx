@@ -60,9 +60,7 @@ export default function NewPrm() {
       return;
     }
 
-    const emergencyContacts = contacts
-      .filter((c) => c.name.trim())
-      .map((c) => ({ ...c, id: '' })) as EmergencyContact[];
+    const emergencyContacts = contacts.filter((c) => c.name.trim());
 
     try {
       const newPrm = await createPrm.mutateAsync({

@@ -8,6 +8,7 @@ export interface Address {
   is_accessible: boolean;
   floor?: string;
   door?: string;
+  created_by?: string;
 }
 
 export interface EmergencyContact {
@@ -24,14 +25,15 @@ export interface Prm {
   phone: string;
   birthDate: string;
   bloodType: string;
-  height: string;
-  weight: string;
+  height?: number;
+  weight?: number;
   status: 'Activo' | 'Inactivo';
   avatar?: string;
   dni?: string;
   address?: Address;
   emergency_contacts?: EmergencyContact[];
   is_demo?: boolean;
+  created_by?: string;
 }
 
 export type ServiceReason =

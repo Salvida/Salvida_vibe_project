@@ -25,8 +25,12 @@ if [ ! -d ".venv" ]; then
   "$PYTHON" -m venv .venv
 fi
 
-# Activate
-source .venv/bin/activate
+# Activate (Scripts on Windows, bin on Unix)
+if [ -f ".venv/Scripts/activate" ]; then
+  source .venv/Scripts/activate
+else
+  source .venv/bin/activate
+fi
 
 # Install/update dependencies
 pip install -r requirements.txt -q

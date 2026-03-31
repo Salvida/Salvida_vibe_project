@@ -34,5 +34,6 @@ class AddressValidationUpdate(BaseModel):
 
 class Address(AddressBase):
     id: str
+    created_by: Optional[str] = None
 
     model_config = {"from_attributes": True}

@@ -56,27 +56,27 @@ CREATE TABLE addresses (
 );
 
 -- =============================================================
--- TABLE: prms (Patient Resource Management)
+-- TABLE: prms (Patients with Reduced Mobility)
 -- NOTE: id is TEXT (not UUID) to support legacy IDs like
 --       '12345', 'SLV-8821'. New records default to uuid::text.
 -- =============================================================
-CREATE TABLE prms (
-  id          TEXT           PRIMARY KEY DEFAULT uuid_generate_v4()::TEXT,
+CREATE TABLE IF NOT EXISTS prms (
+  id          UUID           PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id     UUID           NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
   name        TEXT           NOT NULL,
   email       TEXT           NOT NULL DEFAULT '',
   phone       TEXT           NOT NULL DEFAULT '',
+  dni         TEXT,
   birth_date  DATE,
   blood_type  TEXT           NOT NULL DEFAULT '',
-  height      TEXT           NOT NULL DEFAULT '',
-  weight      TEXT           NOT NULL DEFAULT '',
-  status      prm_status NOT NULL DEFAULT 'Activo',
+  height      NUMERIC,
+  weight      NUMERIC,
+  status      TEXT           NOT NULL DEFAULT 'Activo',
   avatar      TEXT,
-  dni         TEXT,
-  address_id  UUID           REFERENCES addresses(id) ON DELETE SET NULL,
   is_demo     BOOLEAN        NOT NULL DEFAULT FALSE,
-  created_by  UUID           NOT NULL REFERENCES profiles(id) ON DELETE RESTRICT,
   created_at  TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
-  updated_at  TIMESTAMPTZ    NOT NULL DEFAULT NOW()
+  updated_at  TIMESTAMPTZ    NOT NULL DEFAULT NOW(),
+  created_by  UUID           REFERENCES profiles(id) ON DELETE SET NULL
 );
 
 -- =============================================================

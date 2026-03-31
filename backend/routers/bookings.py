@@ -122,8 +122,8 @@ async def create_booking(body: BookingCreate, user: dict = Depends(get_current_u
         "created_by": user["sub"],
     }
 
-    result = supabase.table("bookings").insert(payload).single().execute()
-    return _row_to_booking(result.data, prm_data["name"], prm_data.get("avatar"))
+    result = supabase.table("bookings").insert(payload).execute()
+    return _row_to_booking(result.data[0], prm_data["name"], prm_data.get("avatar"))
 
 
 # ---------------------------------------------------------------------------

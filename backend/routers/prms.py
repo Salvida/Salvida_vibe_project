@@ -21,6 +21,7 @@ def _row_to_list_item(row: dict) -> PrmListItem:
         avatar=row.get("avatar"),
         dni=row.get("dni"),
         is_demo=row.get("is_demo", False),
+        created_by=row.get("created_by"),
     )
 
 
@@ -35,6 +36,7 @@ def _row_to_prm(row: dict, address_row: Optional[dict], contacts: list[dict]) ->
             validation_status=address_row["validation_status"],
             validation_notes=address_row.get("validation_notes"),
             is_accessible=address_row.get("is_accessible", False),
+            created_by=address_row.get("created_by"),
         )
 
     emergency_contacts = [
@@ -54,12 +56,13 @@ def _row_to_prm(row: dict, address_row: Optional[dict], contacts: list[dict]) ->
         phone=row.get("phone", ""),
         birthDate=str(row["birth_date"]) if row.get("birth_date") else None,
         bloodType=row.get("blood_type", ""),
-        height=row.get("height", ""),
-        weight=row.get("weight", ""),
+        height=row.get("height"),
+        weight=row.get("weight"),
         status=row.get("status", "Activo"),
         avatar=row.get("avatar"),
         dni=row.get("dni"),
         is_demo=row.get("is_demo", False),
+        created_by=row.get("created_by"),
         address=address,
         emergency_contacts=emergency_contacts,
     )
@@ -135,21 +138,23 @@ async def create_prm(body: PrmCreate, user: dict = Depends(get_current_user)):
 
     prm_payload = {
         "name": body.name,
-        "email": body.email,
-        "phone": body.phone,
-        "birth_date": body.birthDate,
-        "blood_type": body.bloodType,
+        "email": body.email or "",
+        "phone": body.phone or "",
+        "birth_date": body.birthDate or None,
+        "blood_type": body.bloodType or "",
         "height": body.height,
         "weight": body.weight,
         "status": body.status,
         "avatar": body.avatar,
         "dni": body.dni,
         "is_demo": body.is_demo,
+        "user_id": user["sub"],
         "created_by": user["sub"],
     }
 
-    result = supabase.table("prms").insert(prm_payload).single().execute()
-    prm_id = result.data["id"]
+    result = supabase.table("prms").insert(prm_payload).execute()
+
+    prm_id = result.data[0]["id"]
 
     # Insert emergency contacts if provided
     for ec in body.emergency_contacts:
@@ -157,7 +162,7 @@ async def create_prm(body: PrmCreate, user: dict = Depends(get_current_user)):
             "prm_id": prm_id,
             "name": ec.name,
             "phone": ec.phone,
-            "relationship": ec.relationship,
+            "relationship": ec.relationship or "",
         }).execute()
 
     return _fetch_full_prm(prm_id, supabase)
@@ -237,7 +242,7 @@ async def assign_address(
     addr_payload["created_by"] = user["sub"]
     addr_result = supabase.table("addresses").insert(addr_payload).execute()
 
-    supabase.table("prms").update({"address_id": addr_result.data["id"]}).eq("id", prm_id).execute()
+    supabase.table("prms").update({"address_id": addr_result.data[0]["id"]}).eq("id", prm_id).execute()
 
     return _fetch_full_prm(prm_id, supabase)
 

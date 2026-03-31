@@ -24,8 +24,8 @@ class PrmBase(BaseModel):
     # Stored as ISO 'YYYY-MM-DD' in DB; frontend formats for display
     birthDate: Optional[str] = None
     bloodType: str = ""
-    height: str = ""
-    weight: str = ""
+    height: Optional[float] = None
+    weight: Optional[float] = None
     status: PrmStatus = "Activo"
     avatar: Optional[str] = None
     dni: Optional[str] = None
@@ -42,8 +42,8 @@ class PrmUpdate(BaseModel):
     phone: Optional[str] = None
     birthDate: Optional[str] = None
     bloodType: Optional[str] = None
-    height: Optional[str] = None
-    weight: Optional[str] = None
+    height: Optional[float] = None
+    weight: Optional[float] = None
     status: Optional[PrmStatus] = None
     avatar: Optional[str] = None
     dni: Optional[str] = None
@@ -59,10 +59,12 @@ class PrmListItem(BaseModel):
     avatar: Optional[str] = None
     dni: Optional[str] = None
     is_demo: bool = False
+    created_by: Optional[str] = None
 
 
 class Prm(PrmBase):
     id: str
+    created_by: Optional[str] = None
     address: Optional[Address] = None
     emergency_contacts: list[EmergencyContact] = []
 

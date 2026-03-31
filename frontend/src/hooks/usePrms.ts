@@ -3,8 +3,8 @@ import { apiClient } from '../lib/api';
 import type { Prm } from '../types';
 
 // ---- Query keys ----
-export const PRMS_KEY = ['prms'] as const;
-export const prmKey = (id: string) => ['prms', id] as const;
+export const PRMS_KEY = ['prms', 'list'] as const;
+export const prmKey = (id: string) => ['prms', 'detail', id] as const;
 
 // ---- Types matching the backend PrmListItem / Prm ----
 export type PrmListItem = Pick<Prm, 'id' | 'name' | 'email' | 'phone' | 'status' | 'avatar' | 'dni' | 'is_demo'>;

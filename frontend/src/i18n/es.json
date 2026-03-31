@@ -51,7 +51,8 @@
     "menu": {
       "viewProfile": "Ver perfil",
       "edit": "Editar",
-      "deactivate": "Desactivar"
+      "deactivate": "Desactivar",
+      "activate": "Activar"
     },
     "newPrm": {
       "title": "Nuevo PRM",

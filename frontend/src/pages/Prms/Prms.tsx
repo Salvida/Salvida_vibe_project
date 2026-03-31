@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, Plus, Mail, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Header from '../../components/Header/Header';
 import DropdownMenu from '../../components/DropdownMenu';
-import { usePrms } from '../../hooks/usePrms';
+import { usePrms, useUpdatePrm } from '../../hooks/usePrms';
 import './Prms.css';
 
 function useDebounce(value: string, delay: number) {
@@ -18,9 +18,11 @@ function useDebounce(value: string, delay: number) {
 
 export default function Prms() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const debouncedQuery = useDebounce(query, 300);
   const { data: prms = [], isLoading } = usePrms(debouncedQuery);
+  const updatePrm = useUpdatePrm();
 
   return (
     <div className="prms">
@@ -115,9 +117,12 @@ export default function Prms() {
                         <td>
                           <DropdownMenu
                             items={[
-                              { label: t('prms.menu.viewProfile'), onClick: () => {} },
-                              { label: t('prms.menu.edit'), onClick: () => {} },
-                              { label: t('prms.menu.deactivate'), onClick: () => {}, variant: 'danger' },
+                              { label: t('prms.menu.viewProfile'), onClick: () => navigate(`/app/prms/${prm.id}`) },
+                              {
+                                label: prm.status === 'Activo' ? t('prms.menu.deactivate') : t('prms.menu.activate'),
+                                onClick: () => updatePrm.mutate({ id: prm.id, status: prm.status === 'Activo' ? 'Inactivo' : 'Activo' }),
+                                variant: prm.status === 'Activo' ? 'danger' : 'default',
+                              },
                             ]}
                           />
                         </td>
