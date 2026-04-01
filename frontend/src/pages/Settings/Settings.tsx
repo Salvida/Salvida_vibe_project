@@ -46,9 +46,24 @@ export default function Settings() {
 
   const [activeSection, setActiveSection] = useState("profile");
   const [selectedUserId, setSelectedUserId] = useState("");
+  const [userSearch, setUserSearch] = useState("");
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const { data: profile, isLoading } = useProfile();
   const { mutate: updateProfile, isPending, isSuccess } = useUpdateProfile();
   const { data: users } = useUsers(isAdminUser && activeSection === "profile");
+
+  const filteredUsers = users?.filter((u) => {
+    const q = userSearch.toLowerCase();
+    return (
+      u.firstName?.toLowerCase().includes(q) ||
+      u.lastName?.toLowerCase().includes(q) ||
+      u.email?.toLowerCase().includes(q) ||
+      u.phone?.toLowerCase().includes(q) ||
+      u.organization?.toLowerCase().includes(q) ||
+      u.dni?.toLowerCase().includes(q) ||
+      u.role?.toLowerCase().includes(q)
+    );
+  }) ?? [];
 
   const [form, setForm] = useState({
     firstName: "",
@@ -117,19 +132,58 @@ export default function Settings() {
                     <label className="settings-user-selector__label">
                       Usuario
                     </label>
-                    <select
-                      className="settings-user-selector__select"
-                      value={selectedUserId}
-                      onChange={(e) => setSelectedUserId(e.target.value)}
-                    >
-                      <option value="">Seleccionar usuario…</option>
-                      {users?.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.firstName} {u.lastName}
-                          {u.email ? ` — ${u.email}` : ""}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="settings-user-selector__combobox">
+                      <input
+                        type="text"
+                        className="settings-user-selector__input"
+                        placeholder="Buscar usuario…"
+                        value={userSearch}
+                        onChange={(e) => {
+                          setUserSearch(e.target.value);
+                          setUserDropdownOpen(true);
+                        }}
+                        onFocus={() => setUserDropdownOpen(true)}
+                        onBlur={() =>
+                          setTimeout(() => setUserDropdownOpen(false), 150)
+                        }
+                        autoComplete="off"
+                      />
+                      {userDropdownOpen && filteredUsers.length > 0 && (
+                        <ul className="settings-user-selector__dropdown">
+                          {filteredUsers.map((u) => (
+                            <li
+                              key={u.id}
+                              className={`settings-user-selector__option${selectedUserId === u.id ? " settings-user-selector__option--selected" : ""}`}
+                              onMouseDown={() => {
+                                setSelectedUserId(u.id);
+                                setUserSearch(
+                                  `${u.firstName} ${u.lastName}${u.email ? ` — ${u.email}` : ""}`,
+                                );
+                                setUserDropdownOpen(false);
+                              }}
+                            >
+                              <span className="settings-user-selector__option-name">
+                                {u.firstName} {u.lastName}
+                              </span>
+                              {u.email && (
+                                <span className="settings-user-selector__option-email">
+                                  {u.email}
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {userDropdownOpen &&
+                        userSearch.length > 0 &&
+                        filteredUsers.length === 0 && (
+                          <ul className="settings-user-selector__dropdown">
+                            <li className="settings-user-selector__option settings-user-selector__option--empty">
+                              Sin resultados
+                            </li>
+                          </ul>
+                        )}
+                    </div>
                   </div>
                 )}
                 <h3 className="settings-profile__title">Ajustes de Perfil</h3>
