@@ -68,22 +68,25 @@ export default function Settings() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
+    dni: "",
     email: "",
     phone: "",
     organization: "",
   });
 
   useEffect(() => {
+    if (selectedUserId) return;
     if (profile) {
       setForm({
         firstName: profile.firstName ?? "",
         lastName: profile.lastName ?? "",
+        dni: profile.dni ?? "",
         email: profile.email ?? "",
         phone: profile.phone ?? "",
         organization: profile.organization ?? "",
       });
     }
-  }, [profile]);
+  }, [profile, selectedUserId]);
 
   const activeItem = sections.find((s) => s.id === activeSection);
 
@@ -160,6 +163,14 @@ export default function Settings() {
                                   `${u.firstName} ${u.lastName}${u.email ? ` — ${u.email}` : ""}`,
                                 );
                                 setUserDropdownOpen(false);
+                                setForm({
+                                  firstName: u.firstName ?? "",
+                                  lastName: u.lastName ?? "",
+                                  dni: u.dni ?? "",
+                                  email: u.email ?? "",
+                                  phone: u.phone ?? "",
+                                  organization: u.organization ?? "",
+                                });
                               }}
                             >
                               <span className="settings-user-selector__option-name">
@@ -242,6 +253,18 @@ export default function Settings() {
                           onChange={handleChange}
                           className="settings-form__input"
                           placeholder="Tu apellido"
+                        />
+                      </div>
+                      <div className="settings-form__field">
+                        <label className="settings-form__label">DNI</label>
+                        <input
+                          type="text"
+                          name="dni"
+                          value={form.dni}
+                          onChange={handleChange}
+                          className="settings-form__input"
+                          placeholder="12345678A"
+                          autoComplete="off"
                         />
                       </div>
                       <div className="settings-form__field">
