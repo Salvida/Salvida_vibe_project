@@ -18,8 +18,7 @@ class BookingBase(BaseModel):
     startTime: str          # 'HH:MM'
     endTime: str            # 'HH:MM'
     date: str               # 'YYYY-MM-DD'
-    location: str = ""
-    destination: str = ""
+    address: str = ""
     service_reason: Optional[ServiceReason] = None
     service_reason_notes: Optional[str] = None
     urgency: BookingUrgency = "routine"
@@ -33,8 +32,7 @@ class BookingUpdate(BaseModel):
     startTime: Optional[str] = None
     endTime: Optional[str] = None
     date: Optional[str] = None
-    location: Optional[str] = None
-    destination: Optional[str] = None
+    address: Optional[str] = None
     status: Optional[BookingStatus] = None
     service_reason: Optional[ServiceReason] = None
     service_reason_notes: Optional[str] = None

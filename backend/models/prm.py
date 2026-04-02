@@ -17,6 +17,12 @@ class EmergencyContact(EmergencyContactCreate):
     model_config = {"from_attributes": True}
 
 
+class EmergencyContactUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    relationship: Optional[str] = None
+
+
 class PrmBase(BaseModel):
     name: str
     email: str = ""
@@ -65,7 +71,7 @@ class PrmListItem(BaseModel):
 class Prm(PrmBase):
     id: str
     created_by: Optional[str] = None
-    address: Optional[Address] = None
+    addresses: list[Address] = []
     emergency_contacts: list[EmergencyContact] = []
 
     model_config = {"from_attributes": True}

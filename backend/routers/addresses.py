@@ -13,9 +13,13 @@ def _row_to_address(row: dict) -> Address:
         full_address=row["full_address"],
         lat=row.get("lat"),
         lng=row.get("lng"),
-        validation_status=row["validation_status"],
+        validation_status=row.get("validation_status", "pending"),
         validation_notes=row.get("validation_notes"),
         is_accessible=row.get("is_accessible", False),
+        alias=row.get("alias", ""),
+        prm_id=row.get("prm_id"),
+        user_id=row.get("user_id"),
+        created_by=row.get("created_by"),
     )
 
 
@@ -45,7 +49,7 @@ async def get_address(address_id: str, user: dict = Depends(get_current_user)):
 async def create_address(body: AddressCreate, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
     payload = body.model_dump()
-    payload["created_by"] = user["sub"]
+    payload["user_id"] = user["sub"]
     result = supabase.table("addresses").insert(payload).single().execute()
     return _row_to_address(result.data)
 
@@ -65,12 +69,11 @@ async def update_address(
         supabase.table("addresses")
         .update(updates)
         .eq("id", address_id)
-        .single()
         .execute()
     )
     if not result.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Address not found")
-    return _row_to_address(result.data)
+    return _row_to_address(result.data[0])
 
 
 @router.patch("/{address_id}/validate", response_model=Address)
@@ -89,29 +92,29 @@ async def validate_address(
         supabase.table("addresses")
         .update(updates)
         .eq("id", address_id)
-        .single()
         .execute()
     )
     if not result.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Address not found")
-    return _row_to_address(result.data)
+    return _row_to_address(result.data[0])
 
 
 @router.delete("/{address_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_address(address_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
 
-    # Check no prms are linked to this address
-    prms = (
-        supabase.table("prms")
-        .select("id")
-        .eq("address_id", address_id)
+    # Check no prms are linked to this address via prm_id
+    linked = (
+        supabase.table("addresses")
+        .select("prm_id")
+        .eq("id", address_id)
+        .single()
         .execute()
     )
-    if prms.data:
+    if linked.data and linked.data.get("prm_id"):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Cannot delete address: it is linked to one or more prms",
+            detail="Cannot delete address: it is linked to a PRM. Remove it from the PRM first.",
         )
 
     supabase.table("addresses").delete().eq("id", address_id).execute()

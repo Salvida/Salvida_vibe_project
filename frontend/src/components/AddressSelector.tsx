@@ -10,7 +10,7 @@ import {
   X,
 } from 'lucide-react';
 import type { Address } from '../types';
-import { cn } from '../utils';
+import './AddressSelector.css';
 
 const GEOAPIFY_KEY = import.meta.env.VITE_HERE_API_KEY as string;
 
@@ -41,7 +41,6 @@ interface AddressSelectorProps {
   value: Partial<Address> | undefined;
   onChange: (address: Partial<Address>) => void;
   onValidationChange?: (status: Address['validation_status']) => void;
-  /** Show the validation status toggle (for admin users editing a prm) */
   showValidation?: boolean;
 }
 
@@ -51,16 +50,7 @@ const VALIDATION_LABELS: Record<Address['validation_status'], string> = {
   rejected: 'Rechazada',
 };
 
-const VALIDATION_STYLES: Record<Address['validation_status'], string> = {
-  pending: 'bg-amber-50 text-amber-600 border-amber-200',
-  validated: 'bg-emerald-50 text-emerald-600 border-emerald-200',
-  rejected: 'bg-red-50 text-red-500 border-red-200',
-};
-
-const VALIDATION_ICONS: Record<
-  Address['validation_status'],
-  React.ElementType
-> = {
+const VALIDATION_ICONS: Record<Address['validation_status'], React.ElementType> = {
   pending: Clock,
   validated: ShieldCheck,
   rejected: AlertTriangle,
@@ -91,10 +81,7 @@ export default function AddressSelector({
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
@@ -102,7 +89,6 @@ export default function AddressSelector({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Geoapify autocomplete — returns coords directly, no second lookup needed
   useEffect(() => {
     if (selected || !debouncedQuery || debouncedQuery.length < 3) {
       setSuggestions([]);
@@ -194,14 +180,13 @@ export default function AddressSelector({
   const ValidationIcon = VALIDATION_ICONS[validationStatus];
 
   return (
-    <div className="space-y-3">
+    <div className="address-selector">
       {/* Search input */}
-      <div ref={containerRef} className="relative">
-        <div className="relative">
-          <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-            size={16}
-          />
+      <div ref={containerRef} className="address-selector__search">
+        <div className="address-selector__input-wrap">
+          <span className="address-selector__icon-search">
+            <Search size={16} />
+          </span>
           <input
             type="text"
             value={query}
@@ -221,24 +206,18 @@ export default function AddressSelector({
               if (!selected && suggestions.length > 0) setOpen(true);
             }}
             placeholder="Escribe la dirección con número..."
-            className={cn(
-              'w-full pl-11 pr-11 py-3 rounded-xl border bg-slate-50 outline-none font-medium text-sm transition-colors',
-              selected
-                ? 'border-emerald-300 bg-emerald-50/50 text-slate-700 cursor-default'
-                : 'border-slate-200 focus:ring-2 focus:ring-[#6b4691] focus:border-[#6b4691]',
-            )}
+            className={`address-selector__input${selected ? ' address-selector__input--selected' : ''}`}
           />
           {loading && (
-            <Loader2
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 animate-spin"
-              size={16}
-            />
+            <span className="address-selector__icon-right address-selector__icon-right--spinner">
+              <Loader2 size={16} />
+            </span>
           )}
           {selected && !loading && (
             <button
               type="button"
               onClick={handleClear}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+              className="address-selector__icon-right"
               aria-label="Cambiar dirección"
             >
               <X size={16} />
@@ -248,27 +227,21 @@ export default function AddressSelector({
 
         {/* Dropdown */}
         {open && (suggestions.length > 0 || noResults) && (
-          <ul className="absolute z-[100] mt-1 w-full bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">
+          <ul className="address-selector__dropdown">
             {suggestions.length > 0 ? (
-              suggestions.map((f, idx) => (
-                <li
-                  key={f.properties.place_id}
-                  className={idx > 0 ? 'border-t border-slate-100' : ''}
-                >
+              suggestions.map((f) => (
+                <li key={f.properties.place_id} className="address-selector__dropdown-item">
                   <button
                     type="button"
                     onClick={() => handleSelect(f)}
-                    className="w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-[#6b4691]/5 active:bg-[#6b4691]/10 transition-colors"
+                    className="address-selector__dropdown-btn"
                   >
-                    <MapPin
-                      size={14}
-                      className="text-[#6b4691] mt-0.5 shrink-0"
-                    />
+                    <MapPin size={14} className="address-selector__dropdown-icon" />
                     <div>
-                      <div className="text-sm text-slate-700 leading-snug font-medium">
+                      <div className="address-selector__dropdown-line1">
                         {f.properties.address_line1}
                       </div>
-                      <div className="text-xs text-slate-400 mt-0.5 leading-snug">
+                      <div className="address-selector__dropdown-line2">
                         {f.properties.address_line2}
                       </div>
                     </div>
@@ -276,8 +249,8 @@ export default function AddressSelector({
                 </li>
               ))
             ) : (
-              <li className="px-4 py-3">
-                <p className="text-xs text-slate-500 mb-2">
+              <li className="address-selector__no-results">
+                <p className="address-selector__no-results-text">
                   Sin resultados para "{debouncedQuery}"
                 </p>
                 <button
@@ -289,18 +262,14 @@ export default function AddressSelector({
                     setNoResults(false);
                     onChange({
                       ...value,
-                      full_address: composeFullAddress(
-                        debouncedQuery,
-                        floor,
-                        door,
-                      ),
+                      full_address: composeFullAddress(debouncedQuery, floor, door),
                       lat: undefined,
                       lng: undefined,
                       validation_status: value?.validation_status ?? 'pending',
                       is_accessible: value?.is_accessible ?? false,
                     });
                   }}
-                  className="text-xs font-semibold text-[#6b4691] hover:underline"
+                  className="address-selector__use-manual"
                 >
                   Usar "{debouncedQuery}" como dirección
                 </button>
@@ -310,85 +279,63 @@ export default function AddressSelector({
         )}
       </div>
 
-      {/* Floor / Door — only after address is selected */}
+      {/* Floor / Door */}
       {selected && (
-        <div className="flex gap-2">
+        <div className="address-selector__extras">
           <input
             type="text"
             value={floor}
             onChange={(e) => handleFloorChange(e.target.value)}
             placeholder="Piso (ej: 2º)"
-            className="flex-1 py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-[#6b4691] focus:border-[#6b4691] outline-none text-sm transition-colors"
+            className="address-selector__extra-input"
           />
           <input
             type="text"
             value={door}
             onChange={(e) => handleDoorChange(e.target.value)}
             placeholder="Puerta (ej: A)"
-            className="flex-1 py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-[#6b4691] focus:border-[#6b4691] outline-none text-sm transition-colors"
+            className="address-selector__extra-input"
           />
         </div>
       )}
 
       {/* Accessible + validation badges */}
       {value?.full_address && (
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="address-selector__badges">
           <button
             type="button"
-            onClick={() =>
-              onChange({ ...value, is_accessible: !value?.is_accessible })
-            }
-            className={cn(
-              'inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-bold transition-all',
-              value?.is_accessible
-                ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300',
-            )}
+            onClick={() => onChange({ ...value, is_accessible: !value?.is_accessible })}
+            className={`address-selector__badge ${value?.is_accessible ? 'address-selector__badge--accessible-on' : 'address-selector__badge--accessible-off'}`}
           >
             <Accessibility size={13} />
             Accesible para PMR
           </button>
 
           {showValidation && (
-            <div className="flex items-center gap-2">
-              {(
-                [
-                  'pending',
-                  'validated',
-                  'rejected',
-                ] as Address['validation_status'][]
-              ).map((status) => {
-                const Icon = VALIDATION_ICONS[status];
+            <>
+              {(['pending', 'validated', 'rejected'] as Address['validation_status'][]).map((s) => {
+                const Icon = VALIDATION_ICONS[s];
+                const isActive = validationStatus === s;
                 return (
                   <button
-                    key={status}
+                    key={s}
                     type="button"
                     onClick={() => {
-                      onChange({ ...value, validation_status: status });
-                      onValidationChange?.(status);
+                      onChange({ ...value, validation_status: s });
+                      onValidationChange?.(s);
                     }}
-                    className={cn(
-                      'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all',
-                      validationStatus === status
-                        ? VALIDATION_STYLES[status]
-                        : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300',
-                    )}
+                    className={`address-selector__badge address-selector__badge--validation-btn${isActive ? ` address-selector__badge--${s}` : ''}`}
                   >
                     <Icon size={11} />
-                    {VALIDATION_LABELS[status]}
+                    {VALIDATION_LABELS[s]}
                   </button>
                 );
               })}
-            </div>
+            </>
           )}
 
           {!showValidation && (
-            <span
-              className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[10px] font-bold uppercase tracking-widest',
-                VALIDATION_STYLES[validationStatus],
-              )}
-            >
+            <span className={`address-selector__badge address-selector__badge--validation address-selector__badge--${validationStatus}`}>
               <ValidationIcon size={11} />
               {VALIDATION_LABELS[validationStatus]}
             </span>

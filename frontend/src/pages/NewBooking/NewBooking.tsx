@@ -2,9 +2,9 @@ import { ArrowLeft, Accessibility, Send, Clock, AlertCircle, CalendarDays, Loade
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import AddressSelector from '../../components/AddressSelector';
-import RouteMap from '../../components/RouteMap';
+import PrmAddressPicker from '../../components/PrmAddressPicker';
 import { useCreateBooking } from '../../hooks/useBookings';
+import { useAddPrmAddress } from '../../hooks/usePrmAddresses';
 import type { Address } from '../../types';
 import { apiClient } from '../../lib/api';
 import './NewBooking.css';
@@ -23,14 +23,14 @@ export default function NewBooking() {
   const location = useLocation();
   const { t } = useTranslation();
   const createBooking = useCreateBooking();
+  const addPrmAddress = useAddPrmAddress();
 
   const [step, setStep] = useState(1);
   const [urgency, setUrgency] = useState<'routine' | 'urgent'>('routine');
-  const [pickupAddress, setPickupAddress] = useState<Partial<Address>>({});
-  const [destinationAddress, setDestinationAddress] = useState<Partial<Address>>({});
+  const [address, setAddress] = useState<Partial<Address>>({});
+  const [saveAddressAlias, setSaveAddressAlias] = useState('');
   const [date, setDate] = useState(() => (location.state as { date?: string } | null)?.date || todayIso());
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [time, setTime] = useState('');
 
   // Prm search state
   const [prmQuery, setPrmQuery] = useState('');
@@ -62,29 +62,39 @@ export default function NewBooking() {
   }, [prmQuery]);
 
   async function handleSubmit() {
-    if (!selectedPrm || !pickupAddress.full_address || !destinationAddress.full_address || !date || !startTime) return;
+    if (!selectedPrm || !address.full_address || !date || !time) return;
     try {
+      // Save new address to PRM if requested (and it's not already a saved address)
+      if (saveAddressAlias && !address.id && selectedPrm) {
+        await addPrmAddress.mutateAsync({
+          prmId: selectedPrm.id,
+          full_address: address.full_address,
+          lat: address.lat,
+          lng: address.lng,
+          is_accessible: address.is_accessible ?? false,
+          alias: saveAddressAlias,
+        });
+      }
+
       await createBooking.mutateAsync({
         prmId: selectedPrm.id,
         date,
-        startTime,
-        endTime: endTime || startTime,
-        location: pickupAddress.full_address ?? '',
-        destination: destinationAddress.full_address ?? '',
+        startTime: time,
+        endTime: time,
+        address: address.full_address ?? '',
         urgency,
       });
       navigate(-1);
     } catch {
-      // error handled silently; backend not yet wired
+      // error handled silently
     }
   }
 
   const canSubmit =
     !!selectedPrm &&
-    !!pickupAddress.full_address &&
-    !!destinationAddress.full_address &&
+    !!address.full_address &&
     !!date &&
-    !!startTime;
+    !!time;
 
   return (
     <div className="new-booking">
@@ -167,6 +177,8 @@ export default function NewBooking() {
                     setPrmQuery('');
                     setPrmResults([]);
                     setPrmSearchOpen(false);
+                    setAddress({});
+                    setSaveAddressAlias('');
                   }}
                   style={{
                     fontSize: '0.75rem',
@@ -233,6 +245,8 @@ export default function NewBooking() {
                                 setPrmQuery(p.name);
                                 setPrmSearchOpen(false);
                                 setPrmNoResults(false);
+                                setAddress({});
+                                setSaveAddressAlias('');
                               }}
                               style={{
                                 width: '100%',
@@ -296,33 +310,12 @@ export default function NewBooking() {
               <h3 className="booking-section__title">{t('booking.locationDetails')}</h3>
             </div>
 
-            <div className="location-selectors">
-              <div className="location-selector-block">
-                <p className="location-selector-block__label">{t('booking.pickupAddress')}</p>
-                <AddressSelector
-                  value={pickupAddress}
-                  onChange={setPickupAddress}
-                  showValidation={false}
-                />
-              </div>
-
-              <div className="location-selector-block">
-                <p className="location-selector-block__label">{t('booking.destinationAddress')}</p>
-                <AddressSelector
-                  value={destinationAddress}
-                  onChange={setDestinationAddress}
-                  showValidation={false}
-                />
-              </div>
-            </div>
-
-            {pickupAddress.lat != null && pickupAddress.lng != null &&
-             destinationAddress.lat != null && destinationAddress.lng != null && (
-              <RouteMap
-                pickup={{ lat: pickupAddress.lat, lng: pickupAddress.lng }}
-                destination={{ lat: destinationAddress.lat, lng: destinationAddress.lng }}
-              />
-            )}
+            <PrmAddressPicker
+              prmId={selectedPrm?.id ?? null}
+              value={address}
+              onChange={setAddress}
+              onSaveRequest={setSaveAddressAlias}
+            />
           </section>
 
           {/* Step 3: Passenger */}
@@ -359,41 +352,29 @@ export default function NewBooking() {
             </div>
 
             <div className="datetime-card">
-              <div className="datetime-card__field">
-                <label className="datetime-card__label">
-                  <CalendarDays size={14} />
-                  Fecha
-                </label>
-                <input
-                  type="date"
-                  value={date}
-                  min={todayIso()}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="location-field__input"
-                />
-              </div>
               <div className="datetime-card__row">
                 <div className="datetime-card__field">
                   <label className="datetime-card__label">
-                    <Clock size={14} />
-                    Hora de recogida
+                    <CalendarDays size={14} />
+                    Fecha de asistencia
                   </label>
                   <input
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
+                    type="date"
+                    value={date}
+                    min={todayIso()}
+                    onChange={(e) => setDate(e.target.value)}
                     className="location-field__input"
                   />
                 </div>
                 <div className="datetime-card__field">
                   <label className="datetime-card__label">
                     <Clock size={14} />
-                    Hora estimada de llegada
+                    Hora de asistencia
                   </label>
                   <input
                     type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
                     className="location-field__input"
                   />
                 </div>
@@ -438,17 +419,14 @@ export default function NewBooking() {
               <li className={selectedPrm ? 'req--ok' : 'req--missing'}>
                 {selectedPrm ? '✓' : '○'} Paciente seleccionado
               </li>
-              <li className={pickupAddress.full_address ? 'req--ok' : 'req--missing'}>
-                {pickupAddress.full_address ? '✓' : '○'} Dirección de recogida
-              </li>
-              <li className={destinationAddress.full_address ? 'req--ok' : 'req--missing'}>
-                {destinationAddress.full_address ? '✓' : '○'} Dirección de destino
+              <li className={address.full_address ? 'req--ok' : 'req--missing'}>
+                {address.full_address ? '✓' : '○'} Dirección de asistencia
               </li>
               <li className={date ? 'req--ok' : 'req--missing'}>
                 {date ? '✓' : '○'} Fecha
               </li>
-              <li className={startTime ? 'req--ok' : 'req--missing'}>
-                {startTime ? '✓' : '○'} Hora de recogida
+              <li className={time ? 'req--ok' : 'req--missing'}>
+                {time ? '✓' : '○'} Hora de asistencia
               </li>
             </ul>
           </div>

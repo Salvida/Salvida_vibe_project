@@ -11,6 +11,8 @@ class AddressBase(BaseModel):
     validation_status: AddressValidationStatus = "pending"
     validation_notes: Optional[str] = None
     is_accessible: bool = False
+    alias: str = ""
+    prm_id: Optional[str] = None
 
 
 class AddressCreate(AddressBase):
@@ -24,6 +26,7 @@ class AddressUpdate(BaseModel):
     validation_status: Optional[AddressValidationStatus] = None
     validation_notes: Optional[str] = None
     is_accessible: Optional[bool] = None
+    alias: Optional[str] = None
 
 
 class AddressValidationUpdate(BaseModel):
@@ -32,8 +35,18 @@ class AddressValidationUpdate(BaseModel):
     validation_notes: Optional[str] = None
 
 
+class PrmAddressCreate(BaseModel):
+    """Used when adding an address directly to a PRM."""
+    full_address: str
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    is_accessible: bool = False
+    alias: str = ""
+
+
 class Address(AddressBase):
     id: str
+    user_id: Optional[str] = None
     created_by: Optional[str] = None
 
     model_config = {"from_attributes": True}
