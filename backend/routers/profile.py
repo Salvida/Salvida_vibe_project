@@ -84,6 +84,54 @@ async def get_profile(user: dict = Depends(get_current_user)):
     return _row_to_profile(created.data[0])
 
 
+@router.put("/{user_id}", response_model=UserProfile)
+async def update_user_profile(user_id: str, body: ProfileUpdate, user: dict = Depends(get_current_user)):
+    """Update any user's profile. Requires the caller to be an admin."""
+    supabase = get_supabase()
+
+    caller = supabase.table("profiles").select("role").eq("id", user["sub"]).single().execute()
+    if not caller.data or caller.data.get("role") != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+
+    updates: dict = {}
+    if body.firstName is not None:
+        updates["first_name"] = body.firstName
+    if body.lastName is not None:
+        updates["last_name"] = body.lastName
+    if body.email is not None:
+        updates["email"] = body.email
+    if body.phone is not None:
+        updates["phone"] = body.phone
+    if body.organization is not None:
+        updates["organization"] = body.organization
+    if body.dni is not None:
+        updates["dni"] = body.dni
+    if body.avatar is not None:
+        updates["avatar"] = body.avatar
+
+    if not updates:
+        result = supabase.table("profiles").select("*").eq("id", user_id).single().execute()
+        if not result.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+        return _row_to_profile(result.data[0])
+
+    try:
+        result = (
+            supabase.table("profiles")
+            .update(updates)
+            .eq("id", user_id)
+            .single()
+            .execute()
+        )
+    except PostgrestAPIError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+
+    if not result.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+
+    return _row_to_profile(result.data[0])
+
+
 @router.put("", response_model=UserProfile)
 async def update_profile(body: ProfileUpdate, user: dict = Depends(get_current_user)):
     """Update the authenticated user's profile."""
@@ -117,7 +165,6 @@ async def update_profile(body: ProfileUpdate, user: dict = Depends(get_current_u
             supabase.table("profiles")
             .update(updates)
             .eq("id", user["sub"])
-            .single()
             .execute()
         )
     except PostgrestAPIError:
@@ -126,4 +173,4 @@ async def update_profile(body: ProfileUpdate, user: dict = Depends(get_current_u
     if not result.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
 
-    return _row_to_profile(result.data)
+    return _row_to_profile(result.data[0])

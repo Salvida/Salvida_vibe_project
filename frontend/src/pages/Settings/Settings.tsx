@@ -7,7 +7,6 @@ import {
   Languages,
   Camera,
   Save,
-  Lock,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { LucideIcon } from "lucide-react";
@@ -20,7 +19,6 @@ interface Section {
   id: string;
   icon: LucideIcon;
   label: string;
-  adminOnly?: boolean;
 }
 
 const baseSections: Section[] = [
@@ -29,7 +27,6 @@ const baseSections: Section[] = [
   { id: "security", icon: Shield, label: "Seguridad" },
   { id: "appearance", icon: Palette, label: "Apariencia" },
   { id: "language", icon: Languages, label: "Idioma" },
-  { id: "admin", icon: Lock, label: "Panel Admin", adminOnly: true },
 ];
 
 export default function Settings() {
@@ -39,17 +36,14 @@ export default function Settings() {
   const currentUser = useCurrentUserStore((s) => s.currentUser);
   const isAdminUser = currentUser?.role === "admin";
 
-  // Filtrar secciones: excluir admin si no es admin
-  const sections = baseSections.filter(
-    (section) => !section.adminOnly || isAdminUser,
-  );
+  const sections = baseSections;
 
   const [activeSection, setActiveSection] = useState("profile");
   const [selectedUserId, setSelectedUserId] = useState("");
   const [userSearch, setUserSearch] = useState("");
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const { data: profile, isLoading } = useProfile();
-  const { mutate: updateProfile, isPending, isSuccess } = useUpdateProfile();
+  const { mutate: updateProfile, isPending } = useUpdateProfile();
   const { data: users } = useUsers(isAdminUser && activeSection === "profile");
 
   const filteredUsers = users?.filter((u) => {
@@ -101,7 +95,7 @@ export default function Settings() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    updateProfile(form);
+    updateProfile({ ...form, targetUserId: selectedUserId || undefined });
   }
 
   return (
@@ -304,11 +298,6 @@ export default function Settings() {
                       </div>
 
                       <div className="settings-profile__footer">
-                        {isSuccess && (
-                          <span className="settings-save-ok">
-                            Cambios guardados
-                          </span>
-                        )}
                         <button
                           type="submit"
                           className="settings-save-btn"
@@ -323,65 +312,6 @@ export default function Settings() {
                     </form>
                   </>
                 )}
-              </div>
-            ) : activeSection === "admin" && isAdminUser ? (
-              <div className="settings-admin">
-                <h3 className="settings-admin__title">Panel Administrativo</h3>
-
-                <div className="settings-admin__section">
-                  <h4 className="settings-admin__heading">
-                    Información del Admin
-                  </h4>
-                  <div className="settings-admin__info">
-                    <div className="settings-admin__item">
-                      <span className="settings-admin__label">Usuario:</span>
-                      <span className="settings-admin__value">
-                        {currentUser?.firstName} {currentUser?.lastName}
-                      </span>
-                    </div>
-                    <div className="settings-admin__item">
-                      <span className="settings-admin__label">Email:</span>
-                      <span className="settings-admin__value">
-                        {currentUser?.email}
-                      </span>
-                    </div>
-                    <div className="settings-admin__item">
-                      <span className="settings-admin__label">
-                        Organización:
-                      </span>
-                      <span className="settings-admin__value">
-                        {currentUser?.organization}
-                      </span>
-                    </div>
-                    <div className="settings-admin__item">
-                      <span className="settings-admin__label">Rol:</span>
-                      <span className="settings-admin__value">
-                        {currentUser?.role}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="settings-admin__section">
-                  <h4 className="settings-admin__heading">
-                    Acciones Administrativas
-                  </h4>
-                  <p className="settings-admin__description">
-                    Desde aquí podrás gestionar usuarios, revisar logs y
-                    configurar permisos.
-                  </p>
-                  <div className="settings-admin__actions">
-                    <button className="settings-admin__action-btn" disabled>
-                      Gestionar Usuarios
-                    </button>
-                    <button className="settings-admin__action-btn" disabled>
-                      Ver Logs del Sistema
-                    </button>
-                    <button className="settings-admin__action-btn" disabled>
-                      Configurar Permisos
-                    </button>
-                  </div>
-                </div>
               </div>
             ) : (
               activeItem && (

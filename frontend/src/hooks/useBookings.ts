@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../lib/api';
+import { toast } from 'react-toastify';
+import { apiClient, ApiError } from '../lib/api';
 import type { Booking } from '../types';
 
 // ---- Query keys ----
@@ -11,6 +12,18 @@ export interface BookingFilters {
   date?: string;
   status?: string;
   prmId?: string;
+}
+
+function parseApiError(error: unknown, fallback: string): string {
+  if (error instanceof ApiError) {
+    try {
+      const parsed = JSON.parse(error.message);
+      return parsed.detail ?? fallback;
+    } catch {
+      return error.message || fallback;
+    }
+  }
+  return fallback;
 }
 
 // ---- Hooks ----
@@ -32,7 +45,11 @@ export function useCreateBooking() {
   return useMutation({
     mutationFn: (body: Omit<Booking, 'id' | 'prmName' | 'prmAvatar' | 'status'>) =>
       apiClient.post<Booking>('/api/bookings', body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: BOOKINGS_KEY }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: BOOKINGS_KEY });
+      toast.success('Reserva creada correctamente');
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al crear la reserva')),
   });
 }
 
@@ -41,7 +58,11 @@ export function useUpdateBooking() {
   return useMutation({
     mutationFn: ({ id, ...body }: Partial<Booking> & { id: string }) =>
       apiClient.put<Booking>(`/api/bookings/${id}`, body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: BOOKINGS_KEY }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: BOOKINGS_KEY });
+      toast.success('Reserva actualizada correctamente');
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al actualizar la reserva')),
   });
 }
 
@@ -50,6 +71,10 @@ export function useCancelBooking() {
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
       apiClient.post<Booking>(`/api/bookings/${id}/cancel`, { reason }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: BOOKINGS_KEY }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: BOOKINGS_KEY });
+      toast.success('Reserva cancelada');
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al cancelar la reserva')),
   });
 }
