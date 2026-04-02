@@ -113,14 +113,13 @@ async def update_user_profile(user_id: str, body: ProfileUpdate, user: dict = De
         result = supabase.table("profiles").select("*").eq("id", user_id).single().execute()
         if not result.data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
-        return _row_to_profile(result.data[0])
+        return _row_to_profile(result.data)
 
     try:
         result = (
             supabase.table("profiles")
             .update(updates)
             .eq("id", user_id)
-            .single()
             .execute()
         )
     except PostgrestAPIError:
