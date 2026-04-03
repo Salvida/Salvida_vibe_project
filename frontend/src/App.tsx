@@ -17,6 +17,7 @@ const NewPrm       = lazy(() => import('./pages/NewPrm/NewPrm'));
 const Settings     = lazy(() => import('./pages/Settings/Settings'));
 const Notifications = lazy(() => import('./pages/Notifications/Notifications'));
 const NewBooking   = lazy(() => import('./pages/NewBooking/NewBooking'));
+const EditBooking  = lazy(() => import('./pages/EditBooking/EditBooking'));
 const Addresses    = lazy(() => import('./pages/Addresses/Addresses'));
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
               <Route index element={<Navigate to="/app/bookings" replace />} />
               <Route path="bookings" element={<Dashboard />} />
               <Route path="bookings/new" element={<NewBooking />} />
+              <Route path="bookings/:id/edit" element={<EditBooking />} />
               <Route path="prms" element={<Prms />} />
               <Route path="prms/new" element={<NewPrm />} />
               <Route path="prms/:id" element={<PrmDetail />} />

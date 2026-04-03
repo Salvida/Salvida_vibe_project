@@ -1,0 +1,10 @@
+-- =============================================================
+-- MIGRATION 004: Simplify booking to single address field
+-- Applied manually via Supabase SQL Editor:
+--   ALTER TABLE bookings RENAME COLUMN location TO address;
+--
+-- NOTE: bookings table has both user_id and created_by:
+--   user_id    → NOT NULL, owner of the booking (added via Supabase)
+--   created_by → nullable, who created the record (from original schema)
+-- Both are set to the authenticated user on insert.
+-- =============================================================

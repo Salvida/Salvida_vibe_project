@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import Header from '../../components/Header/Header';
 import CalendarWidget from '../../components/CalendarWidget/CalendarWidget';
-import { PlusCircle, Clock, MapPin, MoreVertical, Navigation } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import DropdownMenu from '../../components/DropdownMenu';
+import { PlusCircle, Clock, MapPin, Pencil, Trash2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useBookings } from '../../hooks/useBookings';
+import { useBookings, useDeleteBooking } from '../../hooks/useBookings';
 import type { Booking } from '../../types';
 import './Dashboard.css';
 
@@ -28,7 +29,11 @@ const STATUS_CLASS: Record<Booking['status'], string> = {
   Cancelled: 'booking-status--cancelled',
 };
 
-function BookingCard({ booking }: { booking: Booking }) {
+function BookingCard({ booking, onEdit, onDelete }: { booking: Booking; onEdit: () => void; onDelete: () => void }) {
+  const mapsUrl = booking.address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.address)}`
+    : null;
+
   return (
     <div className="booking-card">
       {booking.prmAvatar ? (
@@ -46,8 +51,21 @@ function BookingCard({ booking }: { booking: Booking }) {
             {booking.startTime}–{booking.endTime}
           </span>
           <span className="booking-card__meta-item booking-card__meta-location">
-            <MapPin size={13} />
-            {booking.location}
+            {mapsUrl ? (
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="booking-card__map-icon"
+                title="Ver en Google Maps"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MapPin size={13} />
+              </a>
+            ) : (
+              <MapPin size={13} />
+            )}
+            {booking.address}
           </span>
         </div>
       </div>
@@ -55,21 +73,12 @@ function BookingCard({ booking }: { booking: Booking }) {
         <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
           {STATUS_LABEL[booking.status]}
         </span>
-        {booking.location && booking.destination && (
-          <a
-            href={`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(booking.location)}&destination=${encodeURIComponent(booking.destination)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="booking-card__maps-btn"
-            aria-label="Abrir ruta en Google Maps"
-            title="Abrir en Google Maps"
-          >
-            <Navigation size={15} />
-          </a>
-        )}
-        <button className="booking-card__more-btn" aria-label="Más opciones">
-          <MoreVertical size={16} />
-        </button>
+        <DropdownMenu
+          items={[
+            { label: 'Editar reserva', icon: <Pencil size={14} />, onClick: onEdit },
+            { label: 'Eliminar reserva', icon: <Trash2 size={14} />, onClick: onDelete, variant: 'danger' },
+          ]}
+        />
       </div>
     </div>
   );
@@ -77,6 +86,8 @@ function BookingCard({ booking }: { booking: Booking }) {
 
 export default function Dashboard() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const deleteBooking = useDeleteBooking();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const dateStr = formatDateISO(selectedDate);
@@ -149,7 +160,14 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="booking-list">
-                {bookings.map((b) => <BookingCard key={b.id} booking={b} />)}
+                {bookings.map((b) => (
+                <BookingCard
+                  key={b.id}
+                  booking={b}
+                  onEdit={() => navigate(`/app/bookings/${b.id}/edit`)}
+                  onDelete={() => deleteBooking.mutate(b.id)}
+                />
+              ))}
               </div>
             )}
 

@@ -15,6 +15,14 @@ export interface BookingFilters {
 
 // ---- Hooks ----
 
+export function useBooking(id: string) {
+  return useQuery<Booking>({
+    queryKey: ['bookings', 'detail', id],
+    queryFn: () => apiClient.get<Booking>(`/api/bookings/${id}`),
+    enabled: Boolean(id),
+  });
+}
+
 export function useBookings(filters?: BookingFilters) {
   const params = new URLSearchParams();
   if (filters?.date) params.set('date', filters.date);
@@ -41,6 +49,14 @@ export function useUpdateBooking() {
   return useMutation({
     mutationFn: ({ id, ...body }: Partial<Booking> & { id: string }) =>
       apiClient.put<Booking>(`/api/bookings/${id}`, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: BOOKINGS_KEY }),
+  });
+}
+
+export function useDeleteBooking() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiClient.delete<void>(`/api/bookings/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: BOOKINGS_KEY }),
   });
 }

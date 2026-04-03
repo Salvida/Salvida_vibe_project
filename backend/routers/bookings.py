@@ -19,8 +19,7 @@ def _row_to_booking(row: dict, prm_name: str = "", prm_avatar: Optional[str] = N
         startTime=row.get("start_time", ""),
         endTime=row.get("end_time", ""),
         date=str(row["date"]),
-        location=row.get("location", ""),
-        destination=row.get("destination", ""),
+        address=row.get("address", ""),
         status=row.get("status", "Pending"),
         service_reason=row.get("service_reason"),
         service_reason_notes=row.get("service_reason_notes"),
@@ -114,11 +113,11 @@ async def create_booking(body: BookingCreate, user: dict = Depends(get_current_u
         "start_time": body.startTime,
         "end_time": body.endTime,
         "date": body.date,
-        "location": body.location,
-        "destination": body.destination,
+        "address": body.address,
         "service_reason": body.service_reason,
         "service_reason_notes": body.service_reason_notes,
         "urgency": body.urgency,
+        "user_id": user["sub"],
         "created_by": user["sub"],
     }
 
@@ -141,8 +140,7 @@ async def update_booking(
         "startTime": "start_time",
         "endTime": "end_time",
         "date": "date",
-        "location": "location",
-        "destination": "destination",
+        "address": "address",
         "status": "status",
         "service_reason": "service_reason",
         "service_reason_notes": "service_reason_notes",
@@ -175,6 +173,15 @@ async def update_booking_status(
 # ---------------------------------------------------------------------------
 # POST /api/bookings/{id}/cancel
 # ---------------------------------------------------------------------------
+@router.delete("/{booking_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_booking(
+    booking_id: str,
+    user: dict = Depends(get_current_user),
+):
+    supabase = get_supabase()
+    supabase.table("bookings").delete().eq("id", booking_id).execute()
+
+
 @router.post("/{booking_id}/cancel", response_model=Booking)
 async def cancel_booking(
     booking_id: str,

@@ -3,9 +3,9 @@ from typing import Optional
 from db.supabase_client import get_supabase
 from models.prm import (
     Prm, PrmListItem, PrmCreate, PrmUpdate,
-    EmergencyContact, EmergencyContactCreate,
+    EmergencyContact, EmergencyContactCreate, EmergencyContactUpdate,
 )
-from models.address import Address, AddressCreate
+from models.address import Address, PrmAddressCreate
 from auth.dependencies import get_current_user
 
 router = APIRouter()
@@ -25,20 +25,34 @@ def _row_to_list_item(row: dict) -> PrmListItem:
     )
 
 
-def _row_to_prm(row: dict, address_row: Optional[dict], contacts: list[dict]) -> Prm:
-    address = None
-    if address_row:
-        address = Address(
-            id=str(address_row["id"]),
-            full_address=address_row["full_address"],
-            lat=address_row.get("lat"),
-            lng=address_row.get("lng"),
-            validation_status=address_row["validation_status"],
-            validation_notes=address_row.get("validation_notes"),
-            is_accessible=address_row.get("is_accessible", False),
-            created_by=address_row.get("created_by"),
-        )
+def _row_to_address(row: dict) -> Address:
+    return Address(
+        id=str(row["id"]),
+        full_address=row["full_address"],
+        lat=row.get("lat"),
+        lng=row.get("lng"),
+        validation_status=row.get("validation_status", "pending"),
+        validation_notes=row.get("validation_notes"),
+        is_accessible=row.get("is_accessible", False),
+        alias=row.get("alias", ""),
+        prm_id=row.get("prm_id"),
+        user_id=row.get("user_id"),
+        created_by=row.get("created_by"),
+    )
 
+
+def _fetch_prm_addresses(prm_id: str, supabase) -> list[Address]:
+    result = (
+        supabase.table("addresses")
+        .select("*")
+        .eq("prm_id", prm_id)
+        .order("created_at")
+        .execute()
+    )
+    return [_row_to_address(r) for r in (result.data or [])]
+
+
+def _row_to_prm(row: dict, addresses: list[Address], contacts: list[dict]) -> Prm:
     emergency_contacts = [
         EmergencyContact(
             id=str(c["id"]),
@@ -63,7 +77,7 @@ def _row_to_prm(row: dict, address_row: Optional[dict], contacts: list[dict]) ->
         dni=row.get("dni"),
         is_demo=row.get("is_demo", False),
         created_by=row.get("created_by"),
-        address=address,
+        addresses=addresses,
         emergency_contacts=emergency_contacts,
     )
 
@@ -73,16 +87,7 @@ def _fetch_full_prm(prm_id: str, supabase) -> Prm:
     if not row.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prm not found")
 
-    address_row = None
-    if row.data.get("address_id"):
-        addr_result = (
-            supabase.table("addresses")
-            .select("*")
-            .eq("id", row.data["address_id"])
-            .single()
-            .execute()
-        )
-        address_row = addr_result.data
+    addresses = _fetch_prm_addresses(prm_id, supabase)
 
     contacts_result = (
         supabase.table("emergency_contacts")
@@ -92,7 +97,7 @@ def _fetch_full_prm(prm_id: str, supabase) -> Prm:
     )
     contacts = contacts_result.data or []
 
-    return _row_to_prm(row.data, address_row, contacts)
+    return _row_to_prm(row.data, addresses, contacts)
 
 
 # ---------------------------------------------------------------------------
@@ -112,7 +117,6 @@ async def list_prms(
     if status:
         query = query.eq("status", status)
     if q:
-        # Supabase PostgREST text search across multiple columns
         query = query.or_(f"name.ilike.%{q}%,email.ilike.%{q}%,phone.ilike.%{q}%")
 
     query = query.range(offset, offset + limit - 1)
@@ -153,10 +157,8 @@ async def create_prm(body: PrmCreate, user: dict = Depends(get_current_user)):
     }
 
     result = supabase.table("prms").insert(prm_payload).execute()
-
     prm_id = result.data[0]["id"]
 
-    # Insert emergency contacts if provided
     for ec in body.emergency_contacts:
         supabase.table("emergency_contacts").insert({
             "prm_id": prm_id,
@@ -179,7 +181,6 @@ async def update_prm(
 ):
     supabase = get_supabase()
 
-    # Map camelCase → snake_case for DB
     field_map = {
         "name": "name",
         "email": "email",
@@ -209,7 +210,6 @@ async def update_prm(
 async def delete_prm(prm_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
 
-    # Block deletion if prm has active bookings
     active = (
         supabase.table("bookings")
         .select("id")
@@ -227,24 +227,64 @@ async def delete_prm(prm_id: str, user: dict = Depends(get_current_user)):
 
 
 # ---------------------------------------------------------------------------
-# POST /api/prms/{id}/address
+# GET /api/prms/{id}/addresses
 # ---------------------------------------------------------------------------
-@router.post("/{prm_id}/address", response_model=Prm)
-async def assign_address(
+@router.get("/{prm_id}/addresses", response_model=list[Address])
+async def list_prm_addresses(prm_id: str, user: dict = Depends(get_current_user)):
+    supabase = get_supabase()
+    return _fetch_prm_addresses(prm_id, supabase)
+
+
+# ---------------------------------------------------------------------------
+# POST /api/prms/{id}/addresses
+# ---------------------------------------------------------------------------
+@router.post("/{prm_id}/addresses", response_model=Address, status_code=status.HTTP_201_CREATED)
+async def add_prm_address(
     prm_id: str,
-    body: AddressCreate,
+    body: PrmAddressCreate,
     user: dict = Depends(get_current_user),
 ):
-    """Create a new address and link it to this prm."""
+    """Create a new address linked to this PRM."""
     supabase = get_supabase()
 
-    addr_payload = body.model_dump()
-    addr_payload["created_by"] = user["sub"]
-    addr_result = supabase.table("addresses").insert(addr_payload).execute()
+    addr_payload = {
+        "full_address": body.full_address,
+        "lat": body.lat,
+        "lng": body.lng,
+        "is_accessible": body.is_accessible,
+        "alias": body.alias,
+        "prm_id": prm_id,
+        "user_id": user["sub"],
+        "validation_status": "pending",
+    }
+    result = supabase.table("addresses").insert(addr_payload).execute()
+    return _row_to_address(result.data[0])
 
-    supabase.table("prms").update({"address_id": addr_result.data[0]["id"]}).eq("id", prm_id).execute()
 
-    return _fetch_full_prm(prm_id, supabase)
+# ---------------------------------------------------------------------------
+# DELETE /api/prms/{prm_id}/addresses/{address_id}
+# ---------------------------------------------------------------------------
+@router.delete("/{prm_id}/addresses/{address_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_prm_address(
+    prm_id: str,
+    address_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Remove an address from a PRM (deletes the address record)."""
+    supabase = get_supabase()
+    supabase.table("addresses").delete().eq("id", address_id).eq("prm_id", prm_id).execute()
+
+
+# ---------------------------------------------------------------------------
+# POST /api/prms/{id}/address  (legacy — kept for backward compat)
+# ---------------------------------------------------------------------------
+@router.post("/{prm_id}/address", response_model=Address, status_code=status.HTTP_201_CREATED)
+async def assign_address_legacy(
+    prm_id: str,
+    body: PrmAddressCreate,
+    user: dict = Depends(get_current_user),
+):
+    return await add_prm_address(prm_id, body, user)
 
 
 # ---------------------------------------------------------------------------
@@ -286,3 +326,33 @@ async def delete_emergency_contact(
 ):
     supabase = get_supabase()
     supabase.table("emergency_contacts").delete().eq("id", ec_id).eq("prm_id", prm_id).execute()
+
+
+# ---------------------------------------------------------------------------
+# PATCH /api/prms/{id}/emergency-contacts/{ec_id}
+# ---------------------------------------------------------------------------
+@router.patch(
+    "/{prm_id}/emergency-contacts/{ec_id}",
+    response_model=EmergencyContact,
+)
+async def update_emergency_contact(
+    prm_id: str,
+    ec_id: str,
+    body: EmergencyContactUpdate,
+    user: dict = Depends(get_current_user),
+):
+    supabase = get_supabase()
+    updates = body.model_dump(exclude_unset=True)
+    if not updates:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
+    result = (
+        supabase.table("emergency_contacts")
+        .update(updates)
+        .eq("id", ec_id)
+        .eq("prm_id", prm_id)
+        .execute()
+    )
+    if not result.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
+    row = result.data[0]
+    return EmergencyContact(id=str(row["id"]), name=row["name"], phone=row["phone"], relationship=row.get("relationship", ""))
