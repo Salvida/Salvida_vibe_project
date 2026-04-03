@@ -2,6 +2,12 @@ from pydantic import BaseModel
 from typing import Optional
 
 
+class NotificationPrefs(BaseModel):
+    email: bool = True
+    push: bool = True
+    booking_reminder: bool = True
+
+
 class ProfileUpdate(BaseModel):
     firstName: Optional[str] = None
     lastName: Optional[str] = None
@@ -22,5 +28,6 @@ class UserProfile(BaseModel):
     dni: Optional[str] = None
     role: Optional[str] = None
     avatar: Optional[str] = None
+    notification_prefs: Optional[NotificationPrefs] = None
 
     model_config = {"from_attributes": True}

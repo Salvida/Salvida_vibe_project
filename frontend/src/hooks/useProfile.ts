@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { apiClient, ApiError } from '../lib/api';
-import type { UserProfile } from '../types';
+import type { UserProfile, NotificationPrefs } from '../types';
 import { useAuthStore } from '../store/useAuthStore';
 
 export const PROFILE_KEY = ['profile'] as const;
@@ -37,6 +37,22 @@ export function useUsers(enabled: boolean) {
     queryKey: USERS_KEY,
     queryFn: () => apiClient.get<UserProfile[]>('/api/profile/users'),
     enabled,
+  });
+}
+
+export function useUpdateNotificationPrefs() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (prefs: NotificationPrefs) =>
+      apiClient.put<UserProfile>('/api/profile/notifications', prefs),
+    onSuccess: (data) => {
+      qc.setQueryData(PROFILE_KEY, data);
+      toast.success('Preferencias de notificaciones actualizadas');
+    },
+    onError: (error) => {
+      toast.error(parseApiError(error, 'Error al actualizar las preferencias'));
+    },
   });
 }
 

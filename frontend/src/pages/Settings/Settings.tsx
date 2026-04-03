@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { LucideIcon } from "lucide-react";
-import { useProfile, useUpdateProfile, useUsers } from "../../hooks/useProfile";
+import type { NotificationPrefs } from "../../types";
+import { useProfile, useUpdateProfile, useUpdateNotificationPrefs, useUsers } from "../../hooks/useProfile";
 import { useCurrentUserStore } from "../../store/useCurrentUserStore";
 import { useSyncCurrentUser } from "../../hooks/useSyncCurrentUser";
 import "./Settings.css";
@@ -44,6 +45,7 @@ export default function Settings() {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const { data: profile, isLoading } = useProfile();
   const { mutate: updateProfile, isPending } = useUpdateProfile();
+  const { mutate: updateNotificationPrefs, isPending: isSavingPrefs } = useUpdateNotificationPrefs();
   const { data: users } = useUsers(isAdminUser && activeSection === "profile");
 
   const filteredUsers = users?.filter((u) => {
@@ -68,6 +70,12 @@ export default function Settings() {
     organization: "",
   });
 
+  const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>({
+    email: true,
+    push: true,
+    booking_reminder: true,
+  });
+
   useEffect(() => {
     if (selectedUserId) return;
     if (profile) {
@@ -79,6 +87,9 @@ export default function Settings() {
         phone: profile.phone ?? "",
         organization: profile.organization ?? "",
       });
+      if (profile.notification_prefs) {
+        setNotifPrefs(profile.notification_prefs);
+      }
     }
   }, [profile, selectedUserId]);
 
@@ -122,7 +133,82 @@ export default function Settings() {
 
           {/* Settings Panel */}
           <div className="settings-panel">
-            {activeSection === "profile" ? (
+            {activeSection === "notifications" ? (
+              <div className="settings-notifications">
+                <h3 className="settings-profile__title">Notificaciones</h3>
+                <p className="settings-notifications__desc">
+                  Elige cómo y cuándo quieres recibir notificaciones.
+                </p>
+
+                <div className="settings-notifications__group">
+                  <h4 className="settings-notifications__group-title">Canal</h4>
+
+                  <div className="settings-notif-row">
+                    <div className="settings-notif-row__info">
+                      <span className="settings-notif-row__label">Correo electrónico</span>
+                      <span className="settings-notif-row__sub">Recibe notificaciones en tu email</span>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={notifPrefs.email}
+                      className={`settings-toggle${notifPrefs.email ? " settings-toggle--on" : ""}`}
+                      onClick={() => setNotifPrefs((p) => ({ ...p, email: !p.email }))}
+                    >
+                      <span className="settings-toggle__thumb" />
+                    </button>
+                  </div>
+
+                  <div className="settings-notif-row">
+                    <div className="settings-notif-row__info">
+                      <span className="settings-notif-row__label">Notificaciones push</span>
+                      <span className="settings-notif-row__sub">Alertas en el navegador en tiempo real</span>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={notifPrefs.push}
+                      className={`settings-toggle${notifPrefs.push ? " settings-toggle--on" : ""}`}
+                      onClick={() => setNotifPrefs((p) => ({ ...p, push: !p.push }))}
+                    >
+                      <span className="settings-toggle__thumb" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="settings-notifications__group">
+                  <h4 className="settings-notifications__group-title">Tipos de aviso</h4>
+
+                  <div className="settings-notif-row">
+                    <div className="settings-notif-row__info">
+                      <span className="settings-notif-row__label">Recordatorio de reserva</span>
+                      <span className="settings-notif-row__sub">Aviso antes de cada servicio programado</span>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={notifPrefs.booking_reminder}
+                      className={`settings-toggle${notifPrefs.booking_reminder ? " settings-toggle--on" : ""}`}
+                      onClick={() => setNotifPrefs((p) => ({ ...p, booking_reminder: !p.booking_reminder }))}
+                    >
+                      <span className="settings-toggle__thumb" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="settings-profile__footer">
+                  <button
+                    type="button"
+                    className="settings-save-btn"
+                    disabled={isSavingPrefs}
+                    onClick={() => updateNotificationPrefs(notifPrefs)}
+                  >
+                    <Save size={20} />
+                    <span>{isSavingPrefs ? "Guardando…" : "Guardar cambios"}</span>
+                  </button>
+                </div>
+              </div>
+            ) : activeSection === "profile" ? (
               <div className="settings-profile">
                 {isAdminUser && (
                   <div className="settings-user-selector">

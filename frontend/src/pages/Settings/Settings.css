@@ -393,6 +393,106 @@
   color: var(--color-slate-400);
 }
 
+/* Notifications */
+.settings-notifications {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  flex: 1;
+}
+
+.settings-notifications__desc {
+  font-size: 0.875rem;
+  color: var(--color-slate-500);
+  margin-top: -1.5rem;
+}
+
+.settings-notifications__group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background-color: var(--color-slate-50);
+  border: 1px solid var(--color-slate-100);
+}
+
+.settings-notifications__group-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-slate-400);
+  margin-bottom: 0.5rem;
+}
+
+.settings-notif-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--color-slate-100);
+}
+
+.settings-notif-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.settings-notif-row:first-of-type {
+  padding-top: 0;
+}
+
+.settings-notif-row__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.settings-notif-row__label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-slate-800);
+}
+
+.settings-notif-row__sub {
+  font-size: 0.78rem;
+  color: var(--color-slate-400);
+}
+
+/* Toggle switch */
+.settings-toggle {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background-color: var(--color-slate-200);
+  position: relative;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.settings-toggle--on {
+  background-color: var(--color-primary);
+}
+
+.settings-toggle__thumb {
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.settings-toggle--on .settings-toggle__thumb {
+  transform: translateX(1.25rem);
+}
+
 /* Admin Panel */
 .settings-admin {
   display: flex;

@@ -1,13 +1,23 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from postgrest import APIError as PostgrestAPIError
 from db.supabase_client import get_supabase
-from models.profile import UserProfile, ProfileUpdate
+from models.profile import UserProfile, ProfileUpdate, NotificationPrefs
 from auth.dependencies import get_current_user
 
 router = APIRouter()
 
 
 def _row_to_profile(row: dict) -> UserProfile:
+    raw_prefs = row.get("notification_prefs") or {}
+    if isinstance(raw_prefs, dict):
+        prefs = NotificationPrefs(
+            email=raw_prefs.get("email", True),
+            push=raw_prefs.get("push", True),
+            booking_reminder=raw_prefs.get("booking_reminder", True),
+        )
+    else:
+        prefs = NotificationPrefs()
+
     return UserProfile(
         id=row["id"],
         firstName=row.get("first_name"),
@@ -18,6 +28,7 @@ def _row_to_profile(row: dict) -> UserProfile:
         dni=row.get("dni"),
         role=row.get("role", "staff"),
         avatar=row.get("avatar"),
+        notification_prefs=prefs,
     )
 
 
@@ -82,6 +93,29 @@ async def get_profile(user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Could not create profile")
 
     return _row_to_profile(created.data[0])
+
+
+@router.put("/notifications", response_model=UserProfile)
+async def update_notification_prefs(body: NotificationPrefs, user: dict = Depends(get_current_user)):
+    """Update the authenticated user's notification preferences."""
+    supabase = get_supabase()
+
+    prefs_dict = body.model_dump()
+
+    try:
+        result = (
+            supabase.table("profiles")
+            .update({"notification_prefs": prefs_dict})
+            .eq("id", user["sub"])
+            .execute()
+        )
+    except PostgrestAPIError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+
+    if not result.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+
+    return _row_to_profile(result.data[0])
 
 
 @router.put("/{user_id}", response_model=UserProfile)
