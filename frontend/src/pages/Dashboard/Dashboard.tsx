@@ -48,7 +48,7 @@ function BookingCard({ booking, onEdit, onDelete }: { booking: Booking; onEdit: 
         <div className="booking-card__meta">
           <span className="booking-card__meta-item">
             <Clock size={13} />
-            {booking.startTime}–{booking.endTime}
+            {booking.startTime}
           </span>
           <span className="booking-card__meta-item booking-card__meta-location">
             {mapsUrl ? (
