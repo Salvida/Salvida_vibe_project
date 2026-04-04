@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../lib/api';
+import { toast } from 'react-toastify';
+import { apiClient, ApiError } from '../lib/api';
 import type { Prm, EmergencyContact } from '../types';
 
 // ---- Query keys ----
@@ -8,6 +9,18 @@ export const prmKey = (id: string) => ['prms', 'detail', id] as const;
 
 // ---- Types matching the backend PrmListItem / Prm ----
 export type PrmListItem = Pick<Prm, 'id' | 'name' | 'email' | 'phone' | 'status' | 'avatar' | 'dni' | 'is_demo'>;
+
+function parseApiError(error: unknown, fallback: string): string {
+  if (error instanceof ApiError) {
+    try {
+      const parsed = JSON.parse(error.message);
+      return parsed.detail ?? fallback;
+    } catch {
+      return error.message || fallback;
+    }
+  }
+  return fallback;
+}
 
 // ---- Hooks ----
 
@@ -34,7 +47,11 @@ export function useCreatePrm() {
   return useMutation({
     mutationFn: (body: Omit<Prm, 'id' | 'addresses' | 'emergency_contacts'>) =>
       apiClient.post<Prm>('/api/prms', body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PRMS_KEY }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: PRMS_KEY });
+      toast.success('PRM creado correctamente');
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al crear el PRM')),
   });
 }
 
@@ -46,7 +63,9 @@ export function useUpdatePrm() {
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: PRMS_KEY });
       qc.invalidateQueries({ queryKey: prmKey(vars.id) });
+      toast.success('PRM actualizado correctamente');
     },
+    onError: (error) => toast.error(parseApiError(error, 'Error al actualizar el PRM')),
   });
 }
 
@@ -54,7 +73,11 @@ export function useDeletePrm() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiClient.delete<void>(`/api/prms/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PRMS_KEY }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: PRMS_KEY });
+      toast.success('PRM eliminado correctamente');
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al eliminar el PRM')),
   });
 }
 

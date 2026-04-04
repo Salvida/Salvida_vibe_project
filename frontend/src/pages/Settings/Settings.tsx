@@ -7,11 +7,11 @@ import {
   Languages,
   Camera,
   Save,
-  Lock,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { LucideIcon } from "lucide-react";
-import { useProfile, useUpdateProfile, useUsers } from "../../hooks/useProfile";
+import type { NotificationPrefs } from "../../types";
+import { useProfile, useUpdateProfile, useUpdateNotificationPrefs, useUsers } from "../../hooks/useProfile";
 import { useCurrentUserStore } from "../../store/useCurrentUserStore";
 import { useSyncCurrentUser } from "../../hooks/useSyncCurrentUser";
 import "./Settings.css";
@@ -20,7 +20,6 @@ interface Section {
   id: string;
   icon: LucideIcon;
   label: string;
-  adminOnly?: boolean;
 }
 
 const baseSections: Section[] = [
@@ -29,7 +28,6 @@ const baseSections: Section[] = [
   { id: "security", icon: Shield, label: "Seguridad" },
   { id: "appearance", icon: Palette, label: "Apariencia" },
   { id: "language", icon: Languages, label: "Idioma" },
-  { id: "admin", icon: Lock, label: "Panel Admin", adminOnly: true },
 ];
 
 export default function Settings() {
@@ -39,36 +37,61 @@ export default function Settings() {
   const currentUser = useCurrentUserStore((s) => s.currentUser);
   const isAdminUser = currentUser?.role === "admin";
 
-  // Filtrar secciones: excluir admin si no es admin
-  const sections = baseSections.filter(
-    (section) => !section.adminOnly || isAdminUser,
-  );
+  const sections = baseSections;
 
   const [activeSection, setActiveSection] = useState("profile");
   const [selectedUserId, setSelectedUserId] = useState("");
+  const [userSearch, setUserSearch] = useState("");
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const { data: profile, isLoading } = useProfile();
-  const { mutate: updateProfile, isPending, isSuccess } = useUpdateProfile();
+  const { mutate: updateProfile, isPending } = useUpdateProfile();
+  const { mutate: updateNotificationPrefs, isPending: isSavingPrefs } = useUpdateNotificationPrefs();
   const { data: users } = useUsers(isAdminUser && activeSection === "profile");
+
+  const filteredUsers = users?.filter((u) => {
+    const q = userSearch.toLowerCase();
+    return (
+      u.firstName?.toLowerCase().includes(q) ||
+      u.lastName?.toLowerCase().includes(q) ||
+      u.email?.toLowerCase().includes(q) ||
+      u.phone?.toLowerCase().includes(q) ||
+      u.organization?.toLowerCase().includes(q) ||
+      u.dni?.toLowerCase().includes(q) ||
+      u.role?.toLowerCase().includes(q)
+    );
+  }) ?? [];
 
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
+    dni: "",
     email: "",
     phone: "",
     organization: "",
   });
 
+  const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>({
+    email: true,
+    push: true,
+    booking_reminder: true,
+  });
+
   useEffect(() => {
+    if (selectedUserId) return;
     if (profile) {
       setForm({
         firstName: profile.firstName ?? "",
         lastName: profile.lastName ?? "",
+        dni: profile.dni ?? "",
         email: profile.email ?? "",
         phone: profile.phone ?? "",
         organization: profile.organization ?? "",
       });
+      if (profile.notification_prefs) {
+        setNotifPrefs(profile.notification_prefs);
+      }
     }
-  }, [profile]);
+  }, [profile, selectedUserId]);
 
   const activeItem = sections.find((s) => s.id === activeSection);
 
@@ -83,7 +106,7 @@ export default function Settings() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    updateProfile(form);
+    updateProfile({ ...form, targetUserId: selectedUserId || undefined });
   }
 
   return (
@@ -110,26 +133,148 @@ export default function Settings() {
 
           {/* Settings Panel */}
           <div className="settings-panel">
-            {activeSection === "profile" ? (
+            {activeSection === "notifications" ? (
+              <div className="settings-notifications">
+                <h3 className="settings-profile__title">Notificaciones</h3>
+                <p className="settings-notifications__desc">
+                  Elige cómo y cuándo quieres recibir notificaciones.
+                </p>
+
+                <div className="settings-notifications__group">
+                  <h4 className="settings-notifications__group-title">Canal</h4>
+
+                  <div className="settings-notif-row">
+                    <div className="settings-notif-row__info">
+                      <span className="settings-notif-row__label">Correo electrónico</span>
+                      <span className="settings-notif-row__sub">Recibe notificaciones en tu email</span>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={notifPrefs.email}
+                      className={`settings-toggle${notifPrefs.email ? " settings-toggle--on" : ""}`}
+                      onClick={() => setNotifPrefs((p) => ({ ...p, email: !p.email }))}
+                    >
+                      <span className="settings-toggle__thumb" />
+                    </button>
+                  </div>
+
+                  <div className="settings-notif-row">
+                    <div className="settings-notif-row__info">
+                      <span className="settings-notif-row__label">Notificaciones push</span>
+                      <span className="settings-notif-row__sub">Alertas en el navegador en tiempo real</span>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={notifPrefs.push}
+                      className={`settings-toggle${notifPrefs.push ? " settings-toggle--on" : ""}`}
+                      onClick={() => setNotifPrefs((p) => ({ ...p, push: !p.push }))}
+                    >
+                      <span className="settings-toggle__thumb" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="settings-notifications__group">
+                  <h4 className="settings-notifications__group-title">Tipos de aviso</h4>
+
+                  <div className="settings-notif-row">
+                    <div className="settings-notif-row__info">
+                      <span className="settings-notif-row__label">Recordatorio de reserva</span>
+                      <span className="settings-notif-row__sub">Aviso antes de cada servicio programado</span>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={notifPrefs.booking_reminder}
+                      className={`settings-toggle${notifPrefs.booking_reminder ? " settings-toggle--on" : ""}`}
+                      onClick={() => setNotifPrefs((p) => ({ ...p, booking_reminder: !p.booking_reminder }))}
+                    >
+                      <span className="settings-toggle__thumb" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="settings-profile__footer">
+                  <button
+                    type="button"
+                    className="settings-save-btn"
+                    disabled={isSavingPrefs}
+                    onClick={() => updateNotificationPrefs(notifPrefs)}
+                  >
+                    <Save size={20} />
+                    <span>{isSavingPrefs ? "Guardando…" : "Guardar cambios"}</span>
+                  </button>
+                </div>
+              </div>
+            ) : activeSection === "profile" ? (
               <div className="settings-profile">
                 {isAdminUser && (
                   <div className="settings-user-selector">
                     <label className="settings-user-selector__label">
                       Usuario
                     </label>
-                    <select
-                      className="settings-user-selector__select"
-                      value={selectedUserId}
-                      onChange={(e) => setSelectedUserId(e.target.value)}
-                    >
-                      <option value="">Seleccionar usuario…</option>
-                      {users?.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.firstName} {u.lastName}
-                          {u.email ? ` — ${u.email}` : ""}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="settings-user-selector__combobox">
+                      <input
+                        type="text"
+                        className="settings-user-selector__input"
+                        placeholder="Buscar usuario…"
+                        value={userSearch}
+                        onChange={(e) => {
+                          setUserSearch(e.target.value);
+                          setUserDropdownOpen(true);
+                        }}
+                        onFocus={() => setUserDropdownOpen(true)}
+                        onBlur={() =>
+                          setTimeout(() => setUserDropdownOpen(false), 150)
+                        }
+                        autoComplete="off"
+                      />
+                      {userDropdownOpen && filteredUsers.length > 0 && (
+                        <ul className="settings-user-selector__dropdown">
+                          {filteredUsers.map((u) => (
+                            <li
+                              key={u.id}
+                              className={`settings-user-selector__option${selectedUserId === u.id ? " settings-user-selector__option--selected" : ""}`}
+                              onMouseDown={() => {
+                                setSelectedUserId(u.id);
+                                setUserSearch(
+                                  `${u.firstName} ${u.lastName}${u.email ? ` — ${u.email}` : ""}`,
+                                );
+                                setUserDropdownOpen(false);
+                                setForm({
+                                  firstName: u.firstName ?? "",
+                                  lastName: u.lastName ?? "",
+                                  dni: u.dni ?? "",
+                                  email: u.email ?? "",
+                                  phone: u.phone ?? "",
+                                  organization: u.organization ?? "",
+                                });
+                              }}
+                            >
+                              <span className="settings-user-selector__option-name">
+                                {u.firstName} {u.lastName}
+                              </span>
+                              {u.email && (
+                                <span className="settings-user-selector__option-email">
+                                  {u.email}
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {userDropdownOpen &&
+                        userSearch.length > 0 &&
+                        filteredUsers.length === 0 && (
+                          <ul className="settings-user-selector__dropdown">
+                            <li className="settings-user-selector__option settings-user-selector__option--empty">
+                              Sin resultados
+                            </li>
+                          </ul>
+                        )}
+                    </div>
                   </div>
                 )}
                 <h3 className="settings-profile__title">Ajustes de Perfil</h3>
@@ -191,6 +336,18 @@ export default function Settings() {
                         />
                       </div>
                       <div className="settings-form__field">
+                        <label className="settings-form__label">DNI</label>
+                        <input
+                          type="text"
+                          name="dni"
+                          value={form.dni}
+                          onChange={handleChange}
+                          className="settings-form__input"
+                          placeholder="12345678A"
+                          autoComplete="off"
+                        />
+                      </div>
+                      <div className="settings-form__field">
                         <label className="settings-form__label">Email</label>
                         <input
                           type="email"
@@ -227,11 +384,6 @@ export default function Settings() {
                       </div>
 
                       <div className="settings-profile__footer">
-                        {isSuccess && (
-                          <span className="settings-save-ok">
-                            Cambios guardados
-                          </span>
-                        )}
                         <button
                           type="submit"
                           className="settings-save-btn"
@@ -246,65 +398,6 @@ export default function Settings() {
                     </form>
                   </>
                 )}
-              </div>
-            ) : activeSection === "admin" && isAdminUser ? (
-              <div className="settings-admin">
-                <h3 className="settings-admin__title">Panel Administrativo</h3>
-
-                <div className="settings-admin__section">
-                  <h4 className="settings-admin__heading">
-                    Información del Admin
-                  </h4>
-                  <div className="settings-admin__info">
-                    <div className="settings-admin__item">
-                      <span className="settings-admin__label">Usuario:</span>
-                      <span className="settings-admin__value">
-                        {currentUser?.firstName} {currentUser?.lastName}
-                      </span>
-                    </div>
-                    <div className="settings-admin__item">
-                      <span className="settings-admin__label">Email:</span>
-                      <span className="settings-admin__value">
-                        {currentUser?.email}
-                      </span>
-                    </div>
-                    <div className="settings-admin__item">
-                      <span className="settings-admin__label">
-                        Organización:
-                      </span>
-                      <span className="settings-admin__value">
-                        {currentUser?.organization}
-                      </span>
-                    </div>
-                    <div className="settings-admin__item">
-                      <span className="settings-admin__label">Rol:</span>
-                      <span className="settings-admin__value">
-                        {currentUser?.role}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="settings-admin__section">
-                  <h4 className="settings-admin__heading">
-                    Acciones Administrativas
-                  </h4>
-                  <p className="settings-admin__description">
-                    Desde aquí podrás gestionar usuarios, revisar logs y
-                    configurar permisos.
-                  </p>
-                  <div className="settings-admin__actions">
-                    <button className="settings-admin__action-btn" disabled>
-                      Gestionar Usuarios
-                    </button>
-                    <button className="settings-admin__action-btn" disabled>
-                      Ver Logs del Sistema
-                    </button>
-                    <button className="settings-admin__action-btn" disabled>
-                      Configurar Permisos
-                    </button>
-                  </div>
-                </div>
               </div>
             ) : (
               activeItem && (

@@ -1,10 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../lib/api';
-import type { UserProfile } from '../types';
+import { toast } from 'react-toastify';
+import { apiClient, ApiError } from '../lib/api';
+import type { UserProfile, NotificationPrefs } from '../types';
 import { useAuthStore } from '../store/useAuthStore';
 
 export const PROFILE_KEY = ['profile'] as const;
 export const USERS_KEY = ['users'] as const;
+
+function parseApiError(error: unknown, fallback: string): string {
+  if (error instanceof ApiError) {
+    try {
+      const parsed = JSON.parse(error.message);
+      return parsed.detail ?? fallback;
+    } catch {
+      return error.message || fallback;
+    }
+  }
+  return fallback;
+}
 
 export function useProfile() {
   const setUser = useAuthStore((s) => s.setUser);
@@ -13,7 +26,6 @@ export function useProfile() {
     queryKey: PROFILE_KEY,
     queryFn: async () => {
       const profile = await apiClient.get<UserProfile>('/api/profile');
-      // Use setUser (not updateUser) so the profile is set even when user is null/undefined
       setUser(profile);
       return profile;
     },
@@ -28,24 +40,48 @@ export function useUsers(enabled: boolean) {
   });
 }
 
+export function useUpdateNotificationPrefs() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (prefs: NotificationPrefs) =>
+      apiClient.put<UserProfile>('/api/profile/notifications', prefs),
+    onSuccess: (data) => {
+      qc.setQueryData(PROFILE_KEY, data);
+      toast.success('Preferencias de notificaciones actualizadas');
+    },
+    onError: (error) => {
+      toast.error(parseApiError(error, 'Error al actualizar las preferencias'));
+    },
+  });
+}
+
 export function useUpdateProfile() {
   const qc = useQueryClient();
   const updateUser = useAuthStore((s) => s.updateUser);
 
   return useMutation({
-    mutationFn: (body: Partial<UserProfile>) =>
-      apiClient.put<UserProfile>('/api/profile', body),
-    // Optimistic update: update Zustand before the request resolves
-    onMutate: (vars) => {
-      updateUser(vars);
+    mutationFn: ({ targetUserId, ...body }: Partial<UserProfile> & { targetUserId?: string }) => {
+      if (targetUserId) {
+        return apiClient.put<UserProfile>(`/api/profile/${targetUserId}`, body);
+      }
+      return apiClient.put<UserProfile>('/api/profile', body);
     },
-    onSuccess: (data) => {
-      updateUser(data);
-      qc.setQueryData(PROFILE_KEY, data);
+    onMutate: ({ targetUserId, ...vars }) => {
+      if (!targetUserId) updateUser(vars);
     },
-    onError: () => {
-      // On error, re-fetch from server to restore correct state
-      qc.invalidateQueries({ queryKey: PROFILE_KEY });
+    onSuccess: (data, { targetUserId }) => {
+      if (!targetUserId) {
+        updateUser(data);
+        qc.setQueryData(PROFILE_KEY, data);
+      } else {
+        qc.invalidateQueries({ queryKey: USERS_KEY });
+      }
+      toast.success('Perfil actualizado correctamente');
+    },
+    onError: (error, { targetUserId }) => {
+      if (!targetUserId) qc.invalidateQueries({ queryKey: PROFILE_KEY });
+      toast.error(parseApiError(error, 'Error al actualizar el perfil'));
     },
   });
 }
