@@ -7,6 +7,7 @@ from models.prm import (
 )
 from models.address import Address, PrmAddressCreate
 from auth.dependencies import get_current_user
+from auth.roles import is_admin
 
 router = APIRouter()
 
@@ -82,6 +83,15 @@ def _row_to_prm(row: dict, addresses: list[Address], contacts: list[dict]) -> Pr
     )
 
 
+def _assert_prm_access(prm_id: str, user_sub: str, supabase) -> None:
+    """Raises 403 if a non-admin user tries to access a PRM they don't own."""
+    if is_admin(user_sub):
+        return
+    row = supabase.table("prms").select("created_by").eq("id", prm_id).single().execute()
+    if not row.data or row.data.get("created_by") != user_sub:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+
+
 def _fetch_full_prm(prm_id: str, supabase) -> Prm:
     row = supabase.table("prms").select("*").eq("id", prm_id).single().execute()
     if not row.data:
@@ -114,6 +124,9 @@ async def list_prms(
     supabase = get_supabase()
     query = supabase.table("prms").select("*").order("name")
 
+    if not is_admin(user["sub"]):
+        query = query.eq("created_by", user["sub"])
+
     if status:
         query = query.eq("status", status)
     if q:
@@ -130,6 +143,7 @@ async def list_prms(
 @router.get("/{prm_id}", response_model=Prm)
 async def get_prm(prm_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
     return _fetch_full_prm(prm_id, supabase)
 
 
@@ -180,6 +194,7 @@ async def update_prm(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
 
     field_map = {
         "name": "name",
@@ -209,6 +224,7 @@ async def update_prm(
 @router.delete("/{prm_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_prm(prm_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
 
     active = (
         supabase.table("bookings")
@@ -232,6 +248,7 @@ async def delete_prm(prm_id: str, user: dict = Depends(get_current_user)):
 @router.get("/{prm_id}/addresses", response_model=list[Address])
 async def list_prm_addresses(prm_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
     return _fetch_prm_addresses(prm_id, supabase)
 
 
@@ -246,6 +263,7 @@ async def add_prm_address(
 ):
     """Create a new address linked to this PRM."""
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
 
     addr_payload = {
         "full_address": body.full_address,
@@ -272,6 +290,7 @@ async def delete_prm_address(
 ):
     """Remove an address from a PRM (deletes the address record)."""
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
     supabase.table("addresses").delete().eq("id", address_id).eq("prm_id", prm_id).execute()
 
 
@@ -301,6 +320,7 @@ async def add_emergency_contact(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
     result = supabase.table("emergency_contacts").insert({
         "prm_id": prm_id,
         "name": body.name,
@@ -325,6 +345,7 @@ async def delete_emergency_contact(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
     supabase.table("emergency_contacts").delete().eq("id", ec_id).eq("prm_id", prm_id).execute()
 
 
@@ -342,6 +363,7 @@ async def update_emergency_contact(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
     updates = body.model_dump(exclude_unset=True)
     if not updates:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")

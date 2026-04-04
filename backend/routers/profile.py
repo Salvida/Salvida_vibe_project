@@ -3,6 +3,7 @@ from postgrest import APIError as PostgrestAPIError
 from db.supabase_client import get_supabase
 from models.profile import UserProfile, ProfileUpdate, NotificationPrefs
 from auth.dependencies import get_current_user
+from auth.roles import require_admin
 
 router = APIRouter()
 
@@ -26,7 +27,7 @@ def _row_to_profile(row: dict) -> UserProfile:
         phone=row.get("phone"),
         organization=row.get("organization"),
         dni=row.get("dni"),
-        role=row.get("role", "staff"),
+        role=row.get("role", "user"),
         avatar=row.get("avatar"),
         notification_prefs=prefs,
     )
@@ -36,11 +37,7 @@ def _row_to_profile(row: dict) -> UserProfile:
 async def get_users(user: dict = Depends(get_current_user)):
     """Get all non-admin profiles. Requires the caller to be an admin."""
     supabase = get_supabase()
-
-    caller = supabase.table("profiles").select("role").eq("id", user["sub"]).single().execute()
-    if not caller.data or caller.data.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
-
+    require_admin(user["sub"])
     result = supabase.table("profiles").select("*").neq("role", "admin").execute()
     return [_row_to_profile(row) for row in result.data]
 
@@ -86,7 +83,7 @@ async def get_profile(user: dict = Depends(get_current_user)):
         "phone": user_meta.get("phone", ""),
         "organization": "",
         "dni": user_meta.get("dni", ""),
-        "role": "staff",
+        "role": "user",
     }
     created = supabase.table("profiles").insert(new_row).execute()
     if not created.data:
@@ -122,10 +119,7 @@ async def update_notification_prefs(body: NotificationPrefs, user: dict = Depend
 async def update_user_profile(user_id: str, body: ProfileUpdate, user: dict = Depends(get_current_user)):
     """Update any user's profile. Requires the caller to be an admin."""
     supabase = get_supabase()
-
-    caller = supabase.table("profiles").select("role").eq("id", user["sub"]).single().execute()
-    if not caller.data or caller.data.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    require_admin(user["sub"])
 
     updates: dict = {}
     if body.firstName is not None:

@@ -6,6 +6,7 @@ from models.booking import (
     BookingStatusUpdate, BookingCancel,
 )
 from auth.dependencies import get_current_user
+from auth.roles import is_admin
 
 router = APIRouter()
 
@@ -26,6 +27,17 @@ def _row_to_booking(row: dict, prm_name: str = "", prm_avatar: Optional[str] = N
         urgency=row.get("urgency", "routine"),
         is_demo=row.get("is_demo", False),
     )
+
+
+def _assert_booking_access(booking_id: str, user_sub: str, supabase) -> None:
+    """Raises 403 if a non-admin user tries to access a booking they don't own."""
+    if is_admin(user_sub):
+        return
+    row = supabase.table("bookings").select("created_by").eq("id", booking_id).single().execute()
+    if not row.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
+    if row.data.get("created_by") != user_sub:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
 
 def _fetch_full_booking(booking_id: str, supabase) -> Booking:
@@ -63,6 +75,9 @@ async def list_bookings(
         .order("start_time")
     )
 
+    if not is_admin(user["sub"]):
+        query = query.eq("created_by", user["sub"])
+
     if date:
         query = query.eq("date", date)
     if booking_status:
@@ -87,6 +102,7 @@ async def list_bookings(
 @router.get("/{booking_id}", response_model=Booking)
 async def get_booking(booking_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
+    _assert_booking_access(booking_id, user["sub"], supabase)
     return _fetch_full_booking(booking_id, supabase)
 
 
@@ -135,6 +151,7 @@ async def update_booking(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_booking_access(booking_id, user["sub"], supabase)
 
     field_map = {
         "startTime": "start_time",
@@ -166,6 +183,7 @@ async def update_booking_status(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_booking_access(booking_id, user["sub"], supabase)
     supabase.table("bookings").update({"status": body.status}).eq("id", booking_id).execute()
     return _fetch_full_booking(booking_id, supabase)
 
@@ -179,6 +197,7 @@ async def delete_booking(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_booking_access(booking_id, user["sub"], supabase)
     supabase.table("bookings").delete().eq("id", booking_id).execute()
 
 
@@ -189,6 +208,7 @@ async def cancel_booking(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_booking_access(booking_id, user["sub"], supabase)
     updates: dict = {"status": "Cancelled"}
     if body.reason:
         updates["service_reason_notes"] = body.reason

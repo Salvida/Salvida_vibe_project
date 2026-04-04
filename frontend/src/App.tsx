@@ -29,7 +29,7 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
 
-          {/* Protected app */}
+          {/* Protected app — all authenticated users */}
           <Route element={<ProtectedRoute />}>
             <Route path="/app" element={<Layout />}>
               <Route index element={<Navigate to="/app/bookings" replace />} />
@@ -39,9 +39,15 @@ export default function App() {
               <Route path="prms" element={<Prms />} />
               <Route path="prms/new" element={<NewPrm />} />
               <Route path="prms/:id" element={<PrmDetail />} />
-              <Route path="addresses" element={<Addresses />} />
               <Route path="settings" element={<Settings />} />
               <Route path="notifications" element={<Notifications />} />
+            </Route>
+          </Route>
+
+          {/* Admin-only routes */}
+          <Route element={<ProtectedRoute requireAdmin />}>
+            <Route path="/app" element={<Layout />}>
+              <Route path="addresses" element={<Addresses />} />
             </Route>
           </Route>
         </Routes>
