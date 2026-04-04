@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { NotificationPrefs } from "../../types";
 import { useProfile, useUpdateProfile, useUpdateNotificationPrefs, useUsers } from "../../hooks/useProfile";
+import { usePushNotifications } from "../../hooks/usePushNotifications";
 import { useCurrentUserStore } from "../../store/useCurrentUserStore";
 import { useSyncCurrentUser } from "../../hooks/useSyncCurrentUser";
 import "./Settings.css";
@@ -46,6 +47,7 @@ export default function Settings() {
   const { data: profile, isLoading } = useProfile();
   const { mutate: updateProfile, isPending } = useUpdateProfile();
   const { mutate: updateNotificationPrefs, isPending: isSavingPrefs } = useUpdateNotificationPrefs();
+  const { subscribe: subscribePush, unsubscribe: unsubscribePush } = usePushNotifications();
   const { data: users } = useUsers(isAdminUser && activeSection === "profile");
 
   const filteredUsers = users?.filter((u) => {
@@ -169,7 +171,12 @@ export default function Settings() {
                       role="switch"
                       aria-checked={notifPrefs.push}
                       className={`settings-toggle${notifPrefs.push ? " settings-toggle--on" : ""}`}
-                      onClick={() => setNotifPrefs((p) => ({ ...p, push: !p.push }))}
+                      onClick={() => {
+                        const next = !notifPrefs.push;
+                        setNotifPrefs((p) => ({ ...p, push: next }));
+                        if (next) subscribePush();
+                        else unsubscribePush();
+                      }}
                     >
                       <span className="settings-toggle__thumb" />
                     </button>
