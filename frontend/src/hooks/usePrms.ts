@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { apiClient, ApiError } from '../lib/api';
-import type { Prm } from '../types';
+import type { Prm, EmergencyContact } from '../types';
 
 // ---- Query keys ----
 export const PRMS_KEY = ['prms', 'list'] as const;
@@ -45,7 +45,7 @@ export function usePrm(id: string) {
 export function useCreatePrm() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: Omit<Prm, 'id' | 'address' | 'emergency_contacts'>) =>
+    mutationFn: (body: Omit<Prm, 'id' | 'addresses' | 'emergency_contacts'>) =>
       apiClient.post<Prm>('/api/prms', body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: PRMS_KEY });
@@ -78,5 +78,50 @@ export function useDeletePrm() {
       toast.success('PRM eliminado correctamente');
     },
     onError: (error) => toast.error(parseApiError(error, 'Error al eliminar el PRM')),
+  });
+}
+
+export interface UpdateEmergencyContactPayload {
+  prmId: string;
+  ecId: string;
+  name?: string;
+  phone?: string;
+  relationship?: string;
+}
+
+export function useUpdateEmergencyContact() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ prmId, ecId, ...body }: UpdateEmergencyContactPayload) =>
+      apiClient.patch<EmergencyContact>(`/api/prms/${prmId}/emergency-contacts/${ecId}`, body),
+    onSuccess: (_data, vars) =>
+      qc.invalidateQueries({ queryKey: prmKey(vars.prmId) }),
+  });
+}
+
+export interface AddEmergencyContactPayload {
+  prmId: string;
+  name: string;
+  phone: string;
+  relationship: string;
+}
+
+export function useAddEmergencyContact() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ prmId, ...body }: AddEmergencyContactPayload) =>
+      apiClient.post<EmergencyContact>(`/api/prms/${prmId}/emergency-contacts`, body),
+    onSuccess: (_data, vars) =>
+      qc.invalidateQueries({ queryKey: prmKey(vars.prmId) }),
+  });
+}
+
+export function useDeleteEmergencyContact() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ prmId, ecId }: { prmId: string; ecId: string }) =>
+      apiClient.delete<void>(`/api/prms/${prmId}/emergency-contacts/${ecId}`),
+    onSuccess: (_data, vars) =>
+      qc.invalidateQueries({ queryKey: prmKey(vars.prmId) }),
   });
 }

@@ -3,7 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCreatePrm } from '../../hooks/usePrms';
-import type { EmergencyContact } from '../../types';
+import { useAddPrmAddress } from '../../hooks/usePrmAddresses';
+import AddressSelector from '../../components/AddressSelector';
+import type { Address, EmergencyContact } from '../../types';
 import './NewPrm.css';
 
 interface ContactDraft {
@@ -16,6 +18,7 @@ export default function NewPrm() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const createPrm = useCreatePrm();
+  const addPrmAddress = useAddPrmAddress();
 
   // Basic fields
   const [name, setName] = useState('');
@@ -33,6 +36,9 @@ export default function NewPrm() {
   // Contacts
   const [contacts, setContacts] = useState<ContactDraft[]>([]);
 
+  // Addresses
+  const [addressDrafts, setAddressDrafts] = useState<{ value: Partial<Address>; alias: string }[]>([]);
+
   // Errors
   const [nameError, setNameError] = useState('');
   const [formError, setFormError] = useState('');
@@ -48,6 +54,22 @@ export default function NewPrm() {
 
   function removeContact(index: number) {
     setContacts(contacts.filter((_, i) => i !== index));
+  }
+
+  function addAddressDraft() {
+    setAddressDrafts([...addressDrafts, { value: {}, alias: '' }]);
+  }
+
+  function updateAddressDraftValue(index: number, value: Partial<Address>) {
+    setAddressDrafts(addressDrafts.map((d, i) => (i === index ? { ...d, value } : d)));
+  }
+
+  function updateAddressDraftAlias(index: number, alias: string) {
+    setAddressDrafts(addressDrafts.map((d, i) => (i === index ? { ...d, alias } : d)));
+  }
+
+  function removeAddressDraft(index: number) {
+    setAddressDrafts(addressDrafts.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -77,6 +99,17 @@ export default function NewPrm() {
         emergency_contacts: emergencyContacts,
         is_demo: false,
       } as Parameters<typeof createPrm.mutateAsync>[0]);
+
+      for (const draft of addressDrafts.filter((d) => d.value.full_address)) {
+        await addPrmAddress.mutateAsync({
+          prmId: newPrm.id,
+          full_address: draft.value.full_address!,
+          lat: draft.value.lat,
+          lng: draft.value.lng,
+          is_accessible: draft.value.is_accessible ?? false,
+          alias: draft.alias,
+        });
+      }
 
       navigate(`/app/prms/${newPrm.id}`);
     } catch {
@@ -288,6 +321,44 @@ export default function NewPrm() {
             ) : (
               <p className="new-prm__contact-max">{t('prms.newPrm.contactMax')}</p>
             )}
+          </section>
+
+          {/* Section: Direcciones */}
+          <section className="new-prm__section">
+            <h2 className="new-prm__section-title">Direcciones</h2>
+
+            {addressDrafts.map((draft, index) => (
+              <div key={index} className="new-prm__contact-row">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '1rem' }}>
+                  <AddressSelector
+                    value={draft.value}
+                    onChange={(v) => updateAddressDraftValue(index, v)}
+                    showValidation={false}
+                  />
+                  <input
+                    type="text"
+                    className="new-prm__input"
+                    placeholder="Alias (ej: Casa, Hospital…)"
+                    value={draft.alias}
+                    onChange={(e) => updateAddressDraftAlias(index, e.target.value)}
+                    maxLength={40}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="new-prm__contact-remove"
+                  onClick={() => removeAddressDraft(index)}
+                  title="Eliminar dirección"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+
+            <button type="button" className="new-prm__add-contact-btn" onClick={addAddressDraft}>
+              <Plus size={16} />
+              Añadir dirección
+            </button>
           </section>
 
           {formError && <p className="new-prm__form-error">{formError}</p>}

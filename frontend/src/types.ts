@@ -6,6 +6,8 @@ export interface Address {
   validation_status: 'pending' | 'validated' | 'rejected';
   validation_notes?: string;
   is_accessible: boolean;
+  alias?: string;
+  prm_id?: string;
   floor?: string;
   door?: string;
   created_by?: string;
@@ -30,7 +32,7 @@ export interface Prm {
   status: 'Activo' | 'Inactivo';
   avatar?: string;
   dni?: string;
-  address?: Address;
+  addresses: Address[];
   emergency_contacts?: EmergencyContact[];
   is_demo?: boolean;
   created_by?: string;
@@ -52,8 +54,7 @@ export interface Booking {
   startTime: string;
   endTime: string;
   date: string;
-  location: string;
-  destination?: string;
+  address: string;
   status: 'Approved' | 'Pending' | 'Completed' | 'Cancelled';
   service_reason?: ServiceReason;
   service_reason_notes?: string;

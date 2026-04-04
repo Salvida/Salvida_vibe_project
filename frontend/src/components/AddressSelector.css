@@ -1,0 +1,281 @@
+/* ── AddressSelector ── */
+
+.address-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Search wrapper */
+.address-selector__search {
+  position: relative;
+}
+
+.address-selector__input-wrap {
+  position: relative;
+}
+
+.address-selector__icon-search {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-slate-400);
+  display: flex;
+  pointer-events: none;
+}
+
+.address-selector__icon-right {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-slate-400);
+  display: flex;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.address-selector__icon-right:hover {
+  color: var(--color-slate-600);
+}
+
+.address-selector__icon-right--spinner {
+  pointer-events: none;
+  animation: addr-spin 1s linear infinite;
+}
+
+@keyframes addr-spin {
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+.address-selector__input {
+  width: 100%;
+  padding: 0.875rem 2.75rem 0.875rem 2.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-slate-200);
+  background-color: var(--color-slate-50);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-slate-900);
+  outline: none;
+  transition: box-shadow 0.15s, border-color 0.15s, background-color 0.15s;
+  font-family: inherit;
+}
+
+.address-selector__input::placeholder {
+  color: var(--color-slate-400);
+  font-weight: 400;
+}
+
+.address-selector__input:focus {
+  box-shadow: 0 0 0 2px var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.address-selector__input--selected {
+  border-color: var(--color-emerald-500);
+  background-color: rgba(16, 185, 129, 0.04);
+  color: var(--color-slate-900);
+  cursor: default;
+}
+
+/* Dropdown */
+.address-selector__dropdown {
+  position: absolute;
+  z-index: 100;
+  margin-top: 0.375rem;
+  width: 100%;
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--color-slate-200);
+  overflow: hidden;
+  list-style: none;
+  padding: 0;
+}
+
+.address-selector__dropdown-item {
+  border-top: none;
+}
+
+.address-selector__dropdown-item + .address-selector__dropdown-item {
+  border-top: 1px solid var(--color-slate-100);
+}
+
+.address-selector__dropdown-btn {
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.12s;
+}
+
+.address-selector__dropdown-btn:hover {
+  background-color: var(--color-primary-05);
+}
+
+.address-selector__dropdown-btn:active {
+  background-color: var(--color-primary-10);
+}
+
+.address-selector__dropdown-icon {
+  color: var(--color-primary);
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+.address-selector__dropdown-line1 {
+  font-size: 0.875rem;
+  color: var(--color-slate-900);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.address-selector__dropdown-line2 {
+  font-size: 0.75rem;
+  color: var(--color-slate-400);
+  margin-top: 0.125rem;
+  line-height: 1.4;
+}
+
+.address-selector__no-results {
+  padding: 0.75rem 1rem;
+}
+
+.address-selector__no-results-text {
+  font-size: 0.8rem;
+  color: var(--color-slate-500);
+  margin-bottom: 0.5rem;
+}
+
+.address-selector__use-manual {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+.address-selector__use-manual:hover {
+  text-decoration: underline;
+}
+
+/* Floor / Door row */
+.address-selector__extras {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.address-selector__extra-input {
+  flex: 1;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-slate-200);
+  background-color: var(--color-slate-50);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-slate-900);
+  outline: none;
+  transition: box-shadow 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+
+.address-selector__extra-input::placeholder {
+  color: var(--color-slate-400);
+  font-weight: 400;
+}
+
+.address-selector__extra-input:focus {
+  box-shadow: 0 0 0 2px var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* Badges row */
+.address-selector__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.address-selector__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  background: none;
+}
+
+.address-selector__badge--accessible-on {
+  background-color: var(--color-emerald-50);
+  color: var(--color-emerald-600);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.address-selector__badge--accessible-off {
+  background-color: var(--color-slate-50);
+  color: var(--color-slate-400);
+  border-color: var(--color-slate-200);
+}
+
+.address-selector__badge--accessible-off:hover {
+  border-color: var(--color-slate-300);
+}
+
+.address-selector__badge--validation {
+  cursor: default;
+}
+
+.address-selector__badge--pending {
+  background-color: var(--color-amber-50);
+  color: var(--color-amber-500);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.address-selector__badge--validated {
+  background-color: var(--color-emerald-50);
+  color: var(--color-emerald-600);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.address-selector__badge--rejected {
+  background-color: rgba(239, 68, 68, 0.05);
+  color: var(--color-red-500);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.address-selector__badge--validation-btn {
+  cursor: pointer;
+}
+
+.address-selector__badge--validation-btn:not(.address-selector__badge--pending):not(.address-selector__badge--validated):not(.address-selector__badge--rejected) {
+  background-color: var(--color-slate-50);
+  color: var(--color-slate-400);
+  border-color: var(--color-slate-200);
+}
+
+.address-selector__badge--validation-btn:not(.address-selector__badge--pending):not(.address-selector__badge--validated):not(.address-selector__badge--rejected):hover {
+  border-color: var(--color-slate-300);
+}
