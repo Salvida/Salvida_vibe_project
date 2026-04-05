@@ -202,6 +202,9 @@ async def get_prm(prm_id: str, user: dict = Depends(get_current_user)):
 async def create_prm(body: PrmCreate, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
 
+    caller_is_admin = is_admin(user["sub"])
+    owner = body.owner_id if (caller_is_admin and body.owner_id) else user["sub"]
+
     prm_payload = {
         "name": body.name,
         "email": body.email or "",
@@ -214,8 +217,8 @@ async def create_prm(body: PrmCreate, user: dict = Depends(get_current_user)):
         "avatar": body.avatar,
         "dni": body.dni,
         "is_demo": body.is_demo,
-        "user_id": user["sub"],
-        "created_by": user["sub"],
+        "user_id": owner,
+        "created_by": owner,
     }
 
     result = supabase.table("prms").insert(prm_payload).execute()

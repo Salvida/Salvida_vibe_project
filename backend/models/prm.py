@@ -40,6 +40,7 @@ class PrmBase(BaseModel):
 
 class PrmCreate(PrmBase):
     emergency_contacts: list[EmergencyContactCreate] = []
+    owner_id: Optional[str] = None
 
 
 class PrmUpdate(BaseModel):
