@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -14,11 +14,14 @@ import {
   Pencil,
   PowerOff,
   Power,
+  Camera,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { usePrm, useUpdatePrm, useAddEmergencyContact, useDeleteEmergencyContact, useUpdateEmergencyContact } from '../../hooks/usePrms';
 import DropdownMenu from '../../components/DropdownMenu';
 import { useAuthStore } from '../../store/useAuthStore';
+import { supabase } from '../../lib/supabaseClient';
+import { toast } from 'react-toastify';
 import {
   usePrmAddresses,
   useAddPrmAddress,
@@ -60,6 +63,37 @@ export default function PrmDetail() {
   const [newContact, setNewContact] = useState({ name: '', phone: '', relationship: '' });
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const [editContactDraft, setEditContactDraft] = useState({ name: '', phone: '', relationship: '' });
+
+  // Avatar upload
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  async function handleAvatarFile(file: File) {
+    if (!file.type.startsWith('image/')) {
+      toast.error('Solo se admiten imágenes (JPG, PNG, GIF)');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('La imagen no puede superar los 2MB');
+      return;
+    }
+    if (!prm) return;
+    setUploadingAvatar(true);
+    try {
+      const ext = file.name.split('.').pop() ?? 'jpg';
+      const path = `prm-${prm.id}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+      updatePrm.mutate({ id: prm.id, avatar: urlData.publicUrl });
+    } catch {
+      toast.error('Error al subir la imagen');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
 
   // Address state
   const [showAddAddr, setShowAddAddr] = useState(false);
@@ -208,6 +242,17 @@ export default function PrmDetail() {
           {/* Profile Header */}
           <div className="prm-profile">
             <div className="prm-profile__avatar-wrap">
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleAvatarFile(file);
+                  e.target.value = '';
+                }}
+              />
               <img
                 src={
                   prm.avatar ||
@@ -216,6 +261,15 @@ export default function PrmDetail() {
                 alt={prm.name}
                 className="prm-profile__avatar"
               />
+              <button
+                type="button"
+                className="prm-profile__avatar-btn"
+                disabled={uploadingAvatar}
+                onClick={() => avatarInputRef.current?.click()}
+                title="Cambiar foto"
+              >
+                <Camera size={14} />
+              </button>
             </div>
             <div>
               {editing ? (

@@ -52,6 +52,7 @@
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
+  padding-bottom: 16rem;
 }
 
 /* Progress dots */
@@ -408,4 +409,135 @@
   color: var(--color-slate-500);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+
+/* PRM dropdown */
+.prm-dropdown-trigger {
+  text-align: left;
+  cursor: pointer;
+  color: var(--color-slate-400);
+  font-weight: 500;
+}
+
+.prm-dropdown-list {
+  position: absolute;
+  z-index: 100;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.prm-dropdown-option {
+  width: 100%;
+  text-align: left;
+  padding: 0.65rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #1e293b;
+  transition: background-color 0.1s;
+}
+
+.prm-dropdown-option:hover {
+  background-color: #f8fafc;
+}
+
+.prm-dropdown-option__avatar {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: #ede9f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #6b4691;
+  overflow: hidden;
+}
+
+.prm-dropdown-option__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* PRM selected card */
+.prm-selected-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.prm-selected-card__avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: #6b4691;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.prm-selected-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.prm-selected-card__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.prm-selected-card__name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.prm-selected-card__dni {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.prm-selected-card__change {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b4691;
+  background: none;
+  border: 1px solid #6b4691;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.prm-selected-card__change:hover {
+  background-color: #f3eefb;
 }

@@ -61,8 +61,9 @@ export interface Booking {
   status: 'Approved' | 'Pending' | 'Completed' | 'Cancelled';
   service_reason?: ServiceReason;
   service_reason_notes?: string;
-  urgency?: 'routine' | 'urgent';
   is_demo?: boolean;
+  created_by_admin?: boolean;
+  owner_name?: string;
 }
 
 export interface Notification {

@@ -10,7 +10,6 @@ ServiceReason = Literal[
     "administrative",
     "other",
 ]
-BookingUrgency = Literal["routine", "urgent"]
 
 
 class BookingBase(BaseModel):
@@ -21,7 +20,6 @@ class BookingBase(BaseModel):
     address: str = ""
     service_reason: Optional[ServiceReason] = None
     service_reason_notes: Optional[str] = None
-    urgency: BookingUrgency = "routine"
 
 
 class BookingCreate(BookingBase):
@@ -36,7 +34,6 @@ class BookingUpdate(BaseModel):
     status: Optional[BookingStatus] = None
     service_reason: Optional[ServiceReason] = None
     service_reason_notes: Optional[str] = None
-    urgency: Optional[BookingUrgency] = None
 
 
 class BookingStatusUpdate(BaseModel):
@@ -53,5 +50,7 @@ class Booking(BookingBase):
     prmAvatar: Optional[str] = None
     status: BookingStatus = "Pending"
     is_demo: bool = False
+    created_by_admin: bool = False
+    owner_name: Optional[str] = None
 
     model_config = {"from_attributes": True}

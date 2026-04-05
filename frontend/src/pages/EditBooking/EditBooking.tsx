@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, AlertCircle, CalendarDays, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, Clock, CalendarDays, Send, Loader2 } from 'lucide-react';
 import PrmAddressPicker from '../../components/PrmAddressPicker';
 import { useBooking, useUpdateBooking } from '../../hooks/useBookings';
 import type { Address } from '../../types';
@@ -14,14 +14,12 @@ export default function EditBooking() {
 
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [urgency, setUrgency] = useState<'routine' | 'urgent'>('routine');
   const [address, setAddress] = useState<Partial<Address>>({});
 
   useEffect(() => {
     if (booking) {
       setDate(booking.date);
       setTime(booking.startTime);
-      setUrgency(booking.urgency ?? 'routine');
       setAddress({ full_address: booking.address });
     }
   }, [booking]);
@@ -35,7 +33,6 @@ export default function EditBooking() {
         startTime: time,
         endTime: time,
         address: address.full_address,
-        urgency,
       });
       navigate(-1);
     } catch {
@@ -155,30 +152,6 @@ export default function EditBooking() {
                   />
                 </div>
               </div>
-            </div>
-          </section>
-
-          {/* Urgency */}
-          <section className="booking-section">
-            <div className="booking-section__heading">
-              <span className="booking-section__num booking-section__num--inactive">4</span>
-              <h3 className="booking-section__title">Urgencia</h3>
-            </div>
-            <div className="urgency-grid">
-              <button
-                onClick={() => setUrgency('routine')}
-                className={`urgency-btn${urgency === 'routine' ? ' urgency-btn--routine-active' : ''}`}
-              >
-                <Clock size={32} />
-                <span className="urgency-btn__label">Rutina</span>
-              </button>
-              <button
-                onClick={() => setUrgency('urgent')}
-                className={`urgency-btn${urgency === 'urgent' ? ' urgency-btn--urgent-active' : ''}`}
-              >
-                <AlertCircle size={32} />
-                <span className="urgency-btn__label">Urgente</span>
-              </button>
             </div>
           </section>
 

@@ -117,6 +117,7 @@ def _fetch_full_prm(prm_id: str, supabase) -> Prm:
 async def list_prms(
     q: Optional[str] = Query(None, description="Search by name, email or phone"),
     status: Optional[str] = Query(None),
+    owner_id: Optional[str] = Query(None, description="Filter by owner (admin only)"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     user: dict = Depends(get_current_user),
@@ -126,6 +127,8 @@ async def list_prms(
 
     if not is_admin(user["sub"]):
         query = query.eq("created_by", user["sub"])
+    elif owner_id:
+        query = query.eq("created_by", owner_id)
 
     if status:
         query = query.eq("status", status)

@@ -130,6 +130,11 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+.settings-avatar__circle--img {
+  object-fit: cover;
+  font-size: 0;
+}
+
 .settings-avatar__btn {
   position: absolute;
   bottom: -0.25rem;

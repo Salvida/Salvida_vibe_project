@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Header from '../../components/Header/Header';
 import CalendarWidget from '../../components/CalendarWidget/CalendarWidget';
 import DropdownMenu from '../../components/DropdownMenu';
-import { PlusCircle, Clock, MapPin, Pencil, Trash2, CheckCircle, X } from 'lucide-react';
+import { PlusCircle, Clock, MapPin, Pencil, Trash2, CheckCircle, X, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useBookings, useDeleteBooking, useUpdateBookingStatus } from '../../hooks/useBookings';
@@ -80,12 +80,23 @@ function BookingCard({
             )}
             {booking.address}
           </span>
+          {isAdmin && booking.owner_name && (
+            <span className="booking-card__meta-item">
+              <User size={13} />
+              {booking.owner_name}
+            </span>
+          )}
         </div>
       </div>
       <div className="booking-card__actions">
-        <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
-          {STATUS_LABEL[booking.status]}
-        </span>
+        <div className="booking-card__badges">
+          {booking.created_by_admin && (
+            <span className="booking-admin-badge">Creado por admin</span>
+          )}
+          <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
+            {STATUS_LABEL[booking.status]}
+          </span>
+        </div>
         <DropdownMenu
           items={[
             ...(isAdmin && booking.status === 'Pending' ? [
