@@ -406,6 +406,30 @@
   gap: 1rem;
 }
 
+.settings-profile__title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.settings-user-status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.settings-user-status-badge--active {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.settings-user-status-badge--archived {
+  background: var(--color-slate-100);
+  color: var(--color-slate-400);
+}
+
 /* Notifications */
 .settings-notifications {
   display: flex;

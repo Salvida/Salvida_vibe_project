@@ -9,6 +9,7 @@ import {
   Save,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 import type { NotificationPrefs } from "../../types";
 import { useProfile, useUpdateProfile, useUpdateNotificationPrefs, useUsers, useArchiveUser } from "../../hooks/useProfile";
@@ -44,8 +45,9 @@ export default function Settings() {
 
   const sections = baseSections;
 
+  const [searchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState("profile");
-  const [selectedUserId, setSelectedUserId] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState(() => searchParams.get("userId") ?? "");
   const { data: profile, isLoading } = useProfile();
   const { mutate: updateProfile, isPending } = useUpdateProfile();
   const { mutate: updateNotificationPrefs, isPending: isSavingPrefs } = useUpdateNotificationPrefs();
@@ -255,7 +257,18 @@ export default function Settings() {
                   />
                 )}
                 <div className="settings-profile__title-row">
-                  <h3 className="settings-profile__title">Ajustes de Perfil</h3>
+                  <div className="settings-profile__title-group">
+                    <h3 className="settings-profile__title">Ajustes de Perfil</h3>
+                    {(() => {
+                      const selectedUser = selectedUserId ? users?.find((u) => u.id === selectedUserId) : null;
+                      const isArchived = selectedUser ? selectedUser.isActive === false : false;
+                      return (
+                        <span className={`settings-user-status-badge${isArchived ? ' settings-user-status-badge--archived' : ' settings-user-status-badge--active'}`}>
+                          {isArchived ? 'Archivado' : 'Activo'}
+                        </span>
+                      );
+                    })()}
+                  </div>
                   {isAdminUser && selectedUserId && (() => {
                     const selectedUser = users?.find((u) => u.id === selectedUserId);
                     if (!selectedUser) return null;
@@ -289,9 +302,9 @@ export default function Settings() {
                         }}
                       />
                       <div className="settings-avatar__wrap">
-                        {form.avatar || profile?.avatar ? (
+                        {(selectedUserId ? form.avatar : (form.avatar || profile?.avatar)) ? (
                           <img
-                            src={(form.avatar || profile?.avatar) as string}
+                            src={(selectedUserId ? form.avatar : (form.avatar || profile?.avatar)) as string}
                             alt="Avatar"
                             className="settings-avatar__circle settings-avatar__circle--img"
                           />

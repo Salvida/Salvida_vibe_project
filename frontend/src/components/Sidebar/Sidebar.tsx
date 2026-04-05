@@ -1,11 +1,12 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CalendarDays, Users, Settings, LogOut, HeartPulse, MapPin } from 'lucide-react';
+import { CalendarDays, Users, Settings, LogOut, HeartPulse, MapPin, UserCog } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
 import './Sidebar.css';
 
 const allNavItems = [
   { icon: CalendarDays, labelKey: 'nav.bookings',   path: '/app/bookings',  adminOnly: false },
+  { icon: UserCog,      labelKey: 'nav.users',       path: '/app/users',     adminOnly: true  },
   { icon: Users,        labelKey: 'nav.prms',        path: '/app/prms',      adminOnly: false },
   { icon: MapPin,       labelKey: 'nav.addresses',   path: '/app/addresses', adminOnly: true  },
   { icon: Settings,     labelKey: 'nav.settings',    path: '/app/settings',  adminOnly: false },

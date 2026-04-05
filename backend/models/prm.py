@@ -74,6 +74,7 @@ class PrmListItem(BaseModel):
 class Prm(PrmBase):
     id: str
     created_by: Optional[str] = None
+    owner_name: Optional[str] = None
     addresses: list[Address] = []
     emergency_contacts: list[EmergencyContact] = []
 

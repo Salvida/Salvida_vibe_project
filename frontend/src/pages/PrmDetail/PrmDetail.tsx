@@ -15,6 +15,7 @@ import {
   PowerOff,
   Power,
   Camera,
+  User,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { usePrm, useUpdatePrm, useAddEmergencyContact, useDeleteEmergencyContact, useUpdateEmergencyContact } from '../../hooks/usePrms';
@@ -222,13 +223,13 @@ export default function PrmDetail() {
             items={[
               prm.status === 'Activo'
                 ? {
-                    label: 'Desactivar PRM',
+                    label: 'Archivar PRM',
                     icon: <PowerOff size={14} />,
                     onClick: () => updatePrm.mutate({ id: prm.id, status: 'Inactivo' }),
                     variant: 'danger',
                   }
                 : {
-                    label: 'Activar PRM',
+                    label: 'Restaurar PRM',
                     icon: <Power size={14} />,
                     onClick: () => updatePrm.mutate({ id: prm.id, status: 'Activo' }),
                   },
@@ -474,6 +475,17 @@ export default function PrmDetail() {
                   <span className="prm-info__row-value">{prm.dni || '—'}</span>
                 )}
               </div>
+              {isAdmin && (
+                <div className="prm-info__row">
+                  <div className="prm-info__row-left">
+                    <div className="prm-info__row-icon">
+                      <User size={16} />
+                    </div>
+                    <span className="prm-info__row-key">Responsable</span>
+                  </div>
+                  <span className="prm-info__row-value">{prm.owner_name || '—'}</span>
+                </div>
+              )}
             </div>
           </div>
 

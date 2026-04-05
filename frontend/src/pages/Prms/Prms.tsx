@@ -21,8 +21,13 @@ export default function Prms() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const [statusTab, setStatusTab] = useState<'all' | 'Activo' | 'Inactivo'>('all');
   const debouncedQuery = useDebounce(query, 300);
-  const { data: prms = [], isLoading } = usePrms(debouncedQuery);
+  const { data: prms = [], isLoading } = usePrms(
+    debouncedQuery,
+    undefined,
+    statusTab === 'all' ? undefined : statusTab,
+  );
   const updatePrm = useUpdatePrm();
   const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
 
@@ -53,6 +58,18 @@ export default function Prms() {
               <Plus size={20} />
               <span>{t('prms.addPrm')}</span>
             </Link>
+          </div>
+
+          <div className="prms__filter-tabs">
+            {(['all', 'Activo', 'Inactivo'] as const).map((tab) => (
+              <button
+                key={tab}
+                className={`prms__filter-tab${statusTab === tab ? ' prms__filter-tab--active' : ''}`}
+                onClick={() => setStatusTab(tab)}
+              >
+                {tab === 'Activo' ? 'Activos' : tab === 'Inactivo' ? 'Archivados' : 'Todos'}
+              </button>
+            ))}
           </div>
 
           <div className="prms__table-wrap">
@@ -131,7 +148,7 @@ export default function Prms() {
                         </td>
                         <td>
                           <span className={`prm-status ${prm.status === 'Activo' ? 'prm-status--active' : 'prm-status--inactive'}`}>
-                            {prm.status}
+                            {prm.status === 'Activo' ? 'Activo' : 'Archivado'}
                           </span>
                         </td>
                         <td>

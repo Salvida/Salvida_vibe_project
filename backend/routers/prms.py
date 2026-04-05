@@ -53,7 +53,7 @@ def _fetch_prm_addresses(prm_id: str, supabase) -> list[Address]:
     return [_row_to_address(r) for r in (result.data or [])]
 
 
-def _row_to_prm(row: dict, addresses: list[Address], contacts: list[dict]) -> Prm:
+def _row_to_prm(row: dict, addresses: list[Address], contacts: list[dict], owner_name: Optional[str] = None) -> Prm:
     emergency_contacts = [
         EmergencyContact(
             id=str(c["id"]),
@@ -78,6 +78,7 @@ def _row_to_prm(row: dict, addresses: list[Address], contacts: list[dict]) -> Pr
         dni=row.get("dni"),
         is_demo=row.get("is_demo", False),
         created_by=row.get("created_by"),
+        owner_name=owner_name,
         addresses=addresses,
         emergency_contacts=emergency_contacts,
     )
@@ -107,7 +108,17 @@ def _fetch_full_prm(prm_id: str, supabase) -> Prm:
     )
     contacts = contacts_result.data or []
 
-    return _row_to_prm(row.data, addresses, contacts)
+    owner_name = None
+    created_by = row.data.get("created_by")
+    if created_by:
+        profile_res = supabase.table("profiles").select("first_name, last_name").eq("id", created_by).single().execute()
+        if profile_res.data:
+            parts = [profile_res.data.get("first_name") or "", profile_res.data.get("last_name") or ""]
+            name = " ".join(x for x in parts if x).strip()
+            if name:
+                owner_name = name
+
+    return _row_to_prm(row.data, addresses, contacts, owner_name)
 
 
 # ---------------------------------------------------------------------------

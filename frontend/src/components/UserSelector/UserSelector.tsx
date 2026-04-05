@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUsers } from '../../hooks/useProfile';
 import type { UserProfile } from '../../types';
 import '../../pages/Settings/Settings.css';
@@ -21,7 +21,20 @@ export default function UserSelector({
   const [open, setOpen] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState('');
 
+  // Derive label when value is pre-set (e.g. from URL param) and users load
+  useEffect(() => {
+    if (!value || !users || selectedLabel) return;
+    const match = users.find((u) => u.id === value);
+    if (match) {
+      setSelectedLabel(
+        `${match.firstName} ${match.lastName}${match.email ? ` — ${match.email}` : ''}`,
+      );
+      onChange(match.id, match);
+    }
+  }, [value, users]);
+
   const filtered = users?.filter((u) => {
+    if (u.isActive === false) return false;
     if (!search) return true;
     const q = search.toLowerCase();
     return (

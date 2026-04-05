@@ -35,7 +35,7 @@ export default function NewBooking() {
   const [selectedOwnerId, setSelectedOwnerId] = useState('');
 
   // PRM dropdown
-  const { data: prms = [] } = usePrms(undefined, selectedOwnerId || undefined);
+  const { data: prms = [] } = usePrms(undefined, selectedOwnerId || undefined, 'Activo');
   const [selectedPrm, setSelectedPrm] = useState<{ id: string; name: string; avatar?: string; dni?: string } | null>(null);
   const [prmDropdownOpen, setPrmDropdownOpen] = useState(false);
 
