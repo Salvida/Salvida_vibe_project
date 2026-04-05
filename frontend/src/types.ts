@@ -36,6 +36,9 @@ export interface Prm {
   emergency_contacts?: EmergencyContact[];
   is_demo?: boolean;
   created_by?: string;
+  owner_name?: string;
+  booking_count?: number;
+  last_booking_date?: string;
 }
 
 export type ServiceReason =
@@ -88,4 +91,5 @@ export interface UserProfile {
   role: string;
   avatar?: string;
   notification_prefs?: NotificationPrefs;
+  isActive?: boolean;
 }

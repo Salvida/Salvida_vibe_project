@@ -66,6 +66,9 @@ class PrmListItem(BaseModel):
     dni: Optional[str] = None
     is_demo: bool = False
     created_by: Optional[str] = None
+    owner_name: Optional[str] = None
+    booking_count: int = 0
+    last_booking_date: Optional[str] = None
 
 
 class Prm(PrmBase):

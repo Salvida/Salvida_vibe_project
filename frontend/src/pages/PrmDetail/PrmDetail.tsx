@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
-  MoreVertical,
   Mail,
   Phone,
   Cake,
@@ -13,9 +12,13 @@ import {
   Plus,
   Trash2,
   Pencil,
+  PowerOff,
+  Power,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { usePrm, useUpdatePrm, useAddEmergencyContact, useDeleteEmergencyContact, useUpdateEmergencyContact } from '../../hooks/usePrms';
+import DropdownMenu from '../../components/DropdownMenu';
+import { useAuthStore } from '../../store/useAuthStore';
 import {
   usePrmAddresses,
   useAddPrmAddress,
@@ -42,6 +45,8 @@ export default function PrmDetail() {
   const { t } = useTranslation();
   const { data: prm, isLoading, isError } = usePrm(id!);
   const updatePrm = useUpdatePrm();
+  const currentUser = useAuthStore((s) => s.user);
+  const isAdmin = currentUser?.role === 'admin';
   const { data: addresses, isLoading: addrLoading } = usePrmAddresses(id!);
   const addPrmAddress = useAddPrmAddress();
   const deletePrmAddress = useDeletePrmAddress();
@@ -178,9 +183,24 @@ export default function PrmDetail() {
           <ArrowLeft size={20} />
         </button>
         <h2 className="prm-detail__title">{t('prmDetail.title')}</h2>
-        <button className="prm-detail__more-btn">
-          <MoreVertical size={20} />
-        </button>
+        {isAdmin && prm && (
+          <DropdownMenu
+            items={[
+              prm.status === 'Activo'
+                ? {
+                    label: 'Desactivar PRM',
+                    icon: <PowerOff size={14} />,
+                    onClick: () => updatePrm.mutate({ id: prm.id, status: 'Inactivo' }),
+                    variant: 'danger',
+                  }
+                : {
+                    label: 'Activar PRM',
+                    icon: <Power size={14} />,
+                    onClick: () => updatePrm.mutate({ id: prm.id, status: 'Activo' }),
+                  },
+            ]}
+          />
+        )}
       </div>
 
       <div className="prm-detail__body">

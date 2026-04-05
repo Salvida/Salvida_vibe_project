@@ -11,7 +11,9 @@ import {
 import { useState, useEffect } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { NotificationPrefs } from "../../types";
-import { useProfile, useUpdateProfile, useUpdateNotificationPrefs, useUsers } from "../../hooks/useProfile";
+import { useProfile, useUpdateProfile, useUpdateNotificationPrefs, useUsers, useArchiveUser } from "../../hooks/useProfile";
+import DropdownMenu from "../../components/DropdownMenu";
+import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import { useCurrentUserStore } from "../../store/useCurrentUserStore";
 import { useSyncCurrentUser } from "../../hooks/useSyncCurrentUser";
 import "./Settings.css";
@@ -41,11 +43,14 @@ export default function Settings() {
 
   const [activeSection, setActiveSection] = useState("profile");
   const [selectedUserId, setSelectedUserId] = useState("");
+  const [selectedUserLabel, setSelectedUserLabel] = useState("");
   const [userSearch, setUserSearch] = useState("");
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const { data: profile, isLoading } = useProfile();
   const { mutate: updateProfile, isPending } = useUpdateProfile();
   const { mutate: updateNotificationPrefs, isPending: isSavingPrefs } = useUpdateNotificationPrefs();
+  const archiveUser = useArchiveUser();
+  const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
   const { data: users } = useUsers(isAdminUser && activeSection === "profile");
 
   const filteredUsers = users?.filter((u) => {
@@ -219,13 +224,16 @@ export default function Settings() {
                       <input
                         type="text"
                         className="settings-user-selector__input"
-                        placeholder="Buscar usuario…"
-                        value={userSearch}
+                        placeholder={selectedUserLabel || "Buscar usuario…"}
+                        value={userDropdownOpen ? userSearch : ""}
                         onChange={(e) => {
                           setUserSearch(e.target.value);
                           setUserDropdownOpen(true);
                         }}
-                        onFocus={() => setUserDropdownOpen(true)}
+                        onFocus={() => {
+                          setUserSearch("");
+                          setUserDropdownOpen(true);
+                        }}
                         onBlur={() =>
                           setTimeout(() => setUserDropdownOpen(false), 150)
                         }
@@ -239,9 +247,10 @@ export default function Settings() {
                               className={`settings-user-selector__option${selectedUserId === u.id ? " settings-user-selector__option--selected" : ""}`}
                               onMouseDown={() => {
                                 setSelectedUserId(u.id);
-                                setUserSearch(
+                                setSelectedUserLabel(
                                   `${u.firstName} ${u.lastName}${u.email ? ` — ${u.email}` : ""}`,
                                 );
+                                setUserSearch("");
                                 setUserDropdownOpen(false);
                                 setForm({
                                   firstName: u.firstName ?? "",
@@ -277,7 +286,22 @@ export default function Settings() {
                     </div>
                   </div>
                 )}
-                <h3 className="settings-profile__title">Ajustes de Perfil</h3>
+                <div className="settings-profile__title-row">
+                  <h3 className="settings-profile__title">Ajustes de Perfil</h3>
+                  {isAdminUser && selectedUserId && (() => {
+                    const selectedUser = users?.find((u) => u.id === selectedUserId);
+                    if (!selectedUser) return null;
+                    return (
+                      <DropdownMenu
+                        items={[{
+                          label: selectedUser.isActive === false ? "Restaurar usuario" : "Archivar usuario",
+                          onClick: () => setConfirmArchiveId(selectedUser.id),
+                          variant: selectedUser.isActive === false ? "default" : "danger",
+                        }]}
+                      />
+                    );
+                  })()}
+                </div>
 
                 {isLoading ? (
                   <p className="settings-profile__loading">Cargando perfil…</p>
@@ -417,6 +441,29 @@ export default function Settings() {
           </div>
         </div>
       </div>
+
+      {confirmArchiveId && (() => {
+        const target = users?.find((u) => u.id === confirmArchiveId);
+        const isArchiving = target?.isActive !== false;
+        return (
+          <ConfirmDialog
+            open
+            title={isArchiving ? "¿Archivar usuario?" : "¿Restaurar usuario?"}
+            description={
+              isArchiving
+                ? `${target?.firstName} ${target?.lastName} quedará desactivado. Esta acción puede tener consecuencias sobre sus servicios asociados.`
+                : `${target?.firstName} ${target?.lastName} volverá a estar activo en el sistema.`
+            }
+            confirmLabel={isArchiving ? "Archivar" : "Restaurar"}
+            variant={isArchiving ? "danger" : "default"}
+            onConfirm={() => {
+              archiveUser.mutate(confirmArchiveId);
+              setConfirmArchiveId(null);
+            }}
+            onCancel={() => setConfirmArchiveId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }

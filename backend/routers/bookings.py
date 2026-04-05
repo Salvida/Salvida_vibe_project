@@ -6,7 +6,7 @@ from models.booking import (
     BookingStatusUpdate, BookingCancel,
 )
 from auth.dependencies import get_current_user
-from auth.roles import is_admin
+from auth.roles import is_admin, require_admin
 
 router = APIRouter()
 
@@ -183,7 +183,7 @@ async def update_booking_status(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
-    _assert_booking_access(booking_id, user["sub"], supabase)
+    require_admin(user["sub"])
     supabase.table("bookings").update({"status": body.status}).eq("id", booking_id).execute()
     return _fetch_full_booking(booking_id, supabase)
 

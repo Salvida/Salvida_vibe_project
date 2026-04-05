@@ -30,15 +30,16 @@ def _row_to_profile(row: dict) -> UserProfile:
         role=row.get("role", "user"),
         avatar=row.get("avatar"),
         notification_prefs=prefs,
+        isActive=row.get("is_active", True),
     )
 
 
 @router.get("/users", response_model=list[UserProfile])
 async def get_users(user: dict = Depends(get_current_user)):
-    """Get all non-admin profiles. Requires the caller to be an admin."""
+    """Get all profiles. Requires the caller to be an admin."""
     supabase = get_supabase()
     require_admin(user["sub"])
-    result = supabase.table("profiles").select("*").neq("role", "admin").execute()
+    result = supabase.table("profiles").select("*").execute()
     return [_row_to_profile(row) for row in result.data]
 
 
@@ -113,6 +114,29 @@ async def update_notification_prefs(body: NotificationPrefs, user: dict = Depend
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
 
     return _row_to_profile(result.data[0])
+
+
+@router.patch("/{user_id}/archive", response_model=UserProfile)
+async def toggle_user_archive(user_id: str, user: dict = Depends(get_current_user)):
+    """Toggle is_active for a user. Requires admin."""
+    supabase = get_supabase()
+    require_admin(user["sub"])
+
+    result = supabase.table("profiles").select("is_active").eq("id", user_id).single().execute()
+    if not result.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    current_active = result.data.get("is_active", True)
+    updated = (
+        supabase.table("profiles")
+        .update({"is_active": not current_active})
+        .eq("id", user_id)
+        .execute()
+    )
+    if not updated.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    return _row_to_profile(updated.data[0])
 
 
 @router.put("/{user_id}", response_model=UserProfile)

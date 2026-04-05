@@ -134,7 +134,41 @@ async def list_prms(
 
     query = query.range(offset, offset + limit - 1)
     result = query.execute()
-    return [_row_to_list_item(r) for r in (result.data or [])]
+    rows = result.data or []
+
+    # Enrich with owner names
+    created_by_ids = list({r["created_by"] for r in rows if r.get("created_by")})
+    owner_map: dict = {}
+    if created_by_ids:
+        profiles_res = supabase.table("profiles").select("id, first_name, last_name").in_("id", created_by_ids).execute()
+        for p in (profiles_res.data or []):
+            parts = [p.get("first_name") or "", p.get("last_name") or ""]
+            owner_map[p["id"]] = " ".join(x for x in parts if x).strip()
+
+    # Enrich with booking stats (count + most recent date)
+    prm_ids = [r["id"] for r in rows]
+    booking_stats: dict = {}
+    if prm_ids:
+        bookings_res = supabase.table("bookings").select("prm_id, date").in_("prm_id", prm_ids).execute()
+        for b in (bookings_res.data or []):
+            pid = b["prm_id"]
+            if pid not in booking_stats:
+                booking_stats[pid] = {"count": 0, "last_date": None}
+            booking_stats[pid]["count"] += 1
+            d = b.get("date")
+            if d and (booking_stats[pid]["last_date"] is None or d > booking_stats[pid]["last_date"]):
+                booking_stats[pid]["last_date"] = d
+
+    items = []
+    for r in rows:
+        item = _row_to_list_item(r)
+        cid = r.get("created_by")
+        item.owner_name = owner_map.get(cid) if cid else None
+        stats = booking_stats.get(r["id"], {})
+        item.booking_count = stats.get("count", 0)
+        item.last_booking_date = stats.get("last_date")
+        items.append(item)
+    return items
 
 
 # ---------------------------------------------------------------------------
