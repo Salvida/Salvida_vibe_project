@@ -9,9 +9,14 @@ function ProfileSync() {
   return null;
 }
 
-export default function ProtectedRoute() {
+interface ProtectedRouteProps {
+  requireAdmin?: boolean;
+}
+
+export default function ProtectedRoute({ requireAdmin = false }: ProtectedRouteProps) {
   const session = useAuthStore((s) => s.session);
   const isInitialized = useAuthStore((s) => s.isInitialized);
+  const user = useAuthStore((s) => s.user);
 
   // Wait for getSession() to resolve before deciding whether to redirect.
   // Without this, Zustand starts with session=null and ProtectedRoute would
@@ -22,6 +27,15 @@ export default function ProtectedRoute() {
 
   if (!session) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Wait for profile to load before enforcing role checks
+  if (requireAdmin && user === null) {
+    return <AppLoader />;
+  }
+
+  if (requireAdmin && user?.role !== 'admin') {
+    return <Navigate to="/app/bookings" replace />;
   }
 
   return (

@@ -12,6 +12,15 @@ class Settings(BaseSettings):
     debug: bool = True
     supabase_mcp_connection: str = ""
 
+    # Email notifications (Resend)
+    resend_api_key: str = ""
+    email_from: str = "Salvida <hola@salvida.es>"
+
+    # Web Push notifications (VAPID)
+    vapid_private_key: str = ""
+    vapid_public_key: str = ""
+    vapid_subject: str = "mailto:hola@salvida.es"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

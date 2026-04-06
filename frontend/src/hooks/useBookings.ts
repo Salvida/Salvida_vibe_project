@@ -94,3 +94,16 @@ export function useCancelBooking() {
     onError: (error) => toast.error(parseApiError(error, 'Error al cancelar la reserva')),
   });
 }
+
+export function useUpdateBookingStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: Booking['status'] }) =>
+      apiClient.patch<Booking>(`/api/bookings/${id}/status`, { status }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: BOOKINGS_KEY });
+      toast.success('Estado de la reserva actualizado');
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al actualizar el estado')),
+  });
+}

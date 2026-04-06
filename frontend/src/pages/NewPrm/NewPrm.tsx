@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { useCreatePrm } from '../../hooks/usePrms';
 import { useAddPrmAddress } from '../../hooks/usePrmAddresses';
 import AddressSelector from '../../components/AddressSelector';
+import UserSelector from '../../components/UserSelector/UserSelector';
+import { useAuthStore } from '../../store/useAuthStore';
 import type { Address, EmergencyContact } from '../../types';
 import './NewPrm.css';
 
@@ -19,6 +21,10 @@ export default function NewPrm() {
   const navigate = useNavigate();
   const createPrm = useCreatePrm();
   const addPrmAddress = useAddPrmAddress();
+  const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
+
+  // Admin: selected owner
+  const [ownerId, setOwnerId] = useState('');
 
   // Basic fields
   const [name, setName] = useState('');
@@ -98,6 +104,7 @@ export default function NewPrm() {
         avatar: undefined,
         emergency_contacts: emergencyContacts,
         is_demo: false,
+        ...(isAdmin && ownerId ? { owner_id: ownerId } : {}),
       } as Parameters<typeof createPrm.mutateAsync>[0]);
 
       for (const draft of addressDrafts.filter((d) => d.value.full_address)) {
@@ -131,6 +138,22 @@ export default function NewPrm() {
 
       <div className="new-prm__body">
         <form className="new-prm__form" onSubmit={handleSubmit} noValidate>
+
+          {/* Section: Responsable (admin only) */}
+          {isAdmin && (
+            <section className="new-prm__section">
+              <h2 className="new-prm__section-title">Responsable</h2>
+              <UserSelector
+                value={ownerId}
+                label=""
+                placeholder="Selecciona el usuario responsable…"
+                onChange={(id) => setOwnerId(id)}
+              />
+              {!ownerId && (
+                <p className="new-prm__owner-hint">Si no seleccionas un responsable, el PRM se asignará a tu cuenta.</p>
+              )}
+            </section>
+          )}
 
           {/* Section: Información básica */}
           <section className="new-prm__section">

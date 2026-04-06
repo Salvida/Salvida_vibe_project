@@ -24,12 +24,14 @@ function parseApiError(error: unknown, fallback: string): string {
 
 // ---- Hooks ----
 
-export function usePrms(query?: string) {
+export function usePrms(query?: string, ownerId?: string, statusFilter?: 'Activo' | 'Inactivo') {
   const params = new URLSearchParams();
   if (query) params.set('q', query);
+  if (ownerId) params.set('owner_id', ownerId);
+  if (statusFilter) params.set('status', statusFilter);
 
   return useQuery<PrmListItem[]>({
-    queryKey: [...PRMS_KEY, query],
+    queryKey: [...PRMS_KEY, query, ownerId, statusFilter],
     queryFn: () => apiClient.get<PrmListItem[]>(`/api/prms?${params}`),
   });
 }

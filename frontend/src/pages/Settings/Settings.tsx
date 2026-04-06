@@ -8,12 +8,18 @@ import {
   Camera,
   Save,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 import type { NotificationPrefs } from "../../types";
-import { useProfile, useUpdateProfile, useUpdateNotificationPrefs, useUsers } from "../../hooks/useProfile";
+import { useProfile, useUpdateProfile, useUpdateNotificationPrefs, useUsers, useArchiveUser } from "../../hooks/useProfile";
+import DropdownMenu from "../../components/DropdownMenu";
+import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
+import UserSelector from "../../components/UserSelector/UserSelector";
 import { useCurrentUserStore } from "../../store/useCurrentUserStore";
 import { useSyncCurrentUser } from "../../hooks/useSyncCurrentUser";
+import { supabase } from "../../lib/supabaseClient";
+import { toast } from "react-toastify";
 import "./Settings.css";
 
 interface Section {
@@ -39,27 +45,48 @@ export default function Settings() {
 
   const sections = baseSections;
 
+  const [searchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState("profile");
-  const [selectedUserId, setSelectedUserId] = useState("");
-  const [userSearch, setUserSearch] = useState("");
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(() => searchParams.get("userId") ?? "");
   const { data: profile, isLoading } = useProfile();
   const { mutate: updateProfile, isPending } = useUpdateProfile();
   const { mutate: updateNotificationPrefs, isPending: isSavingPrefs } = useUpdateNotificationPrefs();
-  const { data: users } = useUsers(isAdminUser && activeSection === "profile");
+  const archiveUser = useArchiveUser();
+  const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredUsers = users?.filter((u) => {
-    const q = userSearch.toLowerCase();
-    return (
-      u.firstName?.toLowerCase().includes(q) ||
-      u.lastName?.toLowerCase().includes(q) ||
-      u.email?.toLowerCase().includes(q) ||
-      u.phone?.toLowerCase().includes(q) ||
-      u.organization?.toLowerCase().includes(q) ||
-      u.dni?.toLowerCase().includes(q) ||
-      u.role?.toLowerCase().includes(q)
-    );
-  }) ?? [];
+  async function handleAvatarFile(file: File) {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Solo se admiten imágenes (JPG, PNG, GIF)");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("La imagen no puede superar los 2MB");
+      return;
+    }
+    setUploadingAvatar(true);
+    try {
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const targetUserId = selectedUserId || profile?.id;
+      if (!targetUserId) return;
+      const path = `${targetUserId}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+      updateProfile({
+        avatar: urlData.publicUrl,
+        targetUserId: selectedUserId || undefined,
+      });
+    } catch {
+      toast.error("Error al subir la imagen");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+  const { data: users } = useUsers(isAdminUser && activeSection === "profile");
 
   const [form, setForm] = useState({
     firstName: "",
@@ -68,6 +95,7 @@ export default function Settings() {
     email: "",
     phone: "",
     organization: "",
+    avatar: "",
   });
 
   const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>({
@@ -86,6 +114,7 @@ export default function Settings() {
         email: profile.email ?? "",
         phone: profile.phone ?? "",
         organization: profile.organization ?? "",
+        avatar: profile.avatar ?? "",
       });
       if (profile.notification_prefs) {
         setNotifPrefs(profile.notification_prefs);
@@ -211,73 +240,49 @@ export default function Settings() {
             ) : activeSection === "profile" ? (
               <div className="settings-profile">
                 {isAdminUser && (
-                  <div className="settings-user-selector">
-                    <label className="settings-user-selector__label">
-                      Usuario
-                    </label>
-                    <div className="settings-user-selector__combobox">
-                      <input
-                        type="text"
-                        className="settings-user-selector__input"
-                        placeholder="Buscar usuario…"
-                        value={userSearch}
-                        onChange={(e) => {
-                          setUserSearch(e.target.value);
-                          setUserDropdownOpen(true);
-                        }}
-                        onFocus={() => setUserDropdownOpen(true)}
-                        onBlur={() =>
-                          setTimeout(() => setUserDropdownOpen(false), 150)
-                        }
-                        autoComplete="off"
-                      />
-                      {userDropdownOpen && filteredUsers.length > 0 && (
-                        <ul className="settings-user-selector__dropdown">
-                          {filteredUsers.map((u) => (
-                            <li
-                              key={u.id}
-                              className={`settings-user-selector__option${selectedUserId === u.id ? " settings-user-selector__option--selected" : ""}`}
-                              onMouseDown={() => {
-                                setSelectedUserId(u.id);
-                                setUserSearch(
-                                  `${u.firstName} ${u.lastName}${u.email ? ` — ${u.email}` : ""}`,
-                                );
-                                setUserDropdownOpen(false);
-                                setForm({
-                                  firstName: u.firstName ?? "",
-                                  lastName: u.lastName ?? "",
-                                  dni: u.dni ?? "",
-                                  email: u.email ?? "",
-                                  phone: u.phone ?? "",
-                                  organization: u.organization ?? "",
-                                });
-                              }}
-                            >
-                              <span className="settings-user-selector__option-name">
-                                {u.firstName} {u.lastName}
-                              </span>
-                              {u.email && (
-                                <span className="settings-user-selector__option-email">
-                                  {u.email}
-                                </span>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      {userDropdownOpen &&
-                        userSearch.length > 0 &&
-                        filteredUsers.length === 0 && (
-                          <ul className="settings-user-selector__dropdown">
-                            <li className="settings-user-selector__option settings-user-selector__option--empty">
-                              Sin resultados
-                            </li>
-                          </ul>
-                        )}
-                    </div>
-                  </div>
+                  <UserSelector
+                    value={selectedUserId}
+                    onChange={(id, u) => {
+                      setSelectedUserId(id);
+                      setForm({
+                        firstName: u.firstName ?? "",
+                        lastName: u.lastName ?? "",
+                        dni: u.dni ?? "",
+                        email: u.email ?? "",
+                        phone: u.phone ?? "",
+                        organization: u.organization ?? "",
+                        avatar: u.avatar ?? "",
+                      });
+                    }}
+                  />
                 )}
-                <h3 className="settings-profile__title">Ajustes de Perfil</h3>
+                <div className="settings-profile__title-row">
+                  <div className="settings-profile__title-group">
+                    <h3 className="settings-profile__title">Ajustes de Perfil</h3>
+                    {(() => {
+                      const selectedUser = selectedUserId ? users?.find((u) => u.id === selectedUserId) : null;
+                      const isArchived = selectedUser ? selectedUser.isActive === false : false;
+                      return (
+                        <span className={`settings-user-status-badge${isArchived ? ' settings-user-status-badge--archived' : ' settings-user-status-badge--active'}`}>
+                          {isArchived ? 'Archivado' : 'Activo'}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                  {isAdminUser && selectedUserId && (() => {
+                    const selectedUser = users?.find((u) => u.id === selectedUserId);
+                    if (!selectedUser) return null;
+                    return (
+                      <DropdownMenu
+                        items={[{
+                          label: selectedUser.isActive === false ? "Restaurar usuario" : "Archivar usuario",
+                          onClick: () => setConfirmArchiveId(selectedUser.id),
+                          variant: selectedUser.isActive === false ? "default" : "danger",
+                        }]}
+                      />
+                    );
+                  })()}
+                </div>
 
                 {isLoading ? (
                   <p className="settings-profile__loading">Cargando perfil…</p>
@@ -285,14 +290,32 @@ export default function Settings() {
                   <>
                     {/* Avatar */}
                     <div className="settings-avatar">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleAvatarFile(file);
+                          e.target.value = "";
+                        }}
+                      />
                       <div className="settings-avatar__wrap">
-                        <div className="settings-avatar__circle">
-                          {initials}
-                        </div>
+                        {(selectedUserId ? form.avatar : (form.avatar || profile?.avatar)) ? (
+                          <img
+                            src={(selectedUserId ? form.avatar : (form.avatar || profile?.avatar)) as string}
+                            alt="Avatar"
+                            className="settings-avatar__circle settings-avatar__circle--img"
+                          />
+                        ) : (
+                          <div className="settings-avatar__circle">{initials}</div>
+                        )}
                         <button
                           type="button"
                           className="settings-avatar__btn"
-                          disabled
+                          disabled={uploadingAvatar}
+                          onClick={() => fileInputRef.current?.click()}
                         >
                           <Camera size={14} />
                         </button>
@@ -301,9 +324,10 @@ export default function Settings() {
                         <button
                           type="button"
                           className="settings-avatar__change-btn"
-                          disabled
+                          disabled={uploadingAvatar}
+                          onClick={() => fileInputRef.current?.click()}
                         >
-                          Cambiar foto
+                          {uploadingAvatar ? "Subiendo…" : "Cambiar foto"}
                         </button>
                         <p className="settings-avatar__hint">
                           JPG, PNG o GIF. Máximo 2MB.
@@ -417,6 +441,29 @@ export default function Settings() {
           </div>
         </div>
       </div>
+
+      {confirmArchiveId && (() => {
+        const target = users?.find((u) => u.id === confirmArchiveId);
+        const isArchiving = target?.isActive !== false;
+        return (
+          <ConfirmDialog
+            open
+            title={isArchiving ? "¿Archivar usuario?" : "¿Restaurar usuario?"}
+            description={
+              isArchiving
+                ? `${target?.firstName} ${target?.lastName} quedará desactivado. Esta acción puede tener consecuencias sobre sus servicios asociados.`
+                : `${target?.firstName} ${target?.lastName} volverá a estar activo en el sistema.`
+            }
+            confirmLabel={isArchiving ? "Archivar" : "Restaurar"}
+            variant={isArchiving ? "danger" : "default"}
+            onConfirm={() => {
+              archiveUser.mutate(confirmArchiveId);
+              setConfirmArchiveId(null);
+            }}
+            onCancel={() => setConfirmArchiveId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }

@@ -18,6 +18,7 @@
     "dashboard": "Dashboard",
     "bookings": "Reservas",
     "prms": "Mis PRMs",
+    "users": "Usuarios",
     "addresses": "Direcciones",
     "settings": "Ajustes",
     "brand": "Salvida",
@@ -51,8 +52,8 @@
     "menu": {
       "viewProfile": "Ver perfil",
       "edit": "Editar",
-      "deactivate": "Desactivar",
-      "activate": "Activar"
+      "deactivate": "Archivar",
+      "activate": "Restaurar"
     },
     "newPrm": {
       "title": "Nuevo PRM",

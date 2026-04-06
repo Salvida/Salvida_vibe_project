@@ -3,6 +3,7 @@ from postgrest import APIError as PostgrestAPIError
 from db.supabase_client import get_supabase
 from models.profile import UserProfile, ProfileUpdate, NotificationPrefs
 from auth.dependencies import get_current_user
+from auth.roles import require_admin
 
 router = APIRouter()
 
@@ -26,22 +27,19 @@ def _row_to_profile(row: dict) -> UserProfile:
         phone=row.get("phone"),
         organization=row.get("organization"),
         dni=row.get("dni"),
-        role=row.get("role", "staff"),
+        role=row.get("role", "user"),
         avatar=row.get("avatar"),
         notification_prefs=prefs,
+        isActive=row.get("is_active", True),
     )
 
 
 @router.get("/users", response_model=list[UserProfile])
 async def get_users(user: dict = Depends(get_current_user)):
-    """Get all non-admin profiles. Requires the caller to be an admin."""
+    """Get all profiles. Requires the caller to be an admin."""
     supabase = get_supabase()
-
-    caller = supabase.table("profiles").select("role").eq("id", user["sub"]).single().execute()
-    if not caller.data or caller.data.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
-
-    result = supabase.table("profiles").select("*").neq("role", "admin").execute()
+    require_admin(user["sub"])
+    result = supabase.table("profiles").select("*").execute()
     return [_row_to_profile(row) for row in result.data]
 
 
@@ -86,7 +84,7 @@ async def get_profile(user: dict = Depends(get_current_user)):
         "phone": user_meta.get("phone", ""),
         "organization": "",
         "dni": user_meta.get("dni", ""),
-        "role": "staff",
+        "role": "user",
     }
     created = supabase.table("profiles").insert(new_row).execute()
     if not created.data:
@@ -118,14 +116,34 @@ async def update_notification_prefs(body: NotificationPrefs, user: dict = Depend
     return _row_to_profile(result.data[0])
 
 
+@router.patch("/{user_id}/archive", response_model=UserProfile)
+async def toggle_user_archive(user_id: str, user: dict = Depends(get_current_user)):
+    """Toggle is_active for a user. Requires admin."""
+    supabase = get_supabase()
+    require_admin(user["sub"])
+
+    result = supabase.table("profiles").select("is_active").eq("id", user_id).single().execute()
+    if not result.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    current_active = result.data.get("is_active", True)
+    updated = (
+        supabase.table("profiles")
+        .update({"is_active": not current_active})
+        .eq("id", user_id)
+        .execute()
+    )
+    if not updated.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    return _row_to_profile(updated.data[0])
+
+
 @router.put("/{user_id}", response_model=UserProfile)
 async def update_user_profile(user_id: str, body: ProfileUpdate, user: dict = Depends(get_current_user)):
     """Update any user's profile. Requires the caller to be an admin."""
     supabase = get_supabase()
-
-    caller = supabase.table("profiles").select("role").eq("id", user["sub"]).single().execute()
-    if not caller.data or caller.data.get("role") != "admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    require_admin(user["sub"])
 
     updates: dict = {}
     if body.firstName is not None:
