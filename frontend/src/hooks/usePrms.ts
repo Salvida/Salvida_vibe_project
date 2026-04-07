@@ -8,7 +8,11 @@ export const PRMS_KEY = ['prms', 'list'] as const;
 export const prmKey = (id: string) => ['prms', 'detail', id] as const;
 
 // ---- Types matching the backend PrmListItem / Prm ----
-export type PrmListItem = Pick<Prm, 'id' | 'name' | 'email' | 'phone' | 'status' | 'avatar' | 'dni' | 'is_demo'>;
+export type PrmListItem = Pick<Prm, 'id' | 'name' | 'email' | 'phone' | 'status' | 'avatar' | 'dni' | 'is_demo'> & {
+  owner_name?: string;
+  booking_count?: number;
+  last_booking_date?: string;
+};
 
 function parseApiError(error: unknown, fallback: string): string {
   if (error instanceof ApiError) {

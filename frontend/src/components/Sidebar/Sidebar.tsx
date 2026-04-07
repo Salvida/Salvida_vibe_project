@@ -71,7 +71,7 @@ export default function Sidebar() {
             <div className="sidebar__user-avatar">{initials}</div>
             <div>
               <p className="sidebar__user-name">{fullName}</p>
-              <p className="sidebar__user-role">{user?.role ?? ''}</p>
+              <p className="sidebar__user-role">{user?.role ? t(`userRoles.${user.role}`) : ''}</p>
             </div>
           </div>
           <button className="sidebar__logout-btn" onClick={handleLogout} title={t('common.logout')}>

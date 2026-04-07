@@ -1,5 +1,6 @@
 import { Bell, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './Header.css';
 
 interface HeaderProps {
@@ -8,6 +9,11 @@ interface HeaderProps {
 }
 
 export default function Header({ title, subtitle }: HeaderProps) {
+  const { t } = useTranslation();
+  const now = new Date();
+  const monthName = now.toLocaleDateString('es-ES', { month: 'long' });
+  const year = now.getFullYear();
+
   return (
     <header className="header">
       <div>
@@ -22,7 +28,7 @@ export default function Header({ title, subtitle }: HeaderProps) {
         </Link>
         <div className="header__date">
           <Calendar size={16} />
-          <span>marzo 2026</span>
+          <span>{t('header.date', { month: monthName, year })}</span>
         </div>
       </div>
     </header>
