@@ -67,7 +67,7 @@ export default function Prms() {
                 className={`prms__filter-tab${statusTab === tab ? ' prms__filter-tab--active' : ''}`}
                 onClick={() => setStatusTab(tab)}
               >
-                {tab === 'Activo' ? 'Activos' : tab === 'Inactivo' ? 'Archivados' : 'Todos'}
+                {tab === 'Activo' ? t('prms.tabs.active') : tab === 'Inactivo' ? t('prms.tabs.inactive') : t('prms.tabs.all')}
               </button>
             ))}
           </div>
@@ -78,7 +78,7 @@ export default function Prms() {
                 <thead>
                   <tr>
                     <th>{t('prms.columns.name')}</th>
-                    {isAdmin && <th>Responsable</th>}
+                    {isAdmin && <th>{t('prms.columns.responsible')}</th>}
                     <th>{t('prms.columns.contact')}</th>
                     <th className="center">{t('prms.columns.bookings')}</th>
                     <th>{t('prms.columns.lastVisit')}</th>
@@ -102,7 +102,7 @@ export default function Prms() {
                   ) : prms.length === 0 ? (
                     <tr>
                       <td colSpan={isAdmin ? 7 : 6} className="prms__empty">
-                        No se encontraron PRMs
+                        {t('prms.empty')}
                       </td>
                     </tr>
                   ) : (
@@ -148,7 +148,7 @@ export default function Prms() {
                         </td>
                         <td>
                           <span className={`prm-status ${prm.status === 'Activo' ? 'prm-status--active' : 'prm-status--inactive'}`}>
-                            {prm.status === 'Activo' ? 'Activo' : 'Archivado'}
+                            {prm.status === 'Activo' ? t('common.active') : t('common.archived')}
                           </span>
                         </td>
                         <td>

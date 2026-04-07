@@ -16,13 +16,6 @@ function formatDateISO(date: Date): string {
     String(date.getDate()).padStart(2, '0');
 }
 
-const STATUS_LABEL: Record<Booking['status'], string> = {
-  Approved: 'Aprobada',
-  Pending: 'Pendiente',
-  Completed: 'Completada',
-  Cancelled: 'Cancelada',
-};
-
 const STATUS_CLASS: Record<Booking['status'], string> = {
   Approved: 'booking-status--approved',
   Pending: 'booking-status--pending',
@@ -43,6 +36,7 @@ function BookingCard({
   onStatusChange: (status: Booking['status']) => void;
   isAdmin: boolean;
 }) {
+  const { t } = useTranslation();
   const mapsUrl = booking.address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.address)}`
     : null;
@@ -70,7 +64,7 @@ function BookingCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="booking-card__map-icon"
-                title="Ver en Google Maps"
+                title={t('dashboard.viewOnMaps')}
                 onClick={(e) => e.stopPropagation()}
               >
                 <MapPin size={13} />
@@ -91,23 +85,23 @@ function BookingCard({
       <div className="booking-card__actions">
         <div className="booking-card__badges">
           {booking.created_by_admin && (
-            <span className="booking-admin-badge">Creado por admin</span>
+            <span className="booking-admin-badge">{t('dashboard.createdByAdmin')}</span>
           )}
           <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
-            {STATUS_LABEL[booking.status]}
+            {t(`bookingStatuses.${booking.status}`)}
           </span>
         </div>
         <DropdownMenu
           items={[
             ...(isAdmin && booking.status === 'Pending' ? [
-              { label: 'Aprobar', icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Approved') },
+              { label: t('dashboard.actions.approve'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Approved') },
             ] : []),
             ...(isAdmin && (booking.status === 'Pending' || booking.status === 'Approved') ? [
-              { label: 'Completar', icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Completed') },
-              { label: 'Cancelar reserva', icon: <X size={14} />, onClick: () => onStatusChange('Cancelled'), variant: 'danger' as const },
+              { label: t('dashboard.actions.complete'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Completed') },
+              { label: t('dashboard.actions.cancelBooking'), icon: <X size={14} />, onClick: () => onStatusChange('Cancelled'), variant: 'danger' as const },
             ] : []),
-            { label: 'Editar reserva', icon: <Pencil size={14} />, onClick: onEdit },
-            { label: 'Eliminar reserva', icon: <Trash2 size={14} />, onClick: onDelete, variant: 'danger' as const },
+            { label: t('dashboard.actions.editBooking'), icon: <Pencil size={14} />, onClick: onEdit },
+            { label: t('dashboard.actions.deleteBooking'), icon: <Trash2 size={14} />, onClick: onDelete, variant: 'danger' as const },
           ]}
         />
       </div>
@@ -135,7 +129,7 @@ export default function Dashboard() {
   const isToday = dateStr === todayStr;
   const dateLabel = isToday
     ? t('dashboard.todayBookings')
-    : `Reservas del ${selectedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`;
+    : t('dashboard.dateLabel', { date: selectedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) });
 
   return (
     <div className="dashboard">

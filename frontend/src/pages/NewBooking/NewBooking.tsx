@@ -105,12 +105,12 @@ export default function NewBooking() {
             <section className="booking-section">
               <div className="booking-section__heading">
                 <span className="booking-section__num">1</span>
-                <h3 className="booking-section__title">Responsable</h3>
+                <h3 className="booking-section__title">{t('booking.responsible')}</h3>
               </div>
               <UserSelector
                 value={selectedOwnerId}
                 label=""
-                placeholder="Selecciona un usuario…"
+                placeholder={t('booking.responsibleSelect')}
                 onChange={(id) => {
                   setSelectedOwnerId(id);
                   setSelectedPrm(null);
@@ -127,14 +127,14 @@ export default function NewBooking() {
               <span className={`booking-section__num${isAdmin ? ' booking-section__num--inactive' : ''}`}>
                 {isAdmin ? 2 : 1}
               </span>
-              <h3 className="booking-section__title">PRM</h3>
+              <h3 className="booking-section__title">{t('booking.prm')}</h3>
             </div>
 
             {(!isAdmin || selectedOwnerId) && (
               <>
                 {prms.length === 0 ? (
                   <p style={{ fontSize: '0.875rem', color: 'var(--color-slate-400)', padding: '0.5rem 0' }}>
-                    {isAdmin ? 'Este usuario no tiene PRMs asociados.' : 'No tienes PRMs registrados.'}
+                    {isAdmin ? t('booking.noPrmsForUser') : t('booking.noPrms')}
                   </p>
                 ) : selectedPrm ? (
                   <div className="prm-selected-card">
@@ -145,7 +145,7 @@ export default function NewBooking() {
                     </div>
                     <div className="prm-selected-card__info">
                       <span className="prm-selected-card__name">{selectedPrm.name}</span>
-                      {selectedPrm.dni && <span className="prm-selected-card__dni">DNI: {selectedPrm.dni}</span>}
+                      {selectedPrm.dni && <span className="prm-selected-card__dni">{t('prms.newPrm.dni')}: {selectedPrm.dni}</span>}
                     </div>
                     {prms.length > 1 && (
                       <button
@@ -153,7 +153,7 @@ export default function NewBooking() {
                         className="prm-selected-card__change"
                         onClick={() => { setSelectedPrm(null); setAddress({}); setSaveAddressAlias(''); }}
                       >
-                        Cambiar
+                        {t('booking.changePrm')}
                       </button>
                     )}
                   </div>
@@ -165,7 +165,7 @@ export default function NewBooking() {
                       onClick={() => setPrmDropdownOpen((o) => !o)}
                       onBlur={() => setTimeout(() => setPrmDropdownOpen(false), 150)}
                     >
-                      Seleccionar PRM…
+                      {t('booking.prmSelect')}
                     </button>
                     {prmDropdownOpen && (
                       <ul className="prm-dropdown-list">
@@ -186,7 +186,7 @@ export default function NewBooking() {
                               </div>
                               <div>
                                 <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{p.name}</div>
-                                {p.dni && <div style={{ fontSize: '0.72rem', color: '#64748b' }}>DNI: {p.dni}</div>}
+                                {p.dni && <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{t('prms.newPrm.dni')}: {p.dni}</div>}
                               </div>
                             </button>
                           </li>
@@ -244,7 +244,7 @@ export default function NewBooking() {
           <section className="booking-section">
             <div className="booking-section__heading">
               <span className="booking-section__num booking-section__num--inactive">{isAdmin ? 5 : 4}</span>
-              <h3 className="booking-section__title">Fecha y hora</h3>
+              <h3 className="booking-section__title">{t('booking.dateTime')}</h3>
             </div>
 
             <div className="datetime-card">
@@ -252,7 +252,7 @@ export default function NewBooking() {
                 <div className="datetime-card__field">
                   <label className="datetime-card__label">
                     <CalendarDays size={14} />
-                    Fecha de asistencia
+                    {t('booking.assistDate')}
                   </label>
                   <input
                     type="date"
@@ -265,7 +265,7 @@ export default function NewBooking() {
                 <div className="datetime-card__field">
                   <label className="datetime-card__label">
                     <Clock size={14} />
-                    Hora de asistencia
+                    {t('booking.assistTime')}
                   </label>
                   <input
                     type="time"
@@ -285,19 +285,19 @@ export default function NewBooking() {
       <div className="booking-actions">
         {!canSubmit && (
           <div className="booking-requirements">
-            <p className="booking-requirements__title">Para enviar la solicitud necesitas:</p>
+            <p className="booking-requirements__title">{t('booking.requirements.title')}</p>
             <ul className="booking-requirements__list">
               <li className={selectedPrm ? 'req--ok' : 'req--missing'}>
-                {selectedPrm ? '✓' : '○'} Paciente seleccionado
+                {selectedPrm ? '✓' : '○'} {t('booking.requirements.patientSelected')}
               </li>
               <li className={address.full_address ? 'req--ok' : 'req--missing'}>
-                {address.full_address ? '✓' : '○'} Dirección de asistencia
+                {address.full_address ? '✓' : '○'} {t('booking.requirements.addressSelected')}
               </li>
               <li className={date ? 'req--ok' : 'req--missing'}>
-                {date ? '✓' : '○'} Fecha
+                {date ? '✓' : '○'} {t('booking.requirements.dateSelected')}
               </li>
               <li className={time ? 'req--ok' : 'req--missing'}>
-                {time ? '✓' : '○'} Hora de asistencia
+                {time ? '✓' : '○'} {t('booking.requirements.timeSelected')}
               </li>
             </ul>
           </div>

@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { LucideIcon } from "lucide-react";
 import type { NotificationPrefs } from "../../types";
 import { useProfile, useUpdateProfile, useUpdateNotificationPrefs, useUsers, useArchiveUser } from "../../hooks/useProfile";
@@ -25,18 +26,19 @@ import "./Settings.css";
 interface Section {
   id: string;
   icon: LucideIcon;
-  label: string;
+  labelKey: string;
 }
 
 const baseSections: Section[] = [
-  { id: "profile", icon: User, label: "Perfil" },
-  { id: "notifications", icon: Bell, label: "Notificaciones" },
-  { id: "security", icon: Shield, label: "Seguridad" },
-  { id: "appearance", icon: Palette, label: "Apariencia" },
-  { id: "language", icon: Languages, label: "Idioma" },
+  { id: "profile", icon: User, labelKey: "settings.sectionsLabels.profile" },
+  { id: "notifications", icon: Bell, labelKey: "settings.sectionsLabels.notifications" },
+  { id: "security", icon: Shield, labelKey: "settings.sectionsLabels.security" },
+  { id: "appearance", icon: Palette, labelKey: "settings.sectionsLabels.appearance" },
+  { id: "language", icon: Languages, labelKey: "settings.sectionsLabels.language" },
 ];
 
 export default function Settings() {
+  const { t } = useTranslation();
   // Sincronizar usuario actual
   useSyncCurrentUser();
 
@@ -58,11 +60,11 @@ export default function Settings() {
 
   async function handleAvatarFile(file: File) {
     if (!file.type.startsWith("image/")) {
-      toast.error("Solo se admiten imágenes (JPG, PNG, GIF)");
+      toast.error(t('prmDetail.toast.imageFormat'));
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("La imagen no puede superar los 2MB");
+      toast.error(t('prmDetail.toast.imageSize'));
       return;
     }
     setUploadingAvatar(true);
@@ -81,7 +83,7 @@ export default function Settings() {
         targetUserId: selectedUserId || undefined,
       });
     } catch {
-      toast.error("Error al subir la imagen");
+      toast.error(t('prmDetail.toast.uploadError'));
     } finally {
       setUploadingAvatar(false);
     }
@@ -140,7 +142,7 @@ export default function Settings() {
 
   return (
     <div className="settings">
-      <Header title="Ajustes" subtitle="Configura tus preferencias y cuenta" />
+      <Header title={t('settings.title')} subtitle={t('settings.subtitle')} />
 
       <div className="settings__body">
         <div className="settings__inner">
@@ -154,7 +156,7 @@ export default function Settings() {
                   className={`settings-nav__btn${activeSection === section.id ? " settings-nav__btn--active" : ""}`}
                 >
                   <section.icon size={18} />
-                  <span>{section.label}</span>
+                  <span>{t(section.labelKey)}</span>
                 </button>
               ))}
             </div>
@@ -164,18 +166,18 @@ export default function Settings() {
           <div className="settings-panel">
             {activeSection === "notifications" ? (
               <div className="settings-notifications">
-                <h3 className="settings-profile__title">Notificaciones</h3>
+                <h3 className="settings-profile__title">{t('settings.notifications.title')}</h3>
                 <p className="settings-notifications__desc">
-                  Elige cómo y cuándo quieres recibir notificaciones.
+                  {t('settings.notifications.desc')}
                 </p>
 
                 <div className="settings-notifications__group">
-                  <h4 className="settings-notifications__group-title">Canal</h4>
+                  <h4 className="settings-notifications__group-title">{t('settings.notifications.channel')}</h4>
 
                   <div className="settings-notif-row">
                     <div className="settings-notif-row__info">
-                      <span className="settings-notif-row__label">Correo electrónico</span>
-                      <span className="settings-notif-row__sub">Recibe notificaciones en tu email</span>
+                      <span className="settings-notif-row__label">{t('settings.notifications.emailLabel')}</span>
+                      <span className="settings-notif-row__sub">{t('settings.notifications.emailDesc')}</span>
                     </div>
                     <button
                       type="button"
@@ -190,8 +192,8 @@ export default function Settings() {
 
                   <div className="settings-notif-row">
                     <div className="settings-notif-row__info">
-                      <span className="settings-notif-row__label">Notificaciones push</span>
-                      <span className="settings-notif-row__sub">Alertas en el navegador en tiempo real</span>
+                      <span className="settings-notif-row__label">{t('settings.notifications.pushLabel')}</span>
+                      <span className="settings-notif-row__sub">{t('settings.notifications.pushDesc')}</span>
                     </div>
                     <button
                       type="button"
@@ -206,12 +208,12 @@ export default function Settings() {
                 </div>
 
                 <div className="settings-notifications__group">
-                  <h4 className="settings-notifications__group-title">Tipos de aviso</h4>
+                  <h4 className="settings-notifications__group-title">{t('settings.notifications.typesTitle')}</h4>
 
                   <div className="settings-notif-row">
                     <div className="settings-notif-row__info">
-                      <span className="settings-notif-row__label">Recordatorio de reserva</span>
-                      <span className="settings-notif-row__sub">Aviso antes de cada servicio programado</span>
+                      <span className="settings-notif-row__label">{t('settings.notifications.reminderLabel')}</span>
+                      <span className="settings-notif-row__sub">{t('settings.notifications.reminderDesc')}</span>
                     </div>
                     <button
                       type="button"
@@ -233,7 +235,7 @@ export default function Settings() {
                     onClick={() => updateNotificationPrefs(notifPrefs)}
                   >
                     <Save size={20} />
-                    <span>{isSavingPrefs ? "Guardando…" : "Guardar cambios"}</span>
+                    <span>{isSavingPrefs ? t('common.saving') : t('settings.notifications.save')}</span>
                   </button>
                 </div>
               </div>
@@ -258,13 +260,13 @@ export default function Settings() {
                 )}
                 <div className="settings-profile__title-row">
                   <div className="settings-profile__title-group">
-                    <h3 className="settings-profile__title">Ajustes de Perfil</h3>
+                    <h3 className="settings-profile__title">{t('settings.profile.title')}</h3>
                     {(() => {
                       const selectedUser = selectedUserId ? users?.find((u) => u.id === selectedUserId) : null;
                       const isArchived = selectedUser ? selectedUser.isActive === false : false;
                       return (
                         <span className={`settings-user-status-badge${isArchived ? ' settings-user-status-badge--archived' : ' settings-user-status-badge--active'}`}>
-                          {isArchived ? 'Archivado' : 'Activo'}
+                          {isArchived ? t('settings.profile.statusArchived') : t('settings.profile.statusActive')}
                         </span>
                       );
                     })()}
@@ -275,7 +277,7 @@ export default function Settings() {
                     return (
                       <DropdownMenu
                         items={[{
-                          label: selectedUser.isActive === false ? "Restaurar usuario" : "Archivar usuario",
+                          label: selectedUser.isActive === false ? t('settings.profile.userActions.restoreUser') : t('settings.profile.userActions.archiveUser'),
                           onClick: () => setConfirmArchiveId(selectedUser.id),
                           variant: selectedUser.isActive === false ? "default" : "danger",
                         }]}
@@ -285,7 +287,7 @@ export default function Settings() {
                 </div>
 
                 {isLoading ? (
-                  <p className="settings-profile__loading">Cargando perfil…</p>
+                  <p className="settings-profile__loading">{t('settings.loading')}</p>
                 ) : (
                   <>
                     {/* Avatar */}
@@ -327,10 +329,10 @@ export default function Settings() {
                           disabled={uploadingAvatar}
                           onClick={() => fileInputRef.current?.click()}
                         >
-                          {uploadingAvatar ? "Subiendo…" : "Cambiar foto"}
+                          {uploadingAvatar ? t('settings.profile.uploading') : t('settings.profile.changePhoto')}
                         </button>
                         <p className="settings-avatar__hint">
-                          JPG, PNG o GIF. Máximo 2MB.
+                          {t('settings.profile.photoHint')}
                         </p>
                       </div>
                     </div>
@@ -338,64 +340,64 @@ export default function Settings() {
                     {/* Form */}
                     <form className="settings-form" onSubmit={handleSubmit}>
                       <div className="settings-form__field">
-                        <label className="settings-form__label">Nombre</label>
+                        <label className="settings-form__label">{t('settings.profile.firstName')}</label>
                         <input
                           type="text"
                           name="firstName"
                           value={form.firstName}
                           onChange={handleChange}
                           className="settings-form__input"
-                          placeholder="Tu nombre"
+                          placeholder={t('settings.profile.firstNamePlaceholder')}
                         />
                       </div>
                       <div className="settings-form__field">
-                        <label className="settings-form__label">Apellido</label>
+                        <label className="settings-form__label">{t('settings.profile.lastName')}</label>
                         <input
                           type="text"
                           name="lastName"
                           value={form.lastName}
                           onChange={handleChange}
                           className="settings-form__input"
-                          placeholder="Tu apellido"
+                          placeholder={t('settings.profile.lastNamePlaceholder')}
                         />
                       </div>
                       <div className="settings-form__field">
-                        <label className="settings-form__label">DNI</label>
+                        <label className="settings-form__label">{t('settings.profile.dni')}</label>
                         <input
                           type="text"
                           name="dni"
                           value={form.dni}
                           onChange={handleChange}
                           className="settings-form__input"
-                          placeholder="12345678A"
+                          placeholder={t('settings.profile.dniPlaceholder')}
                           autoComplete="off"
                         />
                       </div>
                       <div className="settings-form__field">
-                        <label className="settings-form__label">Email</label>
+                        <label className="settings-form__label">{t('settings.profile.email')}</label>
                         <input
                           type="email"
                           name="email"
                           value={form.email}
                           onChange={handleChange}
                           className="settings-form__input"
-                          placeholder="tu@email.com"
+                          placeholder={t('settings.profile.emailPlaceholder')}
                         />
                       </div>
                       <div className="settings-form__field">
-                        <label className="settings-form__label">Teléfono</label>
+                        <label className="settings-form__label">{t('settings.profile.phone')}</label>
                         <input
                           type="tel"
                           name="phone"
                           value={form.phone}
                           onChange={handleChange}
                           className="settings-form__input"
-                          placeholder="+34 600 000 000"
+                          placeholder={t('settings.profile.phonePlaceholder')}
                         />
                       </div>
                       <div className="settings-form__field settings-form__field--full">
                         <label className="settings-form__label">
-                          Organización
+                          {t('settings.profile.organization')}
                         </label>
                         <input
                           type="text"
@@ -403,7 +405,7 @@ export default function Settings() {
                           value={form.organization}
                           onChange={handleChange}
                           className="settings-form__input"
-                          placeholder="Nombre de la organización"
+                          placeholder={t('settings.profile.organizationPlaceholder')}
                         />
                       </div>
 
@@ -415,7 +417,7 @@ export default function Settings() {
                         >
                           <Save size={20} />
                           <span>
-                            {isPending ? "Guardando…" : "Guardar cambios"}
+                            {isPending ? t('settings.profile.saving') : t('settings.profile.save')}
                           </span>
                         </button>
                       </div>
@@ -430,10 +432,10 @@ export default function Settings() {
                     <activeItem.icon size={48} />
                   </div>
                   <h3 className="settings-placeholder__title">
-                    {activeItem.label}
+                    {t(activeItem.labelKey)}
                   </h3>
                   <p className="settings-placeholder__desc">
-                    Esta sección está en desarrollo. Vuelve pronto.
+                    {t('settings.placeholder.underDevelopment')}
                   </p>
                 </div>
               )
@@ -448,13 +450,13 @@ export default function Settings() {
         return (
           <ConfirmDialog
             open
-            title={isArchiving ? "¿Archivar usuario?" : "¿Restaurar usuario?"}
+            title={isArchiving ? t('settings.confirm.archiveTitle') : t('settings.confirm.restoreTitle')}
             description={
               isArchiving
-                ? `${target?.firstName} ${target?.lastName} quedará desactivado. Esta acción puede tener consecuencias sobre sus servicios asociados.`
-                : `${target?.firstName} ${target?.lastName} volverá a estar activo en el sistema.`
+                ? t('settings.confirm.archiveDesc', { name: `${target?.firstName} ${target?.lastName}` })
+                : t('settings.confirm.restoreDesc', { name: `${target?.firstName} ${target?.lastName}` })
             }
-            confirmLabel={isArchiving ? "Archivar" : "Restaurar"}
+            confirmLabel={isArchiving ? t('settings.confirm.archiveBtn') : t('settings.confirm.restoreBtn')}
             variant={isArchiving ? "danger" : "default"}
             onConfirm={() => {
               archiveUser.mutate(confirmArchiveId);
