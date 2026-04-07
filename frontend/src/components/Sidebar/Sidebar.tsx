@@ -1,7 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CalendarDays, Users, Settings, LogOut, HeartPulse, MapPin, UserCog } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useUIStore } from '../../store/useUIStore';
 import './Sidebar.css';
 
 const allNavItems = [
@@ -18,6 +20,8 @@ export default function Sidebar() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const sidebarOpen = useUIStore((s) => s.sidebarOpen);
+  const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
 
   const isAdmin = user?.role === 'admin';
   const navItems = allNavItems.filter((item) => !item.adminOnly || isAdmin);
@@ -30,13 +34,17 @@ export default function Sidebar() {
     ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
     : (user?.email?.charAt(0) ?? '?').toUpperCase();
 
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
   async function handleLogout() {
     await logout();
     navigate('/login');
   }
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${sidebarOpen ? ' sidebar--open' : ''}`}>
       <div className="sidebar__logo">
         <div className="sidebar__logo-icon">
           <HeartPulse size={24} />
