@@ -3,7 +3,7 @@ from typing import Optional
 
 
 class NotificationPrefs(BaseModel):
-    email: bool = True
+    email: bool = False
     push: bool = True
     booking_reminder: bool = True
 

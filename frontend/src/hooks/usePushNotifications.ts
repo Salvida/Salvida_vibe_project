@@ -29,7 +29,7 @@ async function getOrCreateSubscription(vapidPublicKey: string): Promise<PushSubs
 }
 
 function subToPayload(sub: PushSubscription) {
-  const json = sub.toJSON() as { endpoint: string; keys: SubscriptionKeys };
+  const json = sub.toJSON() as unknown as { endpoint: string; keys: SubscriptionKeys };
   return {
     endpoint: json.endpoint,
     p256dh: json.keys.p256dh,

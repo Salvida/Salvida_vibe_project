@@ -73,7 +73,7 @@ export default function Settings() {
   });
 
   const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>({
-    email: true,
+    email: false,
     push: true,
     booking_reminder: true,
   });
@@ -148,13 +148,21 @@ export default function Settings() {
                   <div className="settings-notif-row">
                     <div className="settings-notif-row__info">
                       <span className="settings-notif-row__label">Correo electrónico</span>
-                      <span className="settings-notif-row__sub">Recibe notificaciones en tu email</span>
+                      <span className="settings-notif-row__sub">
+                        Recibe notificaciones en tu email
+                        {!profile?.email && (
+                          <span className="settings-notif-row__warning">
+                            {" "}— Requiere un email validado en tu perfil
+                          </span>
+                        )}
+                      </span>
                     </div>
                     <button
                       type="button"
                       role="switch"
                       aria-checked={notifPrefs.email}
-                      className={`settings-toggle${notifPrefs.email ? " settings-toggle--on" : ""}`}
+                      disabled={!profile?.email}
+                      className={`settings-toggle${notifPrefs.email ? " settings-toggle--on" : ""}${!profile?.email ? " settings-toggle--disabled" : ""}`}
                       onClick={() => setNotifPrefs((p) => ({ ...p, email: !p.email }))}
                     >
                       <span className="settings-toggle__thumb" />
@@ -164,7 +172,7 @@ export default function Settings() {
                   <div className="settings-notif-row">
                     <div className="settings-notif-row__info">
                       <span className="settings-notif-row__label">Notificaciones push</span>
-                      <span className="settings-notif-row__sub">Alertas en el navegador en tiempo real</span>
+                      <span className="settings-notif-row__sub">Alertas en tiempo real en cualquier dispositivo</span>
                     </div>
                     <button
                       type="button"
@@ -189,7 +197,7 @@ export default function Settings() {
                   <div className="settings-notif-row">
                     <div className="settings-notif-row__info">
                       <span className="settings-notif-row__label">Recordatorio de reserva</span>
-                      <span className="settings-notif-row__sub">Aviso antes de cada servicio programado</span>
+                      <span className="settings-notif-row__sub">Aviso 2 horas antes de cada servicio programado</span>
                     </div>
                     <button
                       type="button"
