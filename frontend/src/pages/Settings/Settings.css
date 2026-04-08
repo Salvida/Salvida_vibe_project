@@ -130,6 +130,11 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+.settings-avatar__circle--img {
+  object-fit: cover;
+  font-size: 0;
+}
+
 .settings-avatar__btn {
   position: absolute;
   bottom: -0.25rem;
@@ -390,6 +395,38 @@
 
 .settings-user-selector__option-email {
   font-size: 0.75rem;
+  color: var(--color-slate-400);
+}
+
+/* Profile title row with optional actions */
+.settings-profile__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.settings-profile__title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.settings-user-status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.settings-user-status-badge--active {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.settings-user-status-badge--archived {
+  background: var(--color-slate-100);
   color: var(--color-slate-400);
 }
 

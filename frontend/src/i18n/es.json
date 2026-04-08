@@ -7,17 +7,37 @@
     "viewAll": "Ver todo",
     "active": "Activo",
     "inactive": "Inactivo",
+    "archived": "Archivado",
     "administrator": "Administrador",
     "profileIncomplete": "Perfil sin completar",
     "logout": "Cerrar sesión",
     "underDevelopment": "Esta sección está en desarrollo. Vuelve más tarde.",
     "saveSuccess": "Guardado correctamente",
-    "saveError": "Error al guardar"
+    "saveError": "Error al guardar",
+    "required": "obligatorio",
+    "loading": "Cargando...",
+    "uploading": "Subiendo...",
+    "saving": "Guardando...",
+    "changePhoto": "Cambiar foto",
+    "change": "Cambiar",
+    "add": "Añadir",
+    "remove": "Eliminar"
+  },
+  "bookingStatuses": {
+    "Approved": "Aprobada",
+    "Pending": "Pendiente",
+    "Completed": "Completada",
+    "Cancelled": "Cancelada"
+  },
+  "userRoles": {
+    "user": "Usuario",
+    "admin": "Administrador"
   },
   "nav": {
     "dashboard": "Dashboard",
     "bookings": "Reservas",
-    "prms": "Mis PRMs",
+    "prms": "Mis PMRs",
+    "users": "Usuarios",
     "addresses": "Direcciones",
     "settings": "Ajustes",
     "brand": "Salvida",
@@ -34,46 +54,91 @@
     "todayBookings": "Reservas de hoy",
     "requestNewBooking": "Solicitar nueva reserva",
     "viewAll": "Ver todo",
-    "noBookingsToday": "No hay reservas para hoy"
+    "noBookingsToday": "No hay reservas para hoy",
+    "dateLabel": "Reservas del {{date}}",
+    "actions": {
+      "approve": "Aprobar",
+      "complete": "Completar",
+      "cancelBooking": "Cancelar reserva",
+      "editBooking": "Editar reserva",
+      "deleteBooking": "Eliminar reserva"
+    },
+    "createdByAdmin": "Creado por admin",
+    "viewOnMaps": "Ver en Google Maps"
   },
   "prms": {
-    "title": "Mis PRMs",
+    "title": "Mis PMRs",
     "subtitle": "Gestiona tus pacientes de movilidad reducida",
-    "search": "Buscar PRMs...",
-    "addPrm": "Añadir PRM",
+    "search": "Buscar PMRs...",
+    "addPrm": "Añadir PMR",
+    "empty": "No se encontraron PMRs",
     "columns": {
       "name": "Nombre",
       "contact": "Contacto",
       "bookings": "Reservas",
       "lastVisit": "Última Visita",
-      "status": "Estado"
+      "status": "Estado",
+      "responsible": "Responsable"
+    },
+    "tabs": {
+      "all": "Todos",
+      "active": "Activos",
+      "inactive": "Archivados"
     },
     "menu": {
       "viewProfile": "Ver perfil",
       "edit": "Editar",
-      "deactivate": "Desactivar",
-      "activate": "Activar"
+      "deactivate": "Archivar",
+      "activate": "Restaurar"
     },
     "newPrm": {
-      "title": "Nuevo PRM",
+      "title": "Nuevo PMR",
       "subtitle": "Registra un nuevo paciente de movilidad reducida",
       "sections": {
         "basic": "Información básica",
         "medical": "Datos médicos",
         "address": "Dirección (opcional)",
-        "contacts": "Contactos de urgencia"
+        "contacts": "Contactos de urgencia",
+        "responsible": "Responsable",
+        "addresses": "Direcciones"
       },
-      "submit": "Guardar PRM",
+      "submit": "Guardar PMR",
       "submitting": "Guardando...",
       "cancel": "Cancelar",
       "contactAdd": "Añadir contacto de urgencia",
       "contactMax": "Máximo 2 contactos de urgencia",
       "errorRequired": "El nombre es obligatorio",
-      "errorGeneric": "Error al guardar el PRM. Inténtalo de nuevo."
+      "errorGeneric": "Error al guardar el PMR. Inténtalo de nuevo.",
+      "responsiblePlaceholder": "Selecciona el usuario responsable…",
+      "responsibleHint": "Si no seleccionas un responsable, el PMR se asignará a tu cuenta.",
+      "nameFull": "Nombre completo",
+      "namePlaceholder": "Nombre y apellidos",
+      "email": "Email",
+      "emailPlaceholder": "correo@ejemplo.com",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+34 600 000 000",
+      "dni": "DNI / NIE",
+      "dniPlaceholder": "12345678A",
+      "birthDate": "Fecha de nacimiento",
+      "status": "Estado",
+      "statusActive": "Activo",
+      "statusInactive": "Inactivo",
+      "bloodType": "Grupo sanguíneo",
+      "bloodTypePlaceholder": "Selecciona grupo",
+      "height": "Altura (cm)",
+      "heightPlaceholder": "Ej: 165",
+      "weight": "Peso (kg)",
+      "weightPlaceholder": "Ej: 62",
+      "contactName": "Nombre",
+      "contactPhone": "Teléfono",
+      "contactRelationship": "Relación",
+      "contactRelationshipPlaceholder": "Ej: Madre, Hermano",
+      "addressAlias": "Alias (ej: Casa, Hospital…)",
+      "addAddress": "Añadir dirección"
     }
   },
   "prmDetail": {
-    "title": "Detalle del PRM",
+    "title": "Detalle del PMR",
     "personalInfo": "Información personal",
     "recentHistory": "Historial reciente",
     "bookAppointment": "Reservar cita",
@@ -91,9 +156,9 @@
     "birthdate": "Fecha de nacimiento",
     "dni": "DNI / NIE",
     "status": "Estado",
-    "notFound": "PRM no encontrado",
+    "notFound": "PMR no encontrado",
     "goBack": "Volver",
-    "saveSuccess": "PRM actualizado correctamente",
+    "saveSuccess": "PMR actualizado correctamente",
     "saveError": "Error al guardar los cambios",
     "emergencyContacts": "Contactos de urgencia",
     "addContact": "Añadir contacto",
@@ -105,6 +170,7 @@
     "contactRelationshipPlaceholder": "Ej: Madre, Hermano, Cónyuge",
     "maxContactsReached": "Máximo 2 contactos de urgencia",
     "removeContact": "Eliminar contacto",
+    "noEmergencyContacts": "No hay contactos de urgencia",
     "address": "Dirección",
     "addressFull": "Dirección completa",
     "addressAccessible": "Accesible para PMR",
@@ -113,6 +179,12 @@
     "addressValidated": "Validada",
     "addressRejected": "Rechazada",
     "noAddress": "Sin dirección registrada",
+    "addresses": "Direcciones",
+    "noAddresses": "No hay direcciones guardadas",
+    "addAddress": "Añadir",
+    "editAddress": "Editar dirección",
+    "deleteAddress": "Eliminar dirección",
+    "addressAlias": "Alias (ej: Casa, Hospital…)",
     "form": {
       "name": "Nombre completo",
       "bloodType": "Grupo sanguíneo",
@@ -124,16 +196,28 @@
     "menu": {
       "edit": "Editar",
       "history": "Historial",
-      "delete": "Eliminar"
+      "delete": "Eliminar",
+      "archive": "Archivar PMR",
+      "restore": "Restaurar PMR"
+    },
+    "avatar": {
+      "changePhoto": "Cambiar foto"
+    },
+    "toast": {
+      "imageFormat": "Solo se admiten imágenes (JPG, PNG, GIF)",
+      "imageSize": "La imagen no puede superar los 2MB",
+      "uploadError": "Error al subir la imagen"
     }
   },
   "booking": {
     "title": "Nueva Reserva",
+    "editTitle": "Editar reserva",
+    "notFound": "Reserva no encontrada",
     "locationDetails": "Dirección de asistencia",
     "address": "Dirección de asistencia",
     "addressPlaceholder": "Introduce la dirección de asistencia",
     "passengerDetails": "Detalles del pasajero",
-    "pmrStatus": "Estado PRM",
+    "pmrStatus": "Estado PMR",
     "reducedMobility": "Movilidad reducida",
     "serviceReason": "Motivo del servicio",
     "serviceReasonPlaceholder": "Selecciona un motivo",
@@ -142,13 +226,32 @@
     "urgency": "Urgencia",
     "routine": "Rutina",
     "urgent": "Urgente",
-    "selectPrm": "Seleccionar PRM",
-    "searchPrm": "Buscar PRM por nombre...",
-    "noPrmSelected": "Ningún PRM seleccionado",
-    "selectedPrm": "PRM seleccionado",
+    "selectPrm": "Seleccionar PMR",
+    "searchPrm": "Buscar PMR por nombre...",
+    "noPrmSelected": "Ningún PMR seleccionado",
+    "selectedPrm": "PMR seleccionado",
     "submit": "Enviar solicitud",
     "submitting": "Enviando...",
     "cancel": "Cancelar",
+    "save": "Guardar cambios",
+    "saving": "Guardando...",
+    "prm": "PMR",
+    "prmSelect": "Seleccionar PMR…",
+    "noPrms": "No tienes PMRs registrados.",
+    "noPrmsForUser": "Este usuario no tiene PMRs asociados.",
+    "changePrm": "Cambiar",
+    "responsible": "Responsable",
+    "responsibleSelect": "Selecciona un usuario…",
+    "dateTime": "Fecha y hora",
+    "assistDate": "Fecha de asistencia",
+    "assistTime": "Hora de asistencia",
+    "requirements": {
+      "title": "Para enviar la solicitud necesitas:",
+      "patientSelected": "Paciente seleccionado",
+      "addressSelected": "Dirección de asistencia",
+      "dateSelected": "Fecha",
+      "timeSelected": "Hora de asistencia"
+    },
     "menu": {
       "viewDetail": "Ver detalle",
       "edit": "Editar",
@@ -172,6 +275,7 @@
   "settings": {
     "title": "Ajustes",
     "subtitle": "Configura tus preferencias y cuenta",
+    "loading": "Cargando perfil…",
     "sections": {
       "profile": "Perfil",
       "notifications": "Notificaciones",
@@ -179,14 +283,24 @@
       "appearance": "Apariencia",
       "language": "Idioma"
     },
+    "sectionsLabels": {
+      "profile": "Perfil",
+      "notifications": "Notificaciones",
+      "security": "Seguridad",
+      "appearance": "Apariencia",
+      "language": "Idioma"
+    },
     "notifications": {
-      "title": "Preferencias de Notificaciones",
-      "emailLabel": "Notificaciones por email",
-      "emailDesc": "Recibe actualizaciones y alertas en tu correo electrónico",
+      "title": "Notificaciones",
+      "desc": "Elige cómo y cuándo quieres recibir notificaciones.",
+      "channel": "Canal",
+      "emailLabel": "Correo electrónico",
+      "emailDesc": "Recibe notificaciones en tu email",
       "pushLabel": "Notificaciones push",
-      "pushDesc": "Recibe alertas en tiempo real en tu navegador",
-      "reminderLabel": "Recordatorio de reservas",
-      "reminderDesc": "Recibe un aviso antes de cada traslado programado",
+      "pushDesc": "Alertas en tiempo real en cualquier dispositivo",
+      "typesTitle": "Tipos de aviso",
+      "reminderLabel": "Recordatorio de reserva",
+      "reminderDesc": "Aviso 2 horas antes de cada servicio programado",
       "save": "Guardar preferencias",
       "saveSuccess": "Preferencias guardadas correctamente",
       "saveError": "Error al guardar las preferencias"
@@ -211,14 +325,39 @@
       "changePhoto": "Cambiar foto",
       "photoHint": "JPG, PNG o GIF. Máximo 2MB.",
       "firstName": "Nombre",
+      "firstNamePlaceholder": "Tu nombre",
       "lastName": "Apellido",
+      "lastNamePlaceholder": "Tu apellido",
       "email": "Email",
+      "emailPlaceholder": "tu@email.com",
       "phone": "Teléfono",
+      "phonePlaceholder": "+34 600 000 000",
       "organization": "Organización",
+      "organizationPlaceholder": "Nombre de la organización",
       "dni": "DNI / NIE",
+      "dniPlaceholder": "12345678A",
       "save": "Guardar cambios",
+      "saving": "Guardando…",
       "saveSuccess": "Perfil actualizado correctamente",
-      "saveError": "Error al guardar el perfil"
+      "saveError": "Error al guardar el perfil",
+      "uploading": "Subiendo…",
+      "statusActive": "Activo",
+      "statusArchived": "Archivado",
+      "userActions": {
+        "archiveUser": "Archivar usuario",
+        "restoreUser": "Restaurar usuario"
+      }
+    },
+    "confirm": {
+      "archiveTitle": "¿Archivar usuario?",
+      "archiveDesc": "{{name}} quedará desactivado. Esta acción puede tener consecuencias sobre sus servicios asociados.",
+      "restoreTitle": "¿Restaurar usuario?",
+      "restoreDesc": "{{name}} volverá a estar activo en el sistema.",
+      "archiveBtn": "Archivar",
+      "restoreBtn": "Restaurar"
+    },
+    "placeholder": {
+      "underDevelopment": "Esta sección está en desarrollo. Vuelve pronto."
     }
   },
   "notifications": {
@@ -265,7 +404,7 @@
   },
   "addresses": {
     "title": "Gestión de Direcciones",
-    "subtitle": "Revisa y valida las direcciones de los PRMs",
+    "subtitle": "Revisa y valida las direcciones de los PMRs",
     "filterAll": "Todas",
     "filterPending": "Pendientes",
     "filterValidated": "Validadas",
@@ -296,5 +435,8 @@
   "calendar": {
     "months": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
     "weekdays": ["D", "L", "M", "X", "J", "V", "S"]
+  },
+  "header": {
+    "date": "{{month}} {{year}}"
   }
 }

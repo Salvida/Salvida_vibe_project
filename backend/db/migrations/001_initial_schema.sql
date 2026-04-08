@@ -32,7 +32,7 @@ CREATE TABLE profiles (
   phone        TEXT        NOT NULL DEFAULT '',
   organization TEXT        NOT NULL DEFAULT '',
   dni          TEXT,
-  role         TEXT        NOT NULL DEFAULT 'staff',
+  role         TEXT        NOT NULL DEFAULT 'user',
   avatar       TEXT,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()

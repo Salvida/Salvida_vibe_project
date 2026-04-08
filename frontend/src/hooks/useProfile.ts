@@ -56,6 +56,19 @@ export function useUpdateNotificationPrefs() {
   });
 }
 
+export function useArchiveUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      apiClient.patch<UserProfile>(`/api/profile/${userId}/archive`, {}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: USERS_KEY });
+      toast.success('Estado del usuario actualizado');
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al archivar el usuario')),
+  });
+}
+
 export function useUpdateProfile() {
   const qc = useQueryClient();
   const updateUser = useAuthStore((s) => s.updateUser);

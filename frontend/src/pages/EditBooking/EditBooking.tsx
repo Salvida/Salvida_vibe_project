@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, AlertCircle, CalendarDays, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, Clock, CalendarDays, Send, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import PrmAddressPicker from '../../components/PrmAddressPicker';
 import { useBooking, useUpdateBooking } from '../../hooks/useBookings';
 import type { Address } from '../../types';
@@ -9,19 +10,18 @@ import '../NewBooking/NewBooking.css';
 export default function EditBooking() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { data: booking, isLoading } = useBooking(id!);
   const updateBooking = useUpdateBooking();
 
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [urgency, setUrgency] = useState<'routine' | 'urgent'>('routine');
   const [address, setAddress] = useState<Partial<Address>>({});
 
   useEffect(() => {
     if (booking) {
       setDate(booking.date);
       setTime(booking.startTime);
-      setUrgency(booking.urgency ?? 'routine');
       setAddress({ full_address: booking.address });
     }
   }, [booking]);
@@ -35,7 +35,6 @@ export default function EditBooking() {
         startTime: time,
         endTime: time,
         address: address.full_address,
-        urgency,
       });
       navigate(-1);
     } catch {
@@ -52,7 +51,7 @@ export default function EditBooking() {
           <button onClick={() => navigate(-1)} className="new-booking__back-btn">
             <ArrowLeft size={20} />
           </button>
-          <h2 className="new-booking__title">Editar reserva</h2>
+          <h2 className="new-booking__title">{t('booking.editTitle')}</h2>
         </div>
         <div className="new-booking__body">
           <div className="new-booking__inner">
@@ -70,10 +69,10 @@ export default function EditBooking() {
           <button onClick={() => navigate(-1)} className="new-booking__back-btn">
             <ArrowLeft size={20} />
           </button>
-          <h2 className="new-booking__title">Editar reserva</h2>
+          <h2 className="new-booking__title">{t('booking.editTitle')}</h2>
         </div>
         <div className="new-booking__body">
-          <p style={{ padding: '2rem', color: 'var(--color-slate-500)' }}>Reserva no encontrada.</p>
+          <p style={{ padding: '2rem', color: 'var(--color-slate-500)' }}>{t('booking.notFound')}</p>
         </div>
       </div>
     );
@@ -85,7 +84,7 @@ export default function EditBooking() {
         <button onClick={() => navigate(-1)} className="new-booking__back-btn">
           <ArrowLeft size={20} />
         </button>
-        <h2 className="new-booking__title">Editar reserva</h2>
+        <h2 className="new-booking__title">{t('booking.editTitle')}</h2>
       </div>
 
       <div className="new-booking__body">
@@ -95,7 +94,7 @@ export default function EditBooking() {
           <section className="booking-section">
             <div className="booking-section__heading">
               <span className="booking-section__num">1</span>
-              <h3 className="booking-section__title">PRM</h3>
+              <h3 className="booking-section__title">{t('booking.prm')}</h3>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', borderRadius: '0.75rem', border: '1px solid #e2e8f0', background: '#f8fafc' }}>
               {booking.prmAvatar ? (
@@ -113,7 +112,7 @@ export default function EditBooking() {
           <section className="booking-section">
             <div className="booking-section__heading">
               <span className="booking-section__num booking-section__num--inactive">2</span>
-              <h3 className="booking-section__title">Dirección de asistencia</h3>
+              <h3 className="booking-section__title">{t('booking.locationDetails')}</h3>
             </div>
             <PrmAddressPicker
               prmId={booking.prmId}
@@ -126,14 +125,14 @@ export default function EditBooking() {
           <section className="booking-section">
             <div className="booking-section__heading">
               <span className="booking-section__num booking-section__num--inactive">3</span>
-              <h3 className="booking-section__title">Fecha y hora</h3>
+              <h3 className="booking-section__title">{t('booking.dateTime')}</h3>
             </div>
             <div className="datetime-card">
               <div className="datetime-card__row">
                 <div className="datetime-card__field">
                   <label className="datetime-card__label">
                     <CalendarDays size={14} />
-                    Fecha de asistencia
+                    {t('booking.assistDate')}
                   </label>
                   <input
                     type="date"
@@ -145,7 +144,7 @@ export default function EditBooking() {
                 <div className="datetime-card__field">
                   <label className="datetime-card__label">
                     <Clock size={14} />
-                    Hora de asistencia
+                    {t('booking.assistTime')}
                   </label>
                   <input
                     type="time"
@@ -158,30 +157,6 @@ export default function EditBooking() {
             </div>
           </section>
 
-          {/* Urgency */}
-          <section className="booking-section">
-            <div className="booking-section__heading">
-              <span className="booking-section__num booking-section__num--inactive">4</span>
-              <h3 className="booking-section__title">Urgencia</h3>
-            </div>
-            <div className="urgency-grid">
-              <button
-                onClick={() => setUrgency('routine')}
-                className={`urgency-btn${urgency === 'routine' ? ' urgency-btn--routine-active' : ''}`}
-              >
-                <Clock size={32} />
-                <span className="urgency-btn__label">Rutina</span>
-              </button>
-              <button
-                onClick={() => setUrgency('urgent')}
-                className={`urgency-btn${urgency === 'urgent' ? ' urgency-btn--urgent-active' : ''}`}
-              >
-                <AlertCircle size={32} />
-                <span className="urgency-btn__label">Urgente</span>
-              </button>
-            </div>
-          </section>
-
         </div>
       </div>
 
@@ -189,7 +164,7 @@ export default function EditBooking() {
       <div className="booking-actions">
         <div className="booking-actions__inner">
           <button onClick={() => navigate(-1)} className="booking-actions__cancel">
-            Cancelar
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSubmit}
@@ -199,11 +174,11 @@ export default function EditBooking() {
             {updateBooking.isPending ? (
               <>
                 <Loader2 size={18} className="animate-spin" />
-                <span>Guardando…</span>
+                <span>{t('common.saving')}</span>
               </>
             ) : (
               <>
-                <span>Guardar cambios</span>
+                <span>{t('booking.save')}</span>
                 <Send size={18} />
               </>
             )}

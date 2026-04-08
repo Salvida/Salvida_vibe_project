@@ -84,6 +84,28 @@
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
+.prm-profile__avatar-btn {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: white;
+  border: 1.5px solid var(--color-slate-200);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-slate-500);
+  transition: background 0.15s;
+}
+
+.prm-profile__avatar-btn:hover {
+  background: var(--color-slate-50);
+}
+
 .prm-profile__name {
   font-size: 1.875rem;
   font-weight: 900;

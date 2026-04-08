@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { useCreatePrm } from '../../hooks/usePrms';
 import { useAddPrmAddress } from '../../hooks/usePrmAddresses';
 import AddressSelector from '../../components/AddressSelector';
+import UserSelector from '../../components/UserSelector/UserSelector';
+import { useAuthStore } from '../../store/useAuthStore';
 import type { Address, EmergencyContact } from '../../types';
 import './NewPrm.css';
 
@@ -19,6 +21,10 @@ export default function NewPrm() {
   const navigate = useNavigate();
   const createPrm = useCreatePrm();
   const addPrmAddress = useAddPrmAddress();
+  const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
+
+  // Admin: selected owner
+  const [ownerId, setOwnerId] = useState('');
 
   // Basic fields
   const [name, setName] = useState('');
@@ -98,6 +104,7 @@ export default function NewPrm() {
         avatar: undefined,
         emergency_contacts: emergencyContacts,
         is_demo: false,
+        ...(isAdmin && ownerId ? { owner_id: ownerId } : {}),
       } as Parameters<typeof createPrm.mutateAsync>[0]);
 
       for (const draft of addressDrafts.filter((d) => d.value.full_address)) {
@@ -132,6 +139,22 @@ export default function NewPrm() {
       <div className="new-prm__body">
         <form className="new-prm__form" onSubmit={handleSubmit} noValidate>
 
+          {/* Section: Responsable (admin only) */}
+          {isAdmin && (
+            <section className="new-prm__section">
+              <h2 className="new-prm__section-title">{t('prms.newPrm.sections.responsible')}</h2>
+              <UserSelector
+                value={ownerId}
+                label=""
+                placeholder={t('prms.newPrm.responsiblePlaceholder')}
+                onChange={(id) => setOwnerId(id)}
+              />
+              {!ownerId && (
+                <p className="new-prm__owner-hint">{t('prms.newPrm.responsibleHint')}</p>
+              )}
+            </section>
+          )}
+
           {/* Section: Información básica */}
           <section className="new-prm__section">
             <h2 className="new-prm__section-title">
@@ -140,13 +163,13 @@ export default function NewPrm() {
             <div className="new-prm__grid">
               <div className="new-prm__field new-prm__field--full">
                 <label className="new-prm__label" htmlFor="name">
-                  Nombre completo <span className="new-prm__required">*</span>
+                  {t('prms.newPrm.nameFull')} <span className="new-prm__required">*</span>
                 </label>
                 <input
                   id="name"
                   type="text"
                   className={`new-prm__input${nameError ? ' new-prm__input--error' : ''}`}
-                  placeholder="Nombre y apellidos"
+                  placeholder={t('prms.newPrm.namePlaceholder')}
                   value={name}
                   onChange={(e) => { setName(e.target.value); setNameError(''); }}
                 />
@@ -154,43 +177,43 @@ export default function NewPrm() {
               </div>
 
               <div className="new-prm__field">
-                <label className="new-prm__label" htmlFor="email">Email</label>
+                <label className="new-prm__label" htmlFor="email">{t('prms.newPrm.email')}</label>
                 <input
                   id="email"
                   type="email"
                   className="new-prm__input"
-                  placeholder="correo@ejemplo.com"
+                  placeholder={t('prms.newPrm.emailPlaceholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
 
               <div className="new-prm__field">
-                <label className="new-prm__label" htmlFor="phone">Teléfono</label>
+                <label className="new-prm__label" htmlFor="phone">{t('prms.newPrm.phone')}</label>
                 <input
                   id="phone"
                   type="tel"
                   className="new-prm__input"
-                  placeholder="+34 600 000 000"
+                  placeholder={t('prms.newPrm.phonePlaceholder')}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
               </div>
 
               <div className="new-prm__field">
-                <label className="new-prm__label" htmlFor="dni">DNI / NIE</label>
+                <label className="new-prm__label" htmlFor="dni">{t('prms.newPrm.dni')}</label>
                 <input
                   id="dni"
                   type="text"
                   className="new-prm__input"
-                  placeholder="12345678A"
+                  placeholder={t('prms.newPrm.dniPlaceholder')}
                   value={dni}
                   onChange={(e) => setDni(e.target.value)}
                 />
               </div>
 
               <div className="new-prm__field">
-                <label className="new-prm__label" htmlFor="birthDate">Fecha de nacimiento</label>
+                <label className="new-prm__label" htmlFor="birthDate">{t('prms.newPrm.birthDate')}</label>
                 <input
                   id="birthDate"
                   type="date"
@@ -201,15 +224,15 @@ export default function NewPrm() {
               </div>
 
               <div className="new-prm__field">
-                <label className="new-prm__label" htmlFor="status">Estado</label>
+                <label className="new-prm__label" htmlFor="status">{t('prms.newPrm.status')}</label>
                 <select
                   id="status"
                   className="new-prm__select"
                   value={status}
                   onChange={(e) => setStatus(e.target.value as 'Activo' | 'Inactivo')}
                 >
-                  <option value="Activo">Activo</option>
-                  <option value="Inactivo">Inactivo</option>
+                  <option value="Activo">{t('prms.newPrm.statusActive')}</option>
+                  <option value="Inactivo">{t('prms.newPrm.statusInactive')}</option>
                 </select>
               </div>
             </div>
@@ -222,14 +245,14 @@ export default function NewPrm() {
             </h2>
             <div className="new-prm__grid">
               <div className="new-prm__field">
-                <label className="new-prm__label" htmlFor="bloodType">Grupo sanguíneo</label>
+                <label className="new-prm__label" htmlFor="bloodType">{t('prms.newPrm.bloodType')}</label>
                 <select
                   id="bloodType"
                   className="new-prm__select"
                   value={bloodType}
                   onChange={(e) => setBloodType(e.target.value)}
                 >
-                  <option value="">Selecciona grupo</option>
+                  <option value="">{t('prms.newPrm.bloodTypePlaceholder')}</option>
                   {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(g => (
                     <option key={g} value={g}>{g}</option>
                   ))}
@@ -237,24 +260,24 @@ export default function NewPrm() {
               </div>
 
               <div className="new-prm__field">
-                <label className="new-prm__label" htmlFor="height">Altura (cm)</label>
+                <label className="new-prm__label" htmlFor="height">{t('prms.newPrm.height')}</label>
                 <input
                   id="height"
                   type="text"
                   className="new-prm__input"
-                  placeholder="Ej: 165"
+                  placeholder={t('prms.newPrm.heightPlaceholder')}
                   value={height}
                   onChange={(e) => setHeight(e.target.value)}
                 />
               </div>
 
               <div className="new-prm__field">
-                <label className="new-prm__label" htmlFor="weight">Peso (kg)</label>
+                <label className="new-prm__label" htmlFor="weight">{t('prms.newPrm.weight')}</label>
                 <input
                   id="weight"
                   type="text"
                   className="new-prm__input"
-                  placeholder="Ej: 62"
+                  placeholder={t('prms.newPrm.weightPlaceholder')}
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
                 />
@@ -272,31 +295,31 @@ export default function NewPrm() {
               <div key={index} className="new-prm__contact-row">
                 <div className="new-prm__grid">
                   <div className="new-prm__field">
-                    <label className="new-prm__label">Nombre</label>
+                    <label className="new-prm__label">{t('prms.newPrm.contactName')}</label>
                     <input
                       type="text"
                       className="new-prm__input"
-                      placeholder="Nombre del contacto"
+                      placeholder={t('prms.newPrm.contactNamePlaceholder')}
                       value={contact.name}
                       onChange={(e) => updateContact(index, 'name', e.target.value)}
                     />
                   </div>
                   <div className="new-prm__field">
-                    <label className="new-prm__label">Teléfono</label>
+                    <label className="new-prm__label">{t('prms.newPrm.contactPhone')}</label>
                     <input
                       type="tel"
                       className="new-prm__input"
-                      placeholder="+34 600 000 000"
+                      placeholder={t('prms.newPrm.phonePlaceholder')}
                       value={contact.phone}
                       onChange={(e) => updateContact(index, 'phone', e.target.value)}
                     />
                   </div>
                   <div className="new-prm__field">
-                    <label className="new-prm__label">Relación</label>
+                    <label className="new-prm__label">{t('prms.newPrm.contactRelationship')}</label>
                     <input
                       type="text"
                       className="new-prm__input"
-                      placeholder="Ej: Madre, Hermano"
+                      placeholder={t('prms.newPrm.contactRelationshipPlaceholder')}
                       value={contact.relationship}
                       onChange={(e) => updateContact(index, 'relationship', e.target.value)}
                     />
@@ -306,7 +329,7 @@ export default function NewPrm() {
                   type="button"
                   className="new-prm__contact-remove"
                   onClick={() => removeContact(index)}
-                  title="Eliminar contacto"
+                  title={t('common.remove')}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -325,7 +348,7 @@ export default function NewPrm() {
 
           {/* Section: Direcciones */}
           <section className="new-prm__section">
-            <h2 className="new-prm__section-title">Direcciones</h2>
+            <h2 className="new-prm__section-title">{t('prms.newPrm.sections.addresses')}</h2>
 
             {addressDrafts.map((draft, index) => (
               <div key={index} className="new-prm__contact-row">
@@ -338,7 +361,7 @@ export default function NewPrm() {
                   <input
                     type="text"
                     className="new-prm__input"
-                    placeholder="Alias (ej: Casa, Hospital…)"
+                    placeholder={t('prms.newPrm.addressAlias')}
                     value={draft.alias}
                     onChange={(e) => updateAddressDraftAlias(index, e.target.value)}
                     maxLength={40}
@@ -348,7 +371,7 @@ export default function NewPrm() {
                   type="button"
                   className="new-prm__contact-remove"
                   onClick={() => removeAddressDraft(index)}
-                  title="Eliminar dirección"
+                  title={t('common.remove')}
                 >
                   <Trash2 size={16} />
                 </button>
@@ -357,7 +380,7 @@ export default function NewPrm() {
 
             <button type="button" className="new-prm__add-contact-btn" onClick={addAddressDraft}>
               <Plus size={16} />
-              Añadir dirección
+              {t('prms.newPrm.addAddress')}
             </button>
           </section>
 

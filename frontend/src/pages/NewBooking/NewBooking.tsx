@@ -1,15 +1,15 @@
-import { ArrowLeft, Accessibility, Send, Clock, AlertCircle, CalendarDays, Loader2, Search, User } from 'lucide-react';
+import { ArrowLeft, Accessibility, Send, Clock, CalendarDays, Loader2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import PrmAddressPicker from '../../components/PrmAddressPicker';
+import UserSelector from '../../components/UserSelector/UserSelector';
 import { useCreateBooking } from '../../hooks/useBookings';
 import { useAddPrmAddress } from '../../hooks/usePrmAddresses';
+import { usePrms } from '../../hooks/usePrms';
+import { useAuthStore } from '../../store/useAuthStore';
 import type { Address } from '../../types';
-import { apiClient } from '../../lib/api';
 import './NewBooking.css';
-
-type PrmResult = { id: string; name: string; avatar?: string; dni?: string };
 
 function todayIso() {
   const d = new Date();
@@ -24,42 +24,32 @@ export default function NewBooking() {
   const { t } = useTranslation();
   const createBooking = useCreateBooking();
   const addPrmAddress = useAddPrmAddress();
+  const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
 
-  const [step, setStep] = useState(1);
-  const [urgency, setUrgency] = useState<'routine' | 'urgent'>('routine');
   const [address, setAddress] = useState<Partial<Address>>({});
   const [saveAddressAlias, setSaveAddressAlias] = useState('');
   const [date, setDate] = useState(() => (location.state as { date?: string } | null)?.date || todayIso());
   const [time, setTime] = useState('');
 
-  // Prm search state
-  const [prmQuery, setPrmQuery] = useState('');
-  const [prmResults, setPrmResults] = useState<PrmResult[]>([]);
-  const [selectedPrm, setSelectedPrm] = useState<PrmResult | null>(null);
-  const [prmSearchOpen, setPrmSearchOpen] = useState(false);
-  const [prmSearchLoading, setPrmSearchLoading] = useState(false);
-  const [prmNoResults, setPrmNoResults] = useState(false);
+  // Admin: selected user
+  const [selectedOwnerId, setSelectedOwnerId] = useState('');
 
-  // Debounced prm search
+  // PRM dropdown
+  const { data: prms = [] } = usePrms(undefined, selectedOwnerId || undefined, 'Activo');
+  const [selectedPrm, setSelectedPrm] = useState<{ id: string; name: string; avatar?: string; dni?: string } | null>(null);
+  const [prmDropdownOpen, setPrmDropdownOpen] = useState(false);
+
+  // Auto-select when only one PRM
   useEffect(() => {
-    if (prmQuery.length < 2) {
-      setPrmResults([]);
-      setPrmSearchOpen(false);
-      return;
+    if (prms.length === 1 && !selectedPrm) {
+      setSelectedPrm(prms[0]);
     }
-    setPrmSearchLoading(true);
-    const timer = setTimeout(() => {
-      apiClient
-        .get<PrmResult[]>('/api/prms?q=' + encodeURIComponent(prmQuery))
-        .then((data) => {
-          setPrmResults(data);
-          setPrmSearchOpen(data.length > 0);
-        })
-        .catch(() => setPrmResults([]))
-        .finally(() => setPrmSearchLoading(false));
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [prmQuery]);
+    if (prms.length !== 1) {
+      setSelectedPrm(null);
+      setAddress({});
+      setSaveAddressAlias('');
+    }
+  }, [prms]);
 
   async function handleSubmit() {
     if (!selectedPrm || !address.full_address || !date || !time) return;
@@ -82,7 +72,6 @@ export default function NewBooking() {
         startTime: time,
         endTime: time,
         address: address.full_address ?? '',
-        urgency,
       });
       navigate(-1);
     } catch {
@@ -111,202 +100,109 @@ export default function NewBooking() {
       <div className="new-booking__body">
         <div className="new-booking__inner">
 
-          {/* Progress */}
-          <div className="step-progress">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <div
-                key={s}
-                className={`step-dot${s === step ? ' step-dot--active' : ''}`}
+          {/* Step 1 (admin only): Responsable */}
+          {isAdmin && (
+            <section className="booking-section">
+              <div className="booking-section__heading">
+                <span className="booking-section__num">1</span>
+                <h3 className="booking-section__title">{t('booking.responsible')}</h3>
+              </div>
+              <UserSelector
+                value={selectedOwnerId}
+                label=""
+                placeholder={t('booking.responsibleSelect')}
+                onChange={(id) => {
+                  setSelectedOwnerId(id);
+                  setSelectedPrm(null);
+                  setAddress({});
+                  setSaveAddressAlias('');
+                }}
               />
-            ))}
-          </div>
+            </section>
+          )}
 
-          {/* Step 1: Prm */}
+          {/* Step 1 (user) / Step 2 (admin): PRM */}
           <section className="booking-section">
             <div className="booking-section__heading">
-              <span className="booking-section__num">1</span>
-              <h3 className="booking-section__title">PRM</h3>
+              <span className={`booking-section__num${isAdmin ? ' booking-section__num--inactive' : ''}`}>
+                {isAdmin ? 2 : 1}
+              </span>
+              <h3 className="booking-section__title">{t('booking.prm')}</h3>
             </div>
 
-            {selectedPrm ? (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.75rem 1rem',
-                  borderRadius: '0.75rem',
-                  border: '1px solid #e2e8f0',
-                  background: '#f8fafc',
-                }}
-              >
-                {selectedPrm.avatar ? (
-                  <img
-                    src={selectedPrm.avatar}
-                    alt={selectedPrm.name}
-                    style={{ width: '2.25rem', height: '2.25rem', borderRadius: '50%', objectFit: 'cover' }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: '2.25rem',
-                      height: '2.25rem',
-                      borderRadius: '50%',
-                      background: '#6b4691',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: '#fff',
-                      fontWeight: 700,
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    {selectedPrm.name[0]}
+            {(!isAdmin || selectedOwnerId) && (
+              <>
+                {prms.length === 0 ? (
+                  <p style={{ fontSize: '0.875rem', color: 'var(--color-slate-400)', padding: '0.5rem 0' }}>
+                    {isAdmin ? t('booking.noPrmsForUser') : t('booking.noPrms')}
+                  </p>
+                ) : selectedPrm ? (
+                  <div className="prm-selected-card">
+                    <div className="prm-selected-card__avatar">
+                      {selectedPrm.avatar
+                        ? <img src={selectedPrm.avatar} alt={selectedPrm.name} />
+                        : selectedPrm.name[0]}
+                    </div>
+                    <div className="prm-selected-card__info">
+                      <span className="prm-selected-card__name">{selectedPrm.name}</span>
+                      {selectedPrm.dni && <span className="prm-selected-card__dni">{t('prms.newPrm.dni')}: {selectedPrm.dni}</span>}
+                    </div>
+                    {prms.length > 1 && (
+                      <button
+                        type="button"
+                        className="prm-selected-card__change"
+                        onClick={() => { setSelectedPrm(null); setAddress({}); setSaveAddressAlias(''); }}
+                      >
+                        {t('booking.changePrm')}
+                      </button>
+                    )}
                   </div>
-                )}
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#1e293b' }}>{selectedPrm.name}</div>
-                  {selectedPrm.dni && (
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>DNI: {selectedPrm.dni}</div>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedPrm(null);
-                    setPrmQuery('');
-                    setPrmResults([]);
-                    setPrmSearchOpen(false);
-                    setAddress({});
-                    setSaveAddressAlias('');
-                  }}
-                  style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    color: '#6b4691',
-                    background: 'none',
-                    border: '1px solid #6b4691',
-                    borderRadius: '0.5rem',
-                    padding: '0.25rem 0.6rem',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Cambiar
-                </button>
-              </div>
-            ) : (
-              <div style={{ position: 'relative' }}>
-                <div style={{ position: 'relative' }}>
-                  <Search
-                    size={15}
-                    style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}
-                  />
-                  <input
-                    type="text"
-                    value={prmQuery}
-                    onChange={(e) => setPrmQuery(e.target.value)}
-                    placeholder="Buscar PRM por nombre..."
-                    className="location-field__input"
-                    style={{ paddingLeft: '2.4rem', paddingRight: '2.4rem' }}
-                  />
-                  {prmSearchLoading && (
-                    <Loader2
-                      size={15}
-                      style={{ position: 'absolute', right: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', animation: 'spin 1s linear infinite' }}
-                    />
-                  )}
-                </div>
-                {prmSearchOpen && (prmResults.length > 0 || prmNoResults) && (
-                  <ul
-                    style={{
-                      position: 'absolute',
-                      zIndex: 100,
-                      top: '100%',
-                      left: 0,
-                      right: 0,
-                      marginTop: '0.25rem',
-                      background: '#fff',
-                      borderRadius: '0.75rem',
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                      border: '1px solid #e2e8f0',
-                      overflow: 'hidden',
-                      listStyle: 'none',
-                      padding: 0,
-                      margin: 0,
-                    }}
-                  >
-                    {prmResults.length > 0
-                      ? prmResults.map((p, idx) => (
+                ) : (
+                  <div style={{ position: 'relative' }}>
+                    <button
+                      type="button"
+                      className="location-field__input prm-dropdown-trigger"
+                      onClick={() => setPrmDropdownOpen((o) => !o)}
+                      onBlur={() => setTimeout(() => setPrmDropdownOpen(false), 150)}
+                    >
+                      {t('booking.prmSelect')}
+                    </button>
+                    {prmDropdownOpen && (
+                      <ul className="prm-dropdown-list">
+                        {prms.map((p, idx) => (
                           <li key={p.id} style={{ borderTop: idx > 0 ? '1px solid #f1f5f9' : 'none' }}>
                             <button
                               type="button"
-                              onClick={() => {
+                              className="prm-dropdown-option"
+                              onMouseDown={() => {
                                 setSelectedPrm(p);
-                                setPrmQuery(p.name);
-                                setPrmSearchOpen(false);
-                                setPrmNoResults(false);
+                                setPrmDropdownOpen(false);
                                 setAddress({});
                                 setSaveAddressAlias('');
                               }}
-                              style={{
-                                width: '100%',
-                                textAlign: 'left',
-                                padding: '0.65rem 1rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.6rem',
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontSize: '0.875rem',
-                                color: '#1e293b',
-                              }}
                             >
-                              {p.avatar ? (
-                                <img
-                                  src={p.avatar}
-                                  alt={p.name}
-                                  style={{ width: '1.75rem', height: '1.75rem', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                                />
-                              ) : (
-                                <div
-                                  style={{
-                                    width: '1.75rem',
-                                    height: '1.75rem',
-                                    borderRadius: '50%',
-                                    background: '#ede9f6',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  <User size={13} color="#6b4691" />
-                                </div>
-                              )}
+                              <div className="prm-dropdown-option__avatar">
+                                {p.avatar ? <img src={p.avatar} alt={p.name} /> : p.name[0]}
+                              </div>
                               <div>
-                                <div style={{ fontWeight: 600 }}>{p.name}</div>
-                                {p.dni && <div style={{ fontSize: '0.72rem', color: '#64748b' }}>DNI: {p.dni}</div>}
+                                <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{p.name}</div>
+                                {p.dni && <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{t('prms.newPrm.dni')}: {p.dni}</div>}
                               </div>
                             </button>
                           </li>
-                        ))
-                      : (
-                        <li style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', color: '#64748b' }}>
-                          No se encontró ningún PRM con ese nombre
-                        </li>
-                      )
-                    }
-                  </ul>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 )}
-              </div>
+              </>
             )}
           </section>
 
-          {/* Step 2: Location */}
+          {/* Step 2 (user) / Step 3 (admin): Location */}
           <section className="booking-section">
             <div className="booking-section__heading">
-              <span className="booking-section__num booking-section__num--inactive">2</span>
+              <span className="booking-section__num booking-section__num--inactive">{isAdmin ? 3 : 2}</span>
               <h3 className="booking-section__title">{t('booking.locationDetails')}</h3>
             </div>
 
@@ -318,10 +214,10 @@ export default function NewBooking() {
             />
           </section>
 
-          {/* Step 3: Passenger */}
+          {/* Step 3 (user) / Step 4 (admin): Passenger */}
           <section className="booking-section">
             <div className="booking-section__heading">
-              <span className="booking-section__num booking-section__num--inactive">3</span>
+              <span className="booking-section__num booking-section__num--inactive">{isAdmin ? 4 : 3}</span>
               <h3 className="booking-section__title">{t('booking.passengerDetails')}</h3>
             </div>
 
@@ -344,11 +240,11 @@ export default function NewBooking() {
             </div>
           </section>
 
-          {/* Step 4: Date & Time */}
+          {/* Step 4 (user) / Step 5 (admin): Date & Time */}
           <section className="booking-section">
             <div className="booking-section__heading">
-              <span className="booking-section__num booking-section__num--inactive">4</span>
-              <h3 className="booking-section__title">Fecha y hora</h3>
+              <span className="booking-section__num booking-section__num--inactive">{isAdmin ? 5 : 4}</span>
+              <h3 className="booking-section__title">{t('booking.dateTime')}</h3>
             </div>
 
             <div className="datetime-card">
@@ -356,7 +252,7 @@ export default function NewBooking() {
                 <div className="datetime-card__field">
                   <label className="datetime-card__label">
                     <CalendarDays size={14} />
-                    Fecha de asistencia
+                    {t('booking.assistDate')}
                   </label>
                   <input
                     type="date"
@@ -369,7 +265,7 @@ export default function NewBooking() {
                 <div className="datetime-card__field">
                   <label className="datetime-card__label">
                     <Clock size={14} />
-                    Hora de asistencia
+                    {t('booking.assistTime')}
                   </label>
                   <input
                     type="time"
@@ -382,31 +278,6 @@ export default function NewBooking() {
             </div>
           </section>
 
-          {/* Step 5: Urgency */}
-          <section className="booking-section">
-            <div className="booking-section__heading">
-              <span className="booking-section__num booking-section__num--inactive">5</span>
-              <h3 className="booking-section__title">{t('booking.urgency')}</h3>
-            </div>
-
-            <div className="urgency-grid">
-              <button
-                onClick={() => setUrgency('routine')}
-                className={`urgency-btn${urgency === 'routine' ? ' urgency-btn--routine-active' : ''}`}
-              >
-                <Clock size={32} />
-                <span className="urgency-btn__label">{t('booking.routine')}</span>
-              </button>
-              <button
-                onClick={() => setUrgency('urgent')}
-                className={`urgency-btn${urgency === 'urgent' ? ' urgency-btn--urgent-active' : ''}`}
-              >
-                <AlertCircle size={32} />
-                <span className="urgency-btn__label">{t('booking.urgent')}</span>
-              </button>
-            </div>
-          </section>
-
         </div>
       </div>
 
@@ -414,19 +285,19 @@ export default function NewBooking() {
       <div className="booking-actions">
         {!canSubmit && (
           <div className="booking-requirements">
-            <p className="booking-requirements__title">Para enviar la solicitud necesitas:</p>
+            <p className="booking-requirements__title">{t('booking.requirements.title')}</p>
             <ul className="booking-requirements__list">
               <li className={selectedPrm ? 'req--ok' : 'req--missing'}>
-                {selectedPrm ? '✓' : '○'} Paciente seleccionado
+                {selectedPrm ? '✓' : '○'} {t('booking.requirements.patientSelected')}
               </li>
               <li className={address.full_address ? 'req--ok' : 'req--missing'}>
-                {address.full_address ? '✓' : '○'} Dirección de asistencia
+                {address.full_address ? '✓' : '○'} {t('booking.requirements.addressSelected')}
               </li>
               <li className={date ? 'req--ok' : 'req--missing'}>
-                {date ? '✓' : '○'} Fecha
+                {date ? '✓' : '○'} {t('booking.requirements.dateSelected')}
               </li>
               <li className={time ? 'req--ok' : 'req--missing'}>
-                {time ? '✓' : '○'} Hora de asistencia
+                {time ? '✓' : '○'} {t('booking.requirements.timeSelected')}
               </li>
             </ul>
           </div>

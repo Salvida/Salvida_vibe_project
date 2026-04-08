@@ -7,6 +7,7 @@ from models.prm import (
 )
 from models.address import Address, PrmAddressCreate
 from auth.dependencies import get_current_user
+from auth.roles import is_admin
 
 router = APIRouter()
 
@@ -52,7 +53,7 @@ def _fetch_prm_addresses(prm_id: str, supabase) -> list[Address]:
     return [_row_to_address(r) for r in (result.data or [])]
 
 
-def _row_to_prm(row: dict, addresses: list[Address], contacts: list[dict]) -> Prm:
+def _row_to_prm(row: dict, addresses: list[Address], contacts: list[dict], owner_name: Optional[str] = None) -> Prm:
     emergency_contacts = [
         EmergencyContact(
             id=str(c["id"]),
@@ -77,9 +78,19 @@ def _row_to_prm(row: dict, addresses: list[Address], contacts: list[dict]) -> Pr
         dni=row.get("dni"),
         is_demo=row.get("is_demo", False),
         created_by=row.get("created_by"),
+        owner_name=owner_name,
         addresses=addresses,
         emergency_contacts=emergency_contacts,
     )
+
+
+def _assert_prm_access(prm_id: str, user_sub: str, supabase) -> None:
+    """Raises 403 if a non-admin user tries to access a PRM they don't own."""
+    if is_admin(user_sub):
+        return
+    row = supabase.table("prms").select("created_by").eq("id", prm_id).single().execute()
+    if not row.data or row.data.get("created_by") != user_sub:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
 
 def _fetch_full_prm(prm_id: str, supabase) -> Prm:
@@ -97,7 +108,17 @@ def _fetch_full_prm(prm_id: str, supabase) -> Prm:
     )
     contacts = contacts_result.data or []
 
-    return _row_to_prm(row.data, addresses, contacts)
+    owner_name = None
+    created_by = row.data.get("created_by")
+    if created_by:
+        profile_res = supabase.table("profiles").select("first_name, last_name").eq("id", created_by).single().execute()
+        if profile_res.data:
+            parts = [profile_res.data.get("first_name") or "", profile_res.data.get("last_name") or ""]
+            name = " ".join(x for x in parts if x).strip()
+            if name:
+                owner_name = name
+
+    return _row_to_prm(row.data, addresses, contacts, owner_name)
 
 
 # ---------------------------------------------------------------------------
@@ -107,12 +128,18 @@ def _fetch_full_prm(prm_id: str, supabase) -> Prm:
 async def list_prms(
     q: Optional[str] = Query(None, description="Search by name, email or phone"),
     status: Optional[str] = Query(None),
+    owner_id: Optional[str] = Query(None, description="Filter by owner (admin only)"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
     query = supabase.table("prms").select("*").order("name")
+
+    if not is_admin(user["sub"]):
+        query = query.eq("created_by", user["sub"])
+    elif owner_id:
+        query = query.eq("created_by", owner_id)
 
     if status:
         query = query.eq("status", status)
@@ -121,7 +148,41 @@ async def list_prms(
 
     query = query.range(offset, offset + limit - 1)
     result = query.execute()
-    return [_row_to_list_item(r) for r in (result.data or [])]
+    rows = result.data or []
+
+    # Enrich with owner names
+    created_by_ids = list({r["created_by"] for r in rows if r.get("created_by")})
+    owner_map: dict = {}
+    if created_by_ids:
+        profiles_res = supabase.table("profiles").select("id, first_name, last_name").in_("id", created_by_ids).execute()
+        for p in (profiles_res.data or []):
+            parts = [p.get("first_name") or "", p.get("last_name") or ""]
+            owner_map[p["id"]] = " ".join(x for x in parts if x).strip()
+
+    # Enrich with booking stats (count + most recent date)
+    prm_ids = [r["id"] for r in rows]
+    booking_stats: dict = {}
+    if prm_ids:
+        bookings_res = supabase.table("bookings").select("prm_id, date").in_("prm_id", prm_ids).execute()
+        for b in (bookings_res.data or []):
+            pid = b["prm_id"]
+            if pid not in booking_stats:
+                booking_stats[pid] = {"count": 0, "last_date": None}
+            booking_stats[pid]["count"] += 1
+            d = b.get("date")
+            if d and (booking_stats[pid]["last_date"] is None or d > booking_stats[pid]["last_date"]):
+                booking_stats[pid]["last_date"] = d
+
+    items = []
+    for r in rows:
+        item = _row_to_list_item(r)
+        cid = r.get("created_by")
+        item.owner_name = owner_map.get(cid) if cid else None
+        stats = booking_stats.get(r["id"], {})
+        item.booking_count = stats.get("count", 0)
+        item.last_booking_date = stats.get("last_date")
+        items.append(item)
+    return items
 
 
 # ---------------------------------------------------------------------------
@@ -130,6 +191,7 @@ async def list_prms(
 @router.get("/{prm_id}", response_model=Prm)
 async def get_prm(prm_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
     return _fetch_full_prm(prm_id, supabase)
 
 
@@ -139,6 +201,9 @@ async def get_prm(prm_id: str, user: dict = Depends(get_current_user)):
 @router.post("", response_model=Prm, status_code=status.HTTP_201_CREATED)
 async def create_prm(body: PrmCreate, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
+
+    caller_is_admin = is_admin(user["sub"])
+    owner = body.owner_id if (caller_is_admin and body.owner_id) else user["sub"]
 
     prm_payload = {
         "name": body.name,
@@ -152,8 +217,8 @@ async def create_prm(body: PrmCreate, user: dict = Depends(get_current_user)):
         "avatar": body.avatar,
         "dni": body.dni,
         "is_demo": body.is_demo,
-        "user_id": user["sub"],
-        "created_by": user["sub"],
+        "user_id": owner,
+        "created_by": owner,
     }
 
     result = supabase.table("prms").insert(prm_payload).execute()
@@ -180,6 +245,7 @@ async def update_prm(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
 
     field_map = {
         "name": "name",
@@ -209,6 +275,7 @@ async def update_prm(
 @router.delete("/{prm_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_prm(prm_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
 
     active = (
         supabase.table("bookings")
@@ -232,6 +299,7 @@ async def delete_prm(prm_id: str, user: dict = Depends(get_current_user)):
 @router.get("/{prm_id}/addresses", response_model=list[Address])
 async def list_prm_addresses(prm_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
     return _fetch_prm_addresses(prm_id, supabase)
 
 
@@ -246,6 +314,7 @@ async def add_prm_address(
 ):
     """Create a new address linked to this PRM."""
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
 
     addr_payload = {
         "full_address": body.full_address,
@@ -272,6 +341,7 @@ async def delete_prm_address(
 ):
     """Remove an address from a PRM (deletes the address record)."""
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
     supabase.table("addresses").delete().eq("id", address_id).eq("prm_id", prm_id).execute()
 
 
@@ -301,6 +371,7 @@ async def add_emergency_contact(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
     result = supabase.table("emergency_contacts").insert({
         "prm_id": prm_id,
         "name": body.name,
@@ -325,6 +396,7 @@ async def delete_emergency_contact(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
     supabase.table("emergency_contacts").delete().eq("id", ec_id).eq("prm_id", prm_id).execute()
 
 
@@ -342,6 +414,7 @@ async def update_emergency_contact(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_prm_access(prm_id, user["sub"], supabase)
     updates = body.model_dump(exclude_unset=True)
     if not updates:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")

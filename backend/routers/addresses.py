@@ -3,8 +3,21 @@ from typing import Optional
 from db.supabase_client import get_supabase
 from models.address import Address, AddressCreate, AddressUpdate, AddressValidationUpdate
 from auth.dependencies import get_current_user
+from auth.roles import is_admin, require_admin
 
 router = APIRouter()
+
+
+def _assert_address_access(address_id: str, user_sub: str, supabase) -> dict:
+    """Fetches address row and asserts the caller owns it (or is admin).
+    Returns the row data for reuse."""
+    row = supabase.table("addresses").select("*").eq("id", address_id).single().execute()
+    if not row.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Address not found")
+    if not is_admin(user_sub):
+        if row.data.get("user_id") != user_sub:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+    return row.data
 
 
 def _row_to_address(row: dict) -> Address:
@@ -29,6 +42,7 @@ async def list_addresses(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    require_admin(user["sub"])
     query = supabase.table("addresses").select("*").order("created_at", desc=True)
     if validation_status:
         query = query.eq("validation_status", validation_status)
@@ -39,10 +53,8 @@ async def list_addresses(
 @router.get("/{address_id}", response_model=Address)
 async def get_address(address_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
-    result = supabase.table("addresses").select("*").eq("id", address_id).single().execute()
-    if not result.data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Address not found")
-    return _row_to_address(result.data)
+    row = _assert_address_access(address_id, user["sub"], supabase)
+    return _row_to_address(row)
 
 
 @router.post("", response_model=Address, status_code=status.HTTP_201_CREATED)
@@ -61,6 +73,7 @@ async def update_address(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_address_access(address_id, user["sub"], supabase)
     updates = body.model_dump(exclude_unset=True)
     if not updates:
         return await get_address(address_id, user)
@@ -84,6 +97,7 @@ async def validate_address(
 ):
     """Update only the validation status and notes of an address."""
     supabase = get_supabase()
+    require_admin(user["sub"])
     updates = {"validation_status": body.validation_status}
     if body.validation_notes is not None:
         updates["validation_notes"] = body.validation_notes
@@ -102,6 +116,7 @@ async def validate_address(
 @router.delete("/{address_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_address(address_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
+    _assert_address_access(address_id, user["sub"], supabase)
 
     # Check no prms are linked to this address via prm_id
     linked = (

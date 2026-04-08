@@ -2,10 +2,11 @@ import { useState } from 'react';
 import Header from '../../components/Header/Header';
 import CalendarWidget from '../../components/CalendarWidget/CalendarWidget';
 import DropdownMenu from '../../components/DropdownMenu';
-import { PlusCircle, Clock, MapPin, Pencil, Trash2 } from 'lucide-react';
+import { PlusCircle, Clock, MapPin, Pencil, Trash2, CheckCircle, X, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useBookings, useDeleteBooking } from '../../hooks/useBookings';
+import { useBookings, useDeleteBooking, useUpdateBookingStatus } from '../../hooks/useBookings';
+import { useAuthStore } from '../../store/useAuthStore';
 import type { Booking } from '../../types';
 import './Dashboard.css';
 
@@ -15,13 +16,6 @@ function formatDateISO(date: Date): string {
     String(date.getDate()).padStart(2, '0');
 }
 
-const STATUS_LABEL: Record<Booking['status'], string> = {
-  Approved: 'Aprobada',
-  Pending: 'Pendiente',
-  Completed: 'Completada',
-  Cancelled: 'Cancelada',
-};
-
 const STATUS_CLASS: Record<Booking['status'], string> = {
   Approved: 'booking-status--approved',
   Pending: 'booking-status--pending',
@@ -29,7 +23,20 @@ const STATUS_CLASS: Record<Booking['status'], string> = {
   Cancelled: 'booking-status--cancelled',
 };
 
-function BookingCard({ booking, onEdit, onDelete }: { booking: Booking; onEdit: () => void; onDelete: () => void }) {
+function BookingCard({
+  booking,
+  onEdit,
+  onDelete,
+  onStatusChange,
+  isAdmin,
+}: {
+  booking: Booking;
+  onEdit: () => void;
+  onDelete: () => void;
+  onStatusChange: (status: Booking['status']) => void;
+  isAdmin: boolean;
+}) {
+  const { t } = useTranslation();
   const mapsUrl = booking.address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.address)}`
     : null;
@@ -48,7 +55,7 @@ function BookingCard({ booking, onEdit, onDelete }: { booking: Booking; onEdit: 
         <div className="booking-card__meta">
           <span className="booking-card__meta-item">
             <Clock size={13} />
-            {booking.startTime}–{booking.endTime}
+            {booking.startTime}
           </span>
           <span className="booking-card__meta-item booking-card__meta-location">
             {mapsUrl ? (
@@ -57,7 +64,7 @@ function BookingCard({ booking, onEdit, onDelete }: { booking: Booking; onEdit: 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="booking-card__map-icon"
-                title="Ver en Google Maps"
+                title={t('dashboard.viewOnMaps')}
                 onClick={(e) => e.stopPropagation()}
               >
                 <MapPin size={13} />
@@ -67,16 +74,34 @@ function BookingCard({ booking, onEdit, onDelete }: { booking: Booking; onEdit: 
             )}
             {booking.address}
           </span>
+          {isAdmin && booking.owner_name && (
+            <span className="booking-card__meta-item">
+              <User size={13} />
+              {booking.owner_name}
+            </span>
+          )}
         </div>
       </div>
       <div className="booking-card__actions">
-        <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
-          {STATUS_LABEL[booking.status]}
-        </span>
+        <div className="booking-card__badges">
+          {booking.created_by_admin && (
+            <span className="booking-admin-badge">{t('dashboard.createdByAdmin')}</span>
+          )}
+          <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
+            {t(`bookingStatuses.${booking.status}`)}
+          </span>
+        </div>
         <DropdownMenu
           items={[
-            { label: 'Editar reserva', icon: <Pencil size={14} />, onClick: onEdit },
-            { label: 'Eliminar reserva', icon: <Trash2 size={14} />, onClick: onDelete, variant: 'danger' },
+            ...(isAdmin && booking.status === 'Pending' ? [
+              { label: t('dashboard.actions.approve'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Approved') },
+            ] : []),
+            ...(isAdmin && (booking.status === 'Pending' || booking.status === 'Approved') ? [
+              { label: t('dashboard.actions.complete'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Completed') },
+              { label: t('dashboard.actions.cancelBooking'), icon: <X size={14} />, onClick: () => onStatusChange('Cancelled'), variant: 'danger' as const },
+            ] : []),
+            { label: t('dashboard.actions.editBooking'), icon: <Pencil size={14} />, onClick: onEdit },
+            { label: t('dashboard.actions.deleteBooking'), icon: <Trash2 size={14} />, onClick: onDelete, variant: 'danger' as const },
           ]}
         />
       </div>
@@ -88,6 +113,9 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const deleteBooking = useDeleteBooking();
+  const updateStatus = useUpdateBookingStatus();
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === 'admin';
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const dateStr = formatDateISO(selectedDate);
@@ -101,7 +129,7 @@ export default function Dashboard() {
   const isToday = dateStr === todayStr;
   const dateLabel = isToday
     ? t('dashboard.todayBookings')
-    : `Reservas del ${selectedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`;
+    : t('dashboard.dateLabel', { date: selectedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) });
 
   return (
     <div className="dashboard">
@@ -166,6 +194,8 @@ export default function Dashboard() {
                   booking={b}
                   onEdit={() => navigate(`/app/bookings/${b.id}/edit`)}
                   onDelete={() => deleteBooking.mutate(b.id)}
+                  onStatusChange={(status) => updateStatus.mutate({ id: b.id, status })}
+                  isAdmin={isAdmin}
                 />
               ))}
               </div>

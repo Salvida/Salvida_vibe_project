@@ -8,7 +8,11 @@ export const PRMS_KEY = ['prms', 'list'] as const;
 export const prmKey = (id: string) => ['prms', 'detail', id] as const;
 
 // ---- Types matching the backend PrmListItem / Prm ----
-export type PrmListItem = Pick<Prm, 'id' | 'name' | 'email' | 'phone' | 'status' | 'avatar' | 'dni' | 'is_demo'>;
+export type PrmListItem = Pick<Prm, 'id' | 'name' | 'email' | 'phone' | 'status' | 'avatar' | 'dni' | 'is_demo'> & {
+  owner_name?: string;
+  booking_count?: number;
+  last_booking_date?: string;
+};
 
 function parseApiError(error: unknown, fallback: string): string {
   if (error instanceof ApiError) {
@@ -24,12 +28,14 @@ function parseApiError(error: unknown, fallback: string): string {
 
 // ---- Hooks ----
 
-export function usePrms(query?: string) {
+export function usePrms(query?: string, ownerId?: string, statusFilter?: 'Activo' | 'Inactivo') {
   const params = new URLSearchParams();
   if (query) params.set('q', query);
+  if (ownerId) params.set('owner_id', ownerId);
+  if (statusFilter) params.set('status', statusFilter);
 
   return useQuery<PrmListItem[]>({
-    queryKey: [...PRMS_KEY, query],
+    queryKey: [...PRMS_KEY, query, ownerId, statusFilter],
     queryFn: () => apiClient.get<PrmListItem[]>(`/api/prms?${params}`),
   });
 }

@@ -29,5 +29,6 @@ class UserProfile(BaseModel):
     role: Optional[str] = None
     avatar: Optional[str] = None
     notification_prefs: Optional[NotificationPrefs] = None
+    isActive: bool = True
 
     model_config = {"from_attributes": True}

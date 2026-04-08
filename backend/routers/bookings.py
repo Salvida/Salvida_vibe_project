@@ -6,6 +6,7 @@ from models.booking import (
     BookingStatusUpdate, BookingCancel,
 )
 from auth.dependencies import get_current_user
+from auth.roles import is_admin, require_admin
 from services.notifications import send_push_to_user
 
 router = APIRouter()
@@ -25,7 +26,7 @@ def _push_booking_update(user_id: str, title: str, body: str) -> None:
         send_push_to_user(user_id, title, body)
 
 
-def _row_to_booking(row: dict, prm_name: str = "", prm_avatar: Optional[str] = None) -> Booking:
+def _row_to_booking(row: dict, prm_name: str = "", prm_avatar: Optional[str] = None, owner_name: Optional[str] = None) -> Booking:
     return Booking(
         id=str(row["id"]),
         prmId=row["prm_id"],
@@ -38,9 +39,21 @@ def _row_to_booking(row: dict, prm_name: str = "", prm_avatar: Optional[str] = N
         status=row.get("status", "Pending"),
         service_reason=row.get("service_reason"),
         service_reason_notes=row.get("service_reason_notes"),
-        urgency=row.get("urgency", "routine"),
         is_demo=row.get("is_demo", False),
+        created_by_admin=row.get("created_by_admin", False),
+        owner_name=owner_name,
     )
+
+
+def _assert_booking_access(booking_id: str, user_sub: str, supabase) -> None:
+    """Raises 403 if a non-admin user tries to access a booking they don't own."""
+    if is_admin(user_sub):
+        return
+    row = supabase.table("bookings").select("created_by").eq("id", booking_id).single().execute()
+    if not row.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
+    if row.data.get("created_by") != user_sub:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
 
 def _fetch_full_booking(booking_id: str, supabase) -> Booking:
@@ -78,6 +91,9 @@ async def list_bookings(
         .order("start_time")
     )
 
+    if not is_admin(user["sub"]):
+        query = query.eq("created_by", user["sub"])
+
     if date:
         query = query.eq("date", date)
     if booking_status:
@@ -88,10 +104,25 @@ async def list_bookings(
     query = query.range(offset, offset + limit - 1)
     result = query.execute()
 
+    rows = result.data or []
+
+    # Enrich with owner names for admins
+    owner_map: dict = {}
+    if is_admin(user["sub"]):
+        created_by_ids = list({r["created_by"] for r in rows if r.get("created_by")})
+        if created_by_ids:
+            profiles_res = supabase.table("profiles").select("id, first_name, last_name").in_("id", created_by_ids).execute()
+            for p in (profiles_res.data or []):
+                parts = [p.get("first_name") or "", p.get("last_name") or ""]
+                name = " ".join(x for x in parts if x).strip()
+                if name:
+                    owner_map[p["id"]] = name
+
     bookings = []
-    for row in (result.data or []):
+    for row in rows:
         prm = row.get("prms") or {}
-        bookings.append(_row_to_booking(row, prm.get("name", ""), prm.get("avatar")))
+        owner_name = owner_map.get(row.get("created_by")) if owner_map else None
+        bookings.append(_row_to_booking(row, prm.get("name", ""), prm.get("avatar"), owner_name))
 
     return bookings
 
@@ -102,6 +133,7 @@ async def list_bookings(
 @router.get("/{booking_id}", response_model=Booking)
 async def get_booking(booking_id: str, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
+    _assert_booking_access(booking_id, user["sub"], supabase)
     return _fetch_full_booking(booking_id, supabase)
 
 
@@ -112,9 +144,9 @@ async def get_booking(booking_id: str, user: dict = Depends(get_current_user)):
 async def create_booking(body: BookingCreate, background_tasks: BackgroundTasks, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
 
-    # Validate prm exists
+    # Validate prm exists and get owner
     try:
-        prm_res = supabase.table("prms").select("id, name, avatar").eq("id", body.prmId).single().execute()
+        prm_res = supabase.table("prms").select("id, name, avatar, created_by").eq("id", body.prmId).single().execute()
         if not prm_res.data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prm not found")
         prm_data = prm_res.data
@@ -122,6 +154,11 @@ async def create_booking(body: BookingCreate, background_tasks: BackgroundTasks,
         raise
     except Exception:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prm not found")
+
+    caller_is_admin = is_admin(user["sub"])
+    # When an admin creates a booking, assign ownership to the PRM's owner
+    owner_id = prm_data.get("created_by") or user["sub"]
+    booking_owner = owner_id if caller_is_admin else user["sub"]
 
     payload = {
         "prm_id": body.prmId,
@@ -131,9 +168,9 @@ async def create_booking(body: BookingCreate, background_tasks: BackgroundTasks,
         "address": body.address,
         "service_reason": body.service_reason,
         "service_reason_notes": body.service_reason_notes,
-        "urgency": body.urgency,
-        "user_id": user["sub"],
-        "created_by": user["sub"],
+        "user_id": booking_owner,
+        "created_by": booking_owner,
+        "created_by_admin": caller_is_admin,
     }
 
     result = supabase.table("bookings").insert(payload).execute()
@@ -159,6 +196,7 @@ async def update_booking(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_booking_access(booking_id, user["sub"], supabase)
 
     field_map = {
         "startTime": "start_time",
@@ -168,7 +206,6 @@ async def update_booking(
         "status": "status",
         "service_reason": "service_reason",
         "service_reason_notes": "service_reason_notes",
-        "urgency": "urgency",
     }
 
     raw = body.model_dump(exclude_unset=True)
@@ -198,6 +235,7 @@ async def update_booking_status(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    require_admin(user["sub"])
     supabase.table("bookings").update({"status": body.status}).eq("id", booking_id).execute()
     booking = _fetch_full_booking(booking_id, supabase)
     background_tasks.add_task(
@@ -218,6 +256,7 @@ async def delete_booking(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_booking_access(booking_id, user["sub"], supabase)
     supabase.table("bookings").delete().eq("id", booking_id).execute()
 
 
@@ -228,6 +267,7 @@ async def cancel_booking(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    _assert_booking_access(booking_id, user["sub"], supabase)
     updates: dict = {"status": "Cancelled"}
     if body.reason:
         updates["service_reason_notes"] = body.reason

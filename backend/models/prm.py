@@ -40,6 +40,7 @@ class PrmBase(BaseModel):
 
 class PrmCreate(PrmBase):
     emergency_contacts: list[EmergencyContactCreate] = []
+    owner_id: Optional[str] = None
 
 
 class PrmUpdate(BaseModel):
@@ -66,11 +67,15 @@ class PrmListItem(BaseModel):
     dni: Optional[str] = None
     is_demo: bool = False
     created_by: Optional[str] = None
+    owner_name: Optional[str] = None
+    booking_count: int = 0
+    last_booking_date: Optional[str] = None
 
 
 class Prm(PrmBase):
     id: str
     created_by: Optional[str] = None
+    owner_name: Optional[str] = None
     addresses: list[Address] = []
     emergency_contacts: list[EmergencyContact] = []
 
