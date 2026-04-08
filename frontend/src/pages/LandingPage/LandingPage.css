@@ -712,6 +712,39 @@
   color: var(--lp-on-surface-variant);
 }
 
+/* ── Footer social icons ── */
+.lp-footer__social {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.lp-footer__social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  background: var(--lp-surface-container-high);
+  color: var(--lp-on-surface-variant);
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  text-decoration: none;
+}
+
+.lp-footer__social-link:hover {
+  background: var(--lp-primary-container);
+  color: var(--lp-primary);
+  transform: scale(1.1);
+}
+
+@media (min-width: 768px) {
+  .lp-footer__inner {
+    flex-wrap: wrap;
+    row-gap: 1rem;
+  }
+}
+
 /* ============================================================
    AUTH MODAL
    ============================================================ */
