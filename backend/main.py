@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
-from routers import profile, addresses, prms, bookings, global_kpis, social_links
+from routers import profile, addresses, prms, bookings, global_kpis, social_links, reviews
 
 settings = get_settings()
 
@@ -27,6 +27,7 @@ app.include_router(prms.router,  prefix="/api/prms",  tags=["prms"])
 app.include_router(bookings.router,    prefix="/api/bookings",  tags=["bookings"])
 app.include_router(global_kpis.router,   prefix="/globalKpis",     tags=["landing"])
 app.include_router(social_links.router, prefix="/api/social-links", tags=["landing"])
+app.include_router(reviews.router,      prefix="/api/reviews",      tags=["landing"])
 
 
 @app.get("/health", tags=["health"])

@@ -461,14 +461,8 @@
 }
 
 .lp-testimonials__nav {
-  display: none;
+  display: flex;
   gap: 0.75rem;
-}
-
-@media (min-width: 768px) {
-  .lp-testimonials__nav {
-    display: flex;
-  }
 }
 
 .lp-testimonials__nav-btn {
@@ -494,16 +488,14 @@
   border-color: var(--lp-primary-container);
 }
 
-.lp-testimonials__grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+.lp-testimonials .swiper {
+  padding-bottom: 0.25rem;
 }
 
-@media (min-width: 768px) {
-  .lp-testimonials__grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+/* Equal-height slides */
+.lp-testimonials .swiper-slide {
+  height: auto;
+  display: flex;
 }
 
 .lp-testimonial-card {
@@ -513,6 +505,9 @@
   border: 1px solid transparent;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   transition: box-shadow 0.25s, border-color 0.25s;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .lp-testimonial-card:hover {
@@ -536,6 +531,36 @@
   color: var(--lp-on-surface-variant);
   font-style: italic;
   margin-bottom: 2rem;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: -webkit-line-clamp 0.2s;
+}
+
+/* Quote popup – fixed overlay showing full text on hover */
+.lp-quote-popup {
+  position: fixed;
+  z-index: 9999;
+  background: var(--lp-surface-container-lowest);
+  border: 1px solid rgba(97, 51, 122, 0.18);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.14);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--lp-on-surface-variant);
+  font-style: italic;
+  pointer-events: none;
+  max-height: 40vh;
+  overflow-y: auto;
+  animation: lp-popup-in 0.15s ease;
+}
+
+@keyframes lp-popup-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .lp-testimonial-card__author {
@@ -586,6 +611,22 @@
   text-transform: uppercase;
   color: var(--lp-on-surface-variant);
   margin-top: 2px;
+}
+
+.lp-testimonial-card__avatar-img {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.lp-testimonial-card__source-badge {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  color: var(--lp-on-surface-variant);
+  opacity: 0.6;
 }
 
 /* ============================================================

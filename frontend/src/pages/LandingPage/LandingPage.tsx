@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, A11y } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper/types";
+import "swiper/css";
 import PLATFORM_ICONS from "../../lib/platformIcons";
 import "./LandingPage.css";
 
@@ -15,19 +19,56 @@ interface ApiSocialLink {
 }
 
 const DEFAULT_SOCIAL_LINKS: ApiSocialLink[] = [
-  { id: "facebook",  platform: "facebook",  label: "Facebook",  url: "https://www.facebook.com/p/Salvida-61565788268475/", order: 0 },
-  { id: "instagram", platform: "instagram", label: "Instagram", url: "https://www.instagram.com",                          order: 1 },
-  { id: "tiktok",    platform: "tiktok",    label: "TikTok",    url: "https://www.tiktok.com",                             order: 2 },
-  { id: "google",    platform: "google",    label: "Google",    url: "https://www.google.com",                             order: 3 },
+  {
+    id: "facebook",
+    platform: "facebook",
+    label: "Facebook",
+    url: "https://www.facebook.com/p/Salvida-61565788268475/",
+    order: 0,
+  },
+  {
+    id: "instagram",
+    platform: "instagram",
+    label: "Instagram",
+    url: "https://www.instagram.com",
+    order: 1,
+  },
+  {
+    id: "tiktok",
+    platform: "tiktok",
+    label: "TikTok",
+    url: "https://www.tiktok.com",
+    order: 2,
+  },
+  {
+    id: "google",
+    platform: "google",
+    label: "Google",
+    url: "https://www.google.com",
+    order: 3,
+  },
 ];
 
 // ---------------------------------------------------------------------------
-// Static testimonials – sourced from client feedback emails
+// Review type from API
+// ---------------------------------------------------------------------------
+interface ApiReview {
+  id: string;
+  source: string;
+  author_name: string;
+  author_avatar?: string;
+  rating: number;
+  text: string;
+  published_at?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Static mock reviews – shown when API returns nothing
 // ---------------------------------------------------------------------------
 const testimonials = [
   {
     quote:
-      "Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite.",
+      "Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite.",
     initials: "ME",
     name: "María Elena",
     role: "Usuaria desde 2023",
@@ -48,6 +89,38 @@ const testimonials = [
     name: "Carmen García",
     role: "Usuaria Frecuente",
     avatarMod: "lime",
+  },
+  {
+    quote:
+      "Mi padre lleva meses usando el servicio y cada vez que lo veo bajar solo las escaleras, sé que fue la mejor decisión. Gracias por el cuidado y la profesionalidad.",
+    initials: "LM",
+    name: "Luis Martínez",
+    role: "Familiar de Usuario",
+    avatarMod: "purple",
+  },
+  {
+    quote:
+      "Rápidos, amables y muy eficientes. Me han dado una autonomía que pensé que había perdido para siempre. Lo recomiendo sin dudarlo.",
+    initials: "AP",
+    name: "Ana Pérez",
+    role: "Usuaria desde 2024",
+    avatarMod: "mauve",
+  },
+  {
+    quote:
+      "El equipo siempre llega puntual y trata a mi abuela con una delicadeza y un respeto que nos da mucha tranquilidad a toda la familia.",
+    initials: "RS",
+    name: "Roberto Sánchez",
+    role: "Familiar de Usuaria",
+    avatarMod: "lime",
+  },
+  {
+    quote:
+      "Después de mi operación, Salvida fue clave para recuperar mi rutina. Subir y bajar de casa sin ayuda de nadie volvió a ser posible.",
+    initials: "IT",
+    name: "Isabel Torres",
+    role: "Usuaria Habitual",
+    avatarMod: "purple",
   },
 ] as const;
 
@@ -134,17 +207,30 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<string>("home");
   const [kpis, setKpis] = useState<GlobalKpis>(DEFAULT_KPIS);
-  const [socialLinks, setSocialLinks] = useState<ApiSocialLink[]>(DEFAULT_SOCIAL_LINKS);
+  const [socialLinks, setSocialLinks] =
+    useState<ApiSocialLink[]>(DEFAULT_SOCIAL_LINKS);
+  const [reviews, setReviews] = useState<ApiReview[] | null>(null);
+  const swiperRef = useRef<SwiperType | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const isScrollingRef = useRef(false);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Fetch reviews on mount; null means "still loading / use mocks"
+  useEffect(() => {
+    fetch(`${BASE_URL}/api/reviews`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data: ApiReview[]) => setReviews(data.length > 0 ? data : null))
+      .catch(() => setReviews(null));
+  }, []);
 
   // Fetch social links on mount
   useEffect(() => {
     fetch(`${BASE_URL}/api/social-links`)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((data: ApiSocialLink[]) => setSocialLinks(data))
-      .catch(() => {/* silently ignore – no social links shown */});
+      .catch(() => {
+        /* silently ignore – no social links shown */
+      });
   }, []);
 
   // Fetch global KPIs on mount
@@ -215,7 +301,7 @@ export default function LandingPage() {
                     : id === "servicios"
                       ? "Servicios"
                       : id === "nosotros"
-                        ? "Nosotros"
+                        ? "Nosotras"
                         : "Testimonios"}
                 </button>
               ),
@@ -320,56 +406,138 @@ export default function LandingPage() {
                   Experiencias Reales
                 </span>
                 <h2 className="lp-testimonials__title">
-                  Lo que dicen de nosotros
+                  Lo que dicen de nosotras
                 </h2>
               </div>
               <div className="lp-testimonials__nav">
                 <button
                   className="lp-testimonials__nav-btn"
                   aria-label="Anterior testimonio"
+                  onClick={() => swiperRef.current?.slidePrev()}
                 >
                   chevron_left
                 </button>
                 <button
                   className="lp-testimonials__nav-btn"
                   aria-label="Siguiente testimonio"
+                  onClick={() => swiperRef.current?.slideNext()}
                 >
                   chevron_right
                 </button>
               </div>
             </div>
 
-            <div className="lp-testimonials__grid">
-              {testimonials.map((t) => (
-                <div key={t.initials} className="lp-testimonial-card">
-                  <div
-                    className="lp-testimonial-card__stars"
-                    aria-label="5 estrellas"
-                  >
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <span
-                        key={i}
-                        className="lp-material-icon lp-material-icon--filled"
+            <Swiper
+              modules={[Navigation, A11y]}
+              onSwiper={(swiper) => {
+                swiperRef.current = swiper;
+              }}
+              spaceBetween={24}
+              loop
+              breakpoints={{
+                0: { slidesPerView: 1 },
+                560: { slidesPerView: 2 },
+                900: { slidesPerView: 3 },
+              }}
+            >
+              {(reviews ?? testimonials).map((item) => {
+                const isApi = "author_name" in item;
+                if (isApi) {
+                  const r = item as ApiReview;
+                  const initials = r.author_name
+                    .split(" ")
+                    .map((w) => w[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2);
+                  return (
+                    <SwiperSlide key={r.id}>
+                      <div className="lp-testimonial-card">
+                        <div className="lp-testimonial-card__source-badge">
+                          {PLATFORM_ICONS[r.source] ?? null}
+                        </div>
+                        <div
+                          className="lp-testimonial-card__stars"
+                          aria-label={`${r.rating} estrellas`}
+                        >
+                          {Array.from({ length: r.rating }).map((_, i) => (
+                            <span
+                              key={i}
+                              className="lp-material-icon lp-material-icon--filled"
+                            >
+                              star
+                            </span>
+                          ))}
+                          {Array.from({ length: 5 - r.rating }).map((_, i) => (
+                            <span key={i} className="lp-material-icon">
+                              star
+                            </span>
+                          ))}
+                        </div>
+                        <p className="lp-testimonial-card__quote">"{r.text}"</p>
+                        <div className="lp-testimonial-card__author">
+                          {r.author_avatar ? (
+                            <img
+                              src={r.author_avatar}
+                              alt={r.author_name}
+                              className="lp-testimonial-card__avatar-img"
+                            />
+                          ) : (
+                            <div className="lp-testimonial-card__avatar lp-testimonial-card__avatar--purple">
+                              {initials}
+                            </div>
+                          )}
+                          <div>
+                            <div className="lp-testimonial-card__name">
+                              {r.author_name}
+                            </div>
+                            <div className="lp-testimonial-card__role">
+                              {r.source === "google" ? "Google" : "Facebook"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </SwiperSlide>
+                  );
+                }
+                const t = item as (typeof testimonials)[number];
+                return (
+                  <SwiperSlide key={t.initials}>
+                    <div className="lp-testimonial-card">
+                      <div
+                        className="lp-testimonial-card__stars"
+                        aria-label="5 estrellas"
                       >
-                        star
-                      </span>
-                    ))}
-                  </div>
-                  <p className="lp-testimonial-card__quote">"{t.quote}"</p>
-                  <div className="lp-testimonial-card__author">
-                    <div
-                      className={`lp-testimonial-card__avatar lp-testimonial-card__avatar--${t.avatarMod}`}
-                    >
-                      {t.initials}
+                        {[0, 1, 2, 3, 4].map((i) => (
+                          <span
+                            key={i}
+                            className="lp-material-icon lp-material-icon--filled"
+                          >
+                            star
+                          </span>
+                        ))}
+                      </div>
+                      <p className="lp-testimonial-card__quote">"{t.quote}"</p>
+                      <div className="lp-testimonial-card__author">
+                        <div
+                          className={`lp-testimonial-card__avatar lp-testimonial-card__avatar--${t.avatarMod}`}
+                        >
+                          {t.initials}
+                        </div>
+                        <div>
+                          <div className="lp-testimonial-card__name">
+                            {t.name}
+                          </div>
+                          <div className="lp-testimonial-card__role">
+                            {t.role}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="lp-testimonial-card__name">{t.name}</div>
-                      <div className="lp-testimonial-card__role">{t.role}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  </SwiperSlide>
+                );
+              })}
+            </Swiper>
           </div>
         </section>
       </main>
@@ -407,7 +575,13 @@ export default function LandingPage() {
                   rel="noopener noreferrer"
                 >
                   {PLATFORM_ICONS[s.platform] ?? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
                       <circle cx="12" cy="12" r="10" />
                     </svg>
                   )}
