@@ -93,6 +93,7 @@
 @media (min-width: 768px) {
   .lp-nav__links {
     display: flex;
+    margin-left: 6rem;
   }
 }
 
@@ -558,10 +559,10 @@
   line-height: 1.7;
   color: var(--lp-on-surface-variant);
   font-style: italic;
-  pointer-events: none;
-  max-height: 40vh;
+  pointer-events: auto;
   overflow-y: auto;
   animation: lp-popup-in 0.15s ease;
+  max-height: 10rem !important;
 }
 
 @keyframes lp-popup-in {

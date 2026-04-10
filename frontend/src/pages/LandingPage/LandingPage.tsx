@@ -71,7 +71,7 @@ interface ApiReview {
 const testimonials = [
   {
     quote:
-      "Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite.",
+      "Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite.",
     initials: "ME",
     name: "María Elena",
     role: "Usuaria desde 2023",
@@ -132,18 +132,36 @@ const testimonials = [
 // ---------------------------------------------------------------------------
 interface PopupState {
   text: string;
-  top: number;
   left: number;
   width: number;
+  // below placement
+  top?: number;
+  maxHeightBelow?: number;
+  // above placement
+  bottom?: number;
+  maxHeightAbove?: number;
 }
 
 function QuotePopup({ popup }: { popup: PopupState }) {
   const GAP = 8;
+  const MARGIN = 16;
+  const style: React.CSSProperties =
+    popup.top !== undefined
+      ? {
+          top: popup.top + GAP,
+          left: popup.left,
+          width: popup.width,
+          maxHeight: popup.maxHeightBelow,
+        }
+      : {
+          bottom: popup.bottom! + GAP,
+          left: popup.left,
+          width: popup.width,
+          maxHeight: popup.maxHeightAbove,
+        };
+  void MARGIN;
   return ReactDOM.createPortal(
-    <div
-      className="lp-quote-popup"
-      style={{ top: popup.top + GAP, left: popup.left, width: popup.width }}
-    >
+    <div className="lp-quote-popup" data-quote-popup style={style}>
       "{popup.text}"
     </div>,
     document.body,
@@ -309,19 +327,46 @@ export default function LandingPage() {
     };
   }, []);
 
+  // Close popup on click outside
+  useEffect(() => {
+    if (!popup) return;
+    function handleClick(e: MouseEvent) {
+      if (!(e.target as Element).closest("[data-quote-popup]")) {
+        setPopup(null);
+      }
+    }
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [popup]);
+
   function handleQuoteEnter(
     e: React.MouseEvent<HTMLParagraphElement>,
     text: string,
   ) {
     const el = e.currentTarget;
-    // Only show popup when text is actually clamped
     if (el.scrollHeight <= el.clientHeight) return;
     const rect = el.getBoundingClientRect();
-    setPopup({ text, top: rect.bottom, left: rect.left, width: rect.width });
-  }
-
-  function handleQuoteLeave() {
-    setPopup(null);
+    const MARGIN = 16;
+    const GAP = 8;
+    const spaceBelow = window.innerHeight - rect.bottom - GAP - MARGIN;
+    const spaceAbove = rect.top - GAP - MARGIN;
+    if (spaceBelow >= 150 || spaceBelow >= spaceAbove) {
+      setPopup({
+        text,
+        left: rect.left,
+        width: rect.width,
+        top: rect.bottom,
+        maxHeightBelow: Math.max(spaceBelow, 80),
+      });
+    } else {
+      setPopup({
+        text,
+        left: rect.left,
+        width: rect.width,
+        bottom: window.innerHeight - rect.top,
+        maxHeightAbove: Math.max(spaceAbove, 80),
+      });
+    }
   }
 
   return (
@@ -518,7 +563,6 @@ export default function LandingPage() {
                         <p
                           className="lp-testimonial-card__quote"
                           onMouseEnter={(e) => handleQuoteEnter(e, r.text)}
-                          onMouseLeave={handleQuoteLeave}
                         >
                           "{r.text}"
                         </p>
@@ -569,7 +613,6 @@ export default function LandingPage() {
                       <p
                         className="lp-testimonial-card__quote"
                         onMouseEnter={(e) => handleQuoteEnter(e, mock.quote)}
-                        onMouseLeave={handleQuoteLeave}
                       >
                         "{mock.quote}"
                       </p>
