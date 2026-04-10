@@ -455,5 +455,44 @@
   },
   "header": {
     "date": "{{month}} {{year}}"
+  },
+  "landing": {
+    "nav": {
+      "home": "Inicio",
+      "servicios": "Servicios",
+      "nosotros": "Nosotras",
+      "testimonios": "Testimonios",
+      "login": "Iniciar sesión"
+    },
+    "hero": {
+      "subtitle": "Ayudamos a las Personas con Movilidad Reducida a salir y entrar de su propio hogar con seguridad y dignidad, superando las escaleras que limitan su independencia.",
+      "loginBtn": "Iniciar sesión",
+      "registerBtn": "Crear cuenta"
+    },
+    "stats": {
+      "services": "Servicios Realizados",
+      "users": "Personas Asistidas",
+      "points": "Puntos de Asistencia"
+    },
+    "video": {
+      "imgAlt": "Asistente ayudando a una persona con movilidad reducida a bajar escaleras",
+      "playLabel": "Reproducir video",
+      "captionTitle": "Conoce nuestra misión",
+      "captionSub": "3:45 • Salvida en acción"
+    },
+    "testimonials": {
+      "label": "Experiencias Reales",
+      "title": "Lo que dicen de nosotras",
+      "prevLabel": "Anterior testimonio",
+      "nextLabel": "Siguiente testimonio",
+      "starsLabel": "{{count}} estrellas"
+    },
+    "footer": {
+      "privacy": "Política de Privacidad",
+      "terms": "Términos de Servicio",
+      "contact": "Contacto",
+      "accessibility": "Accesibilidad",
+      "copy": "© 2025 Salvida. Movilidad con dignidad."
+    }
   }
 }

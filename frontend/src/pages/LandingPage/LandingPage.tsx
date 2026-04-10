@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, A11y } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper/types";
-import "swiper/css";
+import "swiper/swiper.css";
 import PLATFORM_ICONS from "../../lib/platformIcons";
 import "./LandingPage.css";
 
@@ -125,6 +127,29 @@ const testimonials = [
 ] as const;
 
 // ---------------------------------------------------------------------------
+// Quote popup – rendered via portal so it floats above the swiper
+// ---------------------------------------------------------------------------
+interface PopupState {
+  text: string;
+  top: number;
+  left: number;
+  width: number;
+}
+
+function QuotePopup({ popup }: { popup: PopupState }) {
+  const GAP = 8;
+  return ReactDOM.createPortal(
+    <div
+      className="lp-quote-popup"
+      style={{ top: popup.top + GAP, left: popup.left, width: popup.width }}
+    >
+      "{popup.text}"
+    </div>,
+    document.body,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // KPI types
 // ---------------------------------------------------------------------------
 interface GlobalKpis {
@@ -205,11 +230,13 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [activeSection, setActiveSection] = useState<string>("home");
   const [kpis, setKpis] = useState<GlobalKpis>(DEFAULT_KPIS);
   const [socialLinks, setSocialLinks] =
     useState<ApiSocialLink[]>(DEFAULT_SOCIAL_LINKS);
   const [reviews, setReviews] = useState<ApiReview[] | null>(null);
+  const [popup, setPopup] = useState<PopupState | null>(null);
   const swiperRef = useRef<SwiperType | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const isScrollingRef = useRef(false);
@@ -281,6 +308,21 @@ export default function LandingPage() {
     };
   }, []);
 
+  function handleQuoteEnter(
+    e: React.MouseEvent<HTMLParagraphElement>,
+    text: string,
+  ) {
+    const el = e.currentTarget;
+    // Only show popup when text is actually clamped
+    if (el.scrollHeight <= el.clientHeight) return;
+    const rect = el.getBoundingClientRect();
+    setPopup({ text, top: rect.bottom, left: rect.left, width: rect.width });
+  }
+
+  function handleQuoteLeave() {
+    setPopup(null);
+  }
+
   return (
     <div className="lp">
       {/* ── Nav ── */}
@@ -296,20 +338,14 @@ export default function LandingPage() {
                   className={`lp-nav__link${activeSection === id ? " lp-nav__link--active" : ""}`}
                   onClick={() => handleNavClick(id)}
                 >
-                  {id === "home"
-                    ? "Inicio"
-                    : id === "servicios"
-                      ? "Servicios"
-                      : id === "nosotros"
-                        ? "Nosotras"
-                        : "Testimonios"}
+                  {t(`landing.nav.${id}`)}
                 </button>
               ),
             )}
           </div>
 
           <button className="lp-nav__cta" onClick={() => navigate("/login")}>
-            Iniciar sesión
+            {t("landing.nav.login")}
           </button>
         </div>
         <div className="lp-nav__divider" />
@@ -325,24 +361,20 @@ export default function LandingPage() {
 
           <h1 className="lp-hero__title">Salvida</h1>
 
-          <p className="lp-hero__subtitle">
-            Ayudamos a las Personas con Movilidad Reducida a salir y entrar de
-            su propio hogar con seguridad y dignidad, superando las escaleras
-            que limitan su independencia.
-          </p>
+          <p className="lp-hero__subtitle">{t("landing.hero.subtitle")}</p>
 
           <div className="lp-hero__actions">
             <button
               className="lp-hero__btn-primary"
               onClick={() => navigate("/login")}
             >
-              Iniciar sesión
+              {t("landing.hero.loginBtn")}
             </button>
             <button
               className="lp-hero__btn-secondary"
               onClick={() => navigate("/login?register=true")}
             >
-              Crear cuenta
+              {t("landing.hero.registerBtn")}
             </button>
           </div>
         </section>
@@ -353,17 +385,17 @@ export default function LandingPage() {
             <StatCard
               icon="transfer_within_a_station"
               target={kpis.totalServices}
-              label="Servicios Realizados"
+              label={t("landing.stats.services")}
             />
             <StatCard
               icon="groups"
               target={kpis.totalUsers}
-              label="Personas Asistidas"
+              label={t("landing.stats.users")}
             />
             <StatCard
               icon="location_on"
               target={kpis.assistancePoints}
-              label="Puntos de Asistencia"
+              label={t("landing.stats.points")}
             />
           </div>
         </section>
@@ -374,13 +406,13 @@ export default function LandingPage() {
             <img
               className="lp-video__img"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc3UX1FguYT2duV0Oc7SWw8_OcNtgzZCPS1aZAmzIro3OZr3HzZMd9qXc_HQTpFDCul_1nHC_pm4rkteqWNQASwgmKM5r0uG8JLttFzElcTnQblsdJj07q7awgW08YdQgu2O4rEMsjd1h-02YwhCeUvmlT97qSX0tGTSd8FPFft6t6LHYSXDCcZLI450wCDkZR4b3w_SwMRhY5ESr2aV2Zbjq-Fc49zcBLyOOC64BNPa8OKLHq56cMqj5XuuCPF9fkPWdX-yPtiw"
-              alt="Asistente ayudando a una persona con movilidad reducida a bajar escaleras"
+              alt={t("landing.video.imgAlt")}
             />
             <div className="lp-video__overlay" aria-hidden="true" />
             <div
               className="lp-video__play"
               role="button"
-              aria-label="Reproducir video"
+              aria-label={t("landing.video.playLabel")}
             >
               <span className="lp-material-icon lp-video__play-icon">
                 play_arrow
@@ -388,10 +420,10 @@ export default function LandingPage() {
             </div>
             <div className="lp-video__caption">
               <div className="lp-video__caption-title">
-                Conoce nuestra misión
+                {t("landing.video.captionTitle")}
               </div>
               <div className="lp-video__caption-sub">
-                3:45 • Salvida en acción
+                {t("landing.video.captionSub")}
               </div>
             </div>
           </div>
@@ -403,23 +435,23 @@ export default function LandingPage() {
             <div className="lp-testimonials__header">
               <div>
                 <span className="lp-testimonials__label">
-                  Experiencias Reales
+                  {t("landing.testimonials.label")}
                 </span>
                 <h2 className="lp-testimonials__title">
-                  Lo que dicen de nosotras
+                  {t("landing.testimonials.title")}
                 </h2>
               </div>
               <div className="lp-testimonials__nav">
                 <button
                   className="lp-testimonials__nav-btn"
-                  aria-label="Anterior testimonio"
+                  aria-label={t("landing.testimonials.prevLabel")}
                   onClick={() => swiperRef.current?.slidePrev()}
                 >
                   chevron_left
                 </button>
                 <button
                   className="lp-testimonials__nav-btn"
-                  aria-label="Siguiente testimonio"
+                  aria-label={t("landing.testimonials.nextLabel")}
                   onClick={() => swiperRef.current?.slideNext()}
                 >
                   chevron_right
@@ -458,7 +490,9 @@ export default function LandingPage() {
                         </div>
                         <div
                           className="lp-testimonial-card__stars"
-                          aria-label={`${r.rating} estrellas`}
+                          aria-label={t("landing.testimonials.starsLabel", {
+                            count: r.rating,
+                          })}
                         >
                           {Array.from({ length: r.rating }).map((_, i) => (
                             <span
@@ -474,7 +508,13 @@ export default function LandingPage() {
                             </span>
                           ))}
                         </div>
-                        <p className="lp-testimonial-card__quote">"{r.text}"</p>
+                        <p
+                          className="lp-testimonial-card__quote"
+                          onMouseEnter={(e) => handleQuoteEnter(e, r.text)}
+                          onMouseLeave={handleQuoteLeave}
+                        >
+                          "{r.text}"
+                        </p>
                         <div className="lp-testimonial-card__author">
                           {r.author_avatar ? (
                             <img
@@ -500,13 +540,15 @@ export default function LandingPage() {
                     </SwiperSlide>
                   );
                 }
-                const t = item as (typeof testimonials)[number];
+                const mock = item as (typeof testimonials)[number];
                 return (
-                  <SwiperSlide key={t.initials}>
+                  <SwiperSlide key={mock.initials}>
                     <div className="lp-testimonial-card">
                       <div
                         className="lp-testimonial-card__stars"
-                        aria-label="5 estrellas"
+                        aria-label={t("landing.testimonials.starsLabel", {
+                          count: 5,
+                        })}
                       >
                         {[0, 1, 2, 3, 4].map((i) => (
                           <span
@@ -517,19 +559,25 @@ export default function LandingPage() {
                           </span>
                         ))}
                       </div>
-                      <p className="lp-testimonial-card__quote">"{t.quote}"</p>
+                      <p
+                        className="lp-testimonial-card__quote"
+                        onMouseEnter={(e) => handleQuoteEnter(e, mock.quote)}
+                        onMouseLeave={handleQuoteLeave}
+                      >
+                        "{mock.quote}"
+                      </p>
                       <div className="lp-testimonial-card__author">
                         <div
-                          className={`lp-testimonial-card__avatar lp-testimonial-card__avatar--${t.avatarMod}`}
+                          className={`lp-testimonial-card__avatar lp-testimonial-card__avatar--${mock.avatarMod}`}
                         >
-                          {t.initials}
+                          {mock.initials}
                         </div>
                         <div>
                           <div className="lp-testimonial-card__name">
-                            {t.name}
+                            {mock.name}
                           </div>
                           <div className="lp-testimonial-card__role">
-                            {t.role}
+                            {mock.role}
                           </div>
                         </div>
                       </div>
@@ -542,6 +590,8 @@ export default function LandingPage() {
         </section>
       </main>
 
+      {popup && <QuotePopup popup={popup} />}
+
       {/* ── Footer ── */}
       <footer className="lp-footer">
         <div className="lp-footer__inner">
@@ -549,16 +599,16 @@ export default function LandingPage() {
 
           <div className="lp-footer__links">
             <a href="#" className="lp-footer__link">
-              Política de Privacidad
+              {t("landing.footer.privacy")}
             </a>
             <a href="#" className="lp-footer__link">
-              Términos de Servicio
+              {t("landing.footer.terms")}
             </a>
             <a href="#" className="lp-footer__link">
-              Contacto
+              {t("landing.footer.contact")}
             </a>
             <a href="#" className="lp-footer__link">
-              Accesibilidad
+              {t("landing.footer.accessibility")}
             </a>
           </div>
 
@@ -590,9 +640,7 @@ export default function LandingPage() {
             </div>
           )}
 
-          <span className="lp-footer__copy">
-            © 2025 Salvida. Movilidad con dignidad.
-          </span>
+          <span className="lp-footer__copy">{t("landing.footer.copy")}</span>
         </div>
       </footer>
     </div>
