@@ -7,6 +7,7 @@ import { Navigation, A11y } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper/types";
 import "swiper/swiper.css";
 import PLATFORM_ICONS from "../../lib/platformIcons";
+import { SalvidaLogo } from "../../assets/icons/SalvidaLogo";
 import "./LandingPage.css";
 
 // ---------------------------------------------------------------------------
@@ -328,7 +329,13 @@ export default function LandingPage() {
       {/* ── Nav ── */}
       <nav className="lp-nav">
         <div className="lp-nav__inner">
-          <span className="lp-nav__logo">Salvida</span>
+          <button
+            className="lp-nav__logo"
+            onClick={() => handleNavClick("home")}
+            aria-label={t("landing.nav.home")}
+          >
+            <SalvidaLogo width={60} height={60} className="lp-nav__logo-img" />
+          </button>
 
           <div className="lp-nav__links">
             {(["home", "servicios", "nosotros", "testimonios"] as const).map(

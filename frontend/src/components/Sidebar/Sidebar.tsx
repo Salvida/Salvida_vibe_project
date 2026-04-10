@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CalendarDays, Users, Settings, LogOut, HeartPulse, MapPin, UserCog } from 'lucide-react';
+import { CalendarDays, Users, Settings, LogOut, MapPin, UserCog } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
+import { SalvidaLogo } from '../../assets/icons/SalvidaLogo';
 import './Sidebar.css';
 
 const allNavItems = [
@@ -38,13 +39,8 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar__logo">
-        <div className="sidebar__logo-icon">
-          <HeartPulse size={24} />
-        </div>
-        <div>
-          <h1 className="sidebar__logo-name">{t('nav.brand')}</h1>
-          <p className="sidebar__logo-sub">{t('nav.brandSubtitle')}</p>
-        </div>
+        <SalvidaLogo width={160} height={52} className="sidebar__logo-img" />
+        <p className="sidebar__logo-sub">{t('nav.brandSubtitle')}</p>
       </div>
 
       <nav className="sidebar__nav">
