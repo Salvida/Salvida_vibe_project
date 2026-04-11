@@ -28,8 +28,8 @@ export default function CalendarWidget({ onDateSelect }: CalendarWidgetProps) {
   const daysInMonth = getDaysInMonth(year, month);
   const firstDayOffset = getFirstDayOfWeek(year, month);
 
-  const months: string[] = t('calendar.months', { returnObjects: true });
-  const weekdays: string[] = t('calendar.weekdays', { returnObjects: true });
+  const months = t('calendar.months', { returnObjects: true }) as string[];
+  const weekdays = t('calendar.weekdays', { returnObjects: true }) as string[];
 
   function prevMonth() {
     if (month === 0) { setYear(y => y - 1); setMonth(11); }

@@ -12,11 +12,13 @@ class Settings(BaseSettings):
     debug: bool = True
     supabase_mcp_connection: str = ""
 
-    # Email notifications (Resend)
+    # Email notifications (Resend — https://resend.com)
     resend_api_key: str = ""
     email_from: str = "Salvida <hola@salvida.es>"
 
-    # Web Push notifications (VAPID)
+    # Web Push notifications (VAPID keys)
+    # Generate with: python -c "from py_vapid import Vapid; v=Vapid(); v.generate_keys(); print(v.private_key.decode()); print(v.public_key.decode())"
+    # Or online: https://vapidkeys.com
     vapid_private_key: str = ""
     vapid_public_key: str = ""
     vapid_subject: str = "mailto:hola@salvida.es"

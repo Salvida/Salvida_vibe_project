@@ -498,6 +498,11 @@
   color: var(--color-slate-400);
 }
 
+.settings-notif-row__warning {
+  color: var(--color-warning, #f59e0b);
+  font-weight: 600;
+}
+
 /* Toggle switch */
 .settings-toggle {
   flex-shrink: 0;
@@ -528,6 +533,11 @@
 
 .settings-toggle--on .settings-toggle__thumb {
   transform: translateX(1.25rem);
+}
+
+.settings-toggle--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* Admin Panel */
