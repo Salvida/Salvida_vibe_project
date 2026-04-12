@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status, Depends, Query
 from typing import Optional
 from db.supabase_client import get_supabase
 from models.booking import (
@@ -7,12 +7,27 @@ from models.booking import (
 )
 from auth.dependencies import get_current_user
 from auth.roles import is_admin, require_admin
+from services.notifications import send_push_to_user
 from services.email import send_review_request
 import logging
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def _push_booking_update(user_id: str, title: str, body: str) -> None:
+    """
+    Sends a push notification to *user_id* if their notification_prefs.push is true.
+    Designed to run as a FastAPI BackgroundTask (fire-and-forget).
+    """
+    supabase = get_supabase()
+    profile_res = supabase.table("profiles").select("notification_prefs").eq("id", user_id).single().execute()
+    if not profile_res.data:
+        return
+    prefs = profile_res.data.get("notification_prefs") or {}
+    if prefs.get("push", False):
+        send_push_to_user(user_id, title, body)
 
 
 def _row_to_booking(row: dict, prm_name: str = "", prm_avatar: Optional[str] = None, owner_name: Optional[str] = None) -> Booking:
@@ -130,7 +145,7 @@ async def get_booking(booking_id: str, user: dict = Depends(get_current_user)):
 # POST /api/bookings
 # ---------------------------------------------------------------------------
 @router.post("", response_model=Booking, status_code=status.HTTP_201_CREATED)
-async def create_booking(body: BookingCreate, user: dict = Depends(get_current_user)):
+async def create_booking(body: BookingCreate, background_tasks: BackgroundTasks, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
 
     # Validate prm exists and get owner
@@ -163,7 +178,15 @@ async def create_booking(body: BookingCreate, user: dict = Depends(get_current_u
     }
 
     result = supabase.table("bookings").insert(payload).execute()
-    return _row_to_booking(result.data[0], prm_data["name"], prm_data.get("avatar"))
+    booking = _row_to_booking(result.data[0], prm_data["name"], prm_data.get("avatar"))
+
+    background_tasks.add_task(
+        _push_booking_update,
+        user["sub"],
+        "Nueva reserva creada",
+        f"Reserva para {prm_data['name']} el {body.date} a las {body.startTime}.",
+    )
+    return booking
 
 
 # ---------------------------------------------------------------------------
@@ -173,6 +196,7 @@ async def create_booking(body: BookingCreate, user: dict = Depends(get_current_u
 async def update_booking(
     booking_id: str,
     body: BookingUpdate,
+    background_tasks: BackgroundTasks,
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
@@ -194,7 +218,14 @@ async def update_booking(
     if updates:
         supabase.table("bookings").update(updates).eq("id", booking_id).execute()
 
-    return _fetch_full_booking(booking_id, supabase)
+    booking = _fetch_full_booking(booking_id, supabase)
+    background_tasks.add_task(
+        _push_booking_update,
+        user["sub"],
+        "Reserva actualizada",
+        f"La reserva para {booking.prmName} ha sido modificada.",
+    )
+    return booking
 
 
 # ---------------------------------------------------------------------------
@@ -204,6 +235,7 @@ async def update_booking(
 async def update_booking_status(
     booking_id: str,
     body: BookingStatusUpdate,
+    background_tasks: BackgroundTasks,
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
@@ -211,10 +243,16 @@ async def update_booking_status(
     supabase.table("bookings").update({"status": body.status}).eq("id", booking_id).execute()
     booking = _fetch_full_booking(booking_id, supabase)
 
+    background_tasks.add_task(
+        _push_booking_update,
+        user["sub"],
+        "Estado de reserva actualizado",
+        f"La reserva para {booking.prmName} ahora está {body.status}.",
+    )
+
     # Send review request email when a service is marked as completed
     if body.status == "Completed":
         try:
-            # Look up the booking owner's email and name
             owner_result = (
                 supabase.table("bookings")
                 .select("created_by")

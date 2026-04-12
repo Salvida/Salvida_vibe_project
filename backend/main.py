@@ -1,15 +1,28 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from config import get_settings
-from routers import profile, addresses, prms, bookings, global_kpis, social_links, reviews
+from routers import profile, addresses, prms, bookings, global_kpis, social_links, reviews, push_subscriptions
+from scheduler import start_scheduler, stop_scheduler
 
 settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    start_scheduler()
+    yield
+    stop_scheduler()
+
 
 app = FastAPI(
     title="Salvida Management Portal API",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -21,10 +34,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(profile.router,   prefix="/api/profile",   tags=["profile"])
-app.include_router(addresses.router, prefix="/api/addresses", tags=["addresses"])
-app.include_router(prms.router,  prefix="/api/prms",  tags=["prms"])
-app.include_router(bookings.router,    prefix="/api/bookings",  tags=["bookings"])
+app.include_router(profile.router,              prefix="/api/profile",    tags=["profile"])
+app.include_router(addresses.router,            prefix="/api/addresses",  tags=["addresses"])
+app.include_router(prms.router,                 prefix="/api/prms",       tags=["prms"])
+app.include_router(bookings.router,               prefix="/api/bookings",   tags=["bookings"])
+app.include_router(push_subscriptions.router,   prefix="/api/push",       tags=["push"])
 app.include_router(global_kpis.router,   prefix="/globalKpis",     tags=["landing"])
 app.include_router(social_links.router, prefix="/api/social-links", tags=["landing"])
 app.include_router(reviews.router,      prefix="/api/reviews",      tags=["landing"])

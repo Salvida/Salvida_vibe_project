@@ -314,10 +314,10 @@
       "emailLabel": "Correo electrónico",
       "emailDesc": "Recibe notificaciones en tu email",
       "pushLabel": "Notificaciones push",
-      "pushDesc": "Alertas en el navegador en tiempo real",
+      "pushDesc": "Alertas en tiempo real en cualquier dispositivo",
       "typesTitle": "Tipos de aviso",
       "reminderLabel": "Recordatorio de reserva",
-      "reminderDesc": "Aviso antes de cada servicio programado",
+      "reminderDesc": "Aviso 2 horas antes de cada servicio programado",
       "save": "Guardar preferencias",
       "saveSuccess": "Preferencias guardadas correctamente",
       "saveError": "Error al guardar las preferencias"

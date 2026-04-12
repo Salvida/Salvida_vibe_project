@@ -12,7 +12,7 @@ def _row_to_profile(row: dict) -> UserProfile:
     raw_prefs = row.get("notification_prefs") or {}
     if isinstance(raw_prefs, dict):
         prefs = NotificationPrefs(
-            email=raw_prefs.get("email", True),
+            email=raw_prefs.get("email", False),
             push=raw_prefs.get("push", True),
             booking_reminder=raw_prefs.get("booking_reminder", True),
         )
