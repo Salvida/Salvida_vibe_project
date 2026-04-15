@@ -16,3 +16,25 @@
   display: flex;
   flex-direction: column;
 }
+
+.layout__backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .layout__backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 39;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .layout__backdrop--visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}

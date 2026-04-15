@@ -52,7 +52,7 @@
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
-  padding-bottom: 16rem;
+  padding-bottom: 8rem;
 }
 
 /* Progress dots */
@@ -106,6 +106,12 @@
   background-color: var(--color-primary-10);
   color: var(--color-primary);
   border: 1px solid var(--color-primary-20);
+}
+
+.booking-section__num--complete {
+  background-color: #16a34a;
+  color: white;
+  border: none;
 }
 
 .booking-section__title {
@@ -292,7 +298,7 @@
 
 .booking-actions__cancel {
   flex: 1;
-  height: 4rem;
+  height: 3rem;
   border-radius: 1rem;
   color: var(--color-slate-500);
   font-weight: 900;
@@ -308,7 +314,7 @@
 
 .booking-actions__submit {
   flex: 2;
-  height: 4rem;
+  height: 3rem;
   border-radius: 1rem;
   background-color: var(--color-primary);
   color: white;
@@ -337,43 +343,6 @@
   cursor: not-allowed;
   transform: none !important;
   box-shadow: none;
-}
-
-.booking-requirements {
-  max-width: 36rem;
-  margin: 0 auto 0.75rem;
-  padding: 0.875rem 1rem;
-  background: #fafafa;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.booking-requirements__title {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #64748b;
-  margin: 0 0 0.5rem;
-}
-
-.booking-requirements__list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.req--ok {
-  font-size: 0.8rem;
-  color: #16a34a;
-}
-
-.req--missing {
-  font-size: 0.8rem;
-  color: #94a3b8;
 }
 
 /* Date & Time section */

@@ -1,4 +1,4 @@
-import { ArrowLeft, Accessibility, Send, Clock, CalendarDays, Loader2 } from 'lucide-react';
+import { ArrowLeft, Accessibility, Send, Clock, CalendarDays, Loader2, Check } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -104,7 +104,9 @@ export default function NewBooking() {
           {isAdmin && (
             <section className="booking-section">
               <div className="booking-section__heading">
-                <span className="booking-section__num">1</span>
+                <span className={`booking-section__num${selectedOwnerId ? ' booking-section__num--complete' : ''}`}>
+                  {selectedOwnerId ? <Check size={14} /> : 1}
+                </span>
                 <h3 className="booking-section__title">{t('booking.responsible')}</h3>
               </div>
               <UserSelector
@@ -124,8 +126,8 @@ export default function NewBooking() {
           {/* Step 1 (user) / Step 2 (admin): PRM */}
           <section className="booking-section">
             <div className="booking-section__heading">
-              <span className={`booking-section__num${isAdmin ? ' booking-section__num--inactive' : ''}`}>
-                {isAdmin ? 2 : 1}
+              <span className={`booking-section__num${selectedPrm ? ' booking-section__num--complete' : ' booking-section__num--inactive'}`}>
+                {selectedPrm ? <Check size={14} /> : (isAdmin ? 2 : 1)}
               </span>
               <h3 className="booking-section__title">{t('booking.prm')}</h3>
             </div>
@@ -202,7 +204,9 @@ export default function NewBooking() {
           {/* Step 2 (user) / Step 3 (admin): Location */}
           <section className="booking-section">
             <div className="booking-section__heading">
-              <span className="booking-section__num booking-section__num--inactive">{isAdmin ? 3 : 2}</span>
+              <span className={`booking-section__num${address.full_address ? ' booking-section__num--complete' : ' booking-section__num--inactive'}`}>
+                {address.full_address ? <Check size={14} /> : (isAdmin ? 3 : 2)}
+              </span>
               <h3 className="booking-section__title">{t('booking.locationDetails')}</h3>
             </div>
 
@@ -243,7 +247,9 @@ export default function NewBooking() {
           {/* Step 4 (user) / Step 5 (admin): Date & Time */}
           <section className="booking-section">
             <div className="booking-section__heading">
-              <span className="booking-section__num booking-section__num--inactive">{isAdmin ? 5 : 4}</span>
+              <span className={`booking-section__num${time ? ' booking-section__num--complete' : ' booking-section__num--inactive'}`}>
+                {time ? <Check size={14} /> : (isAdmin ? 5 : 4)}
+              </span>
               <h3 className="booking-section__title">{t('booking.dateTime')}</h3>
             </div>
 
@@ -283,25 +289,6 @@ export default function NewBooking() {
 
       {/* Bottom Actions */}
       <div className="booking-actions">
-        {!canSubmit && (
-          <div className="booking-requirements">
-            <p className="booking-requirements__title">{t('booking.requirements.title')}</p>
-            <ul className="booking-requirements__list">
-              <li className={selectedPrm ? 'req--ok' : 'req--missing'}>
-                {selectedPrm ? '✓' : '○'} {t('booking.requirements.patientSelected')}
-              </li>
-              <li className={address.full_address ? 'req--ok' : 'req--missing'}>
-                {address.full_address ? '✓' : '○'} {t('booking.requirements.addressSelected')}
-              </li>
-              <li className={date ? 'req--ok' : 'req--missing'}>
-                {date ? '✓' : '○'} {t('booking.requirements.dateSelected')}
-              </li>
-              <li className={time ? 'req--ok' : 'req--missing'}>
-                {time ? '✓' : '○'} {t('booking.requirements.timeSelected')}
-              </li>
-            </ul>
-          </div>
-        )}
         <div className="booking-actions__inner">
           <button
             onClick={() => navigate(-1)}
