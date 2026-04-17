@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUsers } from '../../hooks/useProfile';
 import type { UserProfile } from '../../types';
-import '../../pages/Settings/Settings.css';
+import './UserSelector.css';
 
 interface UserSelectorProps {
   value: string;

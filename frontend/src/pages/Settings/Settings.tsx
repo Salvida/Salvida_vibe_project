@@ -26,8 +26,6 @@ import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import UserSelector from "../../components/UserSelector/UserSelector";
 import SettingsRRSS from "./SettingsRRSS";
 import { usePushNotifications } from "../../hooks/usePushNotifications";
-import { useCurrentUserStore } from "../../store/useCurrentUserStore";
-import { useSyncCurrentUser } from "../../hooks/useSyncCurrentUser";
 import { supabase } from "../../lib/supabaseClient";
 import { toast } from "react-toastify";
 import "./Settings.css";
@@ -71,10 +69,7 @@ const baseSections: Section[] = [
 
 export default function Settings() {
   const { t } = useTranslation();
-  // Sincronizar usuario actual
-  useSyncCurrentUser();
-
-  const currentUser = useCurrentUserStore((s) => s.currentUser);
+  const { data: currentUser } = useProfile();
   const isAdminUser = currentUser?.role === "admin";
 
   const sections = baseSections.filter((s) => !s.adminOnly || isAdminUser);

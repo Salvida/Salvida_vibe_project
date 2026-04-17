@@ -1,21 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { apiClient, ApiError } from '../lib/api';
+import { apiClient, parseApiError } from '../lib/api';
 import type { Address } from '../types';
 
 export const ADDRESSES_KEY = ['addresses'] as const;
-
-function parseApiError(error: unknown, fallback: string): string {
-  if (error instanceof ApiError) {
-    try {
-      const parsed = JSON.parse(error.message);
-      return parsed.detail ?? fallback;
-    } catch {
-      return error.message || fallback;
-    }
-  }
-  return fallback;
-}
 
 export function useAddresses(validationStatus?: string) {
   const params = new URLSearchParams();

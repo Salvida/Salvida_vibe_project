@@ -16,7 +16,10 @@
       "Bash(\"C:\\\\Users\\\\luthe\\\\Desktop\\\\DEV\\\\Salvida_vibe_project\\\\.claude\\\\worktrees\\\\lucid-williams\\\\backend\\\\.venv\\\\Scripts\\\\pip.exe\" show:*)",
       "Bash(C:UserslutheDesktopDEVSalvida_vibe_project.claudeworktreeslucid-williamsbackend.venvScriptspip.exe show:*)",
       "Bash(\"C:\\\\Users\\\\luthe\\\\Desktop\\\\DEV\\\\Salvida_vibe_project\\\\.claude\\\\worktrees\\\\lucid-williams\\\\backend\\\\.venv\\\\Scripts\\\\python.exe\" -c \"from postgrest import APIError; print\\(''OK''\\)\")",
-      "Bash(node -e \"const p = require\\(''./package.json''\\); console.log\\(JSON.stringify\\({leaflet: p.dependencies?.leaflet, ''react-leaflet'': p.dependencies?.[''react-leaflet''], ''@types/leaflet'': p.devDependencies?.[''@types/leaflet'']}, null, 2\\)\\)\")"
+      "Bash(node -e \"const p = require\\(''./package.json''\\); console.log\\(JSON.stringify\\({leaflet: p.dependencies?.leaflet, ''react-leaflet'': p.dependencies?.[''react-leaflet''], ''@types/leaflet'': p.devDependencies?.[''@types/leaflet'']}, null, 2\\)\\)\")",
+      "Bash(python -c \"from main import app; print\\('OK'\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   },
   "hooks": {
