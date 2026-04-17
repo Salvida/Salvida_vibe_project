@@ -27,7 +27,7 @@
     position: fixed;
     inset: 0;
     background-color: rgba(0, 0, 0, 0.4);
-    z-index: 39;
+    z-index: calc(var(--z-sidebar) - 1);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;

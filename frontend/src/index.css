@@ -53,6 +53,15 @@
   --color-amber-50: #fffbeb;
   --color-amber-500: #f59e0b;
   --color-red-500: #ef4444;
+
+  /* ── Z-index scale ── */
+  --z-overlay:  20;   /* sticky page headers, mobile nav */
+  --z-sticky:   30;   /* sticky action bars (bottom bars, booking actions) */
+  --z-sidebar:  40;   /* sidebar on mobile */
+  --z-dropdown: 50;   /* menus, nav dropdowns */
+  --z-float:   100;   /* floating inputs (AddressSelector, UserSelector) */
+  --z-dialog:  200;   /* ConfirmDialog, modal sheets */
+  --z-toast:  9999;   /* critical overlays (cookie banner, toasts) */
 }
 
 *,
