@@ -78,7 +78,11 @@ export function useDeleteBooking() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiClient.delete<void>(`/api/bookings/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: BOOKINGS_KEY }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: BOOKINGS_KEY });
+      toast.success('Reserva eliminada correctamente');
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al eliminar la reserva')),
   });
 }
 

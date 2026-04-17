@@ -100,8 +100,11 @@ export function useUpdateEmergencyContact() {
   return useMutation({
     mutationFn: ({ prmId, ecId, ...body }: UpdateEmergencyContactPayload) =>
       apiClient.patch<EmergencyContact>(`/api/prms/${prmId}/emergency-contacts/${ecId}`, body),
-    onSuccess: (_data, vars) =>
-      qc.invalidateQueries({ queryKey: prmKey(vars.prmId) }),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: prmKey(vars.prmId) });
+      toast.success('Contacto de emergencia actualizado');
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al actualizar el contacto')),
   });
 }
 
@@ -117,8 +120,11 @@ export function useAddEmergencyContact() {
   return useMutation({
     mutationFn: ({ prmId, ...body }: AddEmergencyContactPayload) =>
       apiClient.post<EmergencyContact>(`/api/prms/${prmId}/emergency-contacts`, body),
-    onSuccess: (_data, vars) =>
-      qc.invalidateQueries({ queryKey: prmKey(vars.prmId) }),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: prmKey(vars.prmId) });
+      toast.success('Contacto de emergencia agregado');
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al agregar el contacto')),
   });
 }
 
@@ -127,7 +133,10 @@ export function useDeleteEmergencyContact() {
   return useMutation({
     mutationFn: ({ prmId, ecId }: { prmId: string; ecId: string }) =>
       apiClient.delete<void>(`/api/prms/${prmId}/emergency-contacts/${ecId}`),
-    onSuccess: (_data, vars) =>
-      qc.invalidateQueries({ queryKey: prmKey(vars.prmId) }),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: prmKey(vars.prmId) });
+      toast.success('Contacto de emergencia eliminado');
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al eliminar el contacto')),
   });
 }

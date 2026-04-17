@@ -10,9 +10,10 @@ import {
   X,
 } from 'lucide-react';
 import type { Address } from '../types';
+import { useDebounce } from '../hooks/useDebounce';
 import './AddressSelector.css';
 
-const GEOAPIFY_KEY = import.meta.env.VITE_HERE_API_KEY as string;
+const GEOAPIFY_KEY = import.meta.env.VITE_GEOAPIFY_API_KEY as string;
 
 interface GeoapifyFeature {
   properties: {
@@ -26,15 +27,6 @@ interface GeoapifyFeature {
   geometry: {
     coordinates: [number, number]; // [lng, lat]
   };
-}
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-  return debounced;
 }
 
 interface AddressSelectorProps {
@@ -97,9 +89,12 @@ export default function AddressSelector({
       return;
     }
 
+    const controller = new AbortController();
     setLoading(true);
+
     fetch(
       `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(debouncedQuery)}&lang=es&filter=countrycode:es&limit=6&apiKey=${GEOAPIFY_KEY}`,
+      { signal: controller.signal },
     )
       .then((r) => r.json())
       .then((data: { features?: GeoapifyFeature[] }) => {
@@ -108,11 +103,14 @@ export default function AddressSelector({
         setNoResults(items.length === 0);
         setOpen(true);
       })
-      .catch(() => {
+      .catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
         setSuggestions([]);
         setNoResults(false);
       })
       .finally(() => setLoading(false));
+
+    return () => controller.abort();
   }, [debouncedQuery, selected]);
 
   const handleSelect = useCallback(

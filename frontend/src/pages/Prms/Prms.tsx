@@ -6,16 +6,8 @@ import Header from '../../components/Header/Header';
 import DropdownMenu from '../../components/DropdownMenu';
 import { usePrms, useUpdatePrm } from '../../hooks/usePrms';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useDebounce } from '../../hooks/useDebounce';
 import './Prms.css';
-
-function useDebounce(value: string, delay: number) {
-  const [debounced, setDebounced] = useState(value);
-  useState(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  });
-  return debounced;
-}
 
 export default function Prms() {
   const { t } = useTranslation();

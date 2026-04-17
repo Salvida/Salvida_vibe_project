@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapPin, Check, X, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 import Header from '../../components/Header/Header';
@@ -87,8 +87,8 @@ export default function Addresses() {
                 </thead>
                 <tbody>
                   {addresses.map((address) => (
-                    <>
-                      <tr key={address.id} className="addresses__row">
+                    <React.Fragment key={address.id}>
+                      <tr className="addresses__row">
                         <td className="addresses__address-cell">
                           <MapPin size={14} className="addresses__pin-icon" />
                           {address.full_address}
@@ -151,7 +151,7 @@ export default function Addresses() {
                         </td>
                       </tr>
                       {expandedId === address.id && address.lat && address.lng && (
-                        <tr key={`${address.id}-map`} className="addresses__map-row">
+                        <tr className="addresses__map-row">
                           <td colSpan={5}>
                             <div className="addresses__map-preview">
                               <AddressMapPreview lat={address.lat} lng={address.lng} height="180px" />
@@ -159,7 +159,7 @@ export default function Addresses() {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>
