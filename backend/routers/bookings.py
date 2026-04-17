@@ -8,6 +8,10 @@ from models.booking import (
 from auth.dependencies import get_current_user
 from auth.roles import is_admin, require_admin
 from services.notifications import send_push_to_user
+from services.email import send_review_request
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -238,12 +242,43 @@ async def update_booking_status(
     require_admin(user["sub"])
     supabase.table("bookings").update({"status": body.status}).eq("id", booking_id).execute()
     booking = _fetch_full_booking(booking_id, supabase)
+
     background_tasks.add_task(
         _push_booking_update,
         user["sub"],
         "Estado de reserva actualizado",
         f"La reserva para {booking.prmName} ahora está {body.status}.",
     )
+
+    # Send review request email when a service is marked as completed
+    if body.status == "Completed":
+        try:
+            owner_result = (
+                supabase.table("bookings")
+                .select("created_by")
+                .eq("id", booking_id)
+                .single()
+                .execute()
+            )
+            owner_id = (owner_result.data or {}).get("created_by")
+            if owner_id:
+                profile_result = (
+                    supabase.table("profiles")
+                    .select("email, first_name")
+                    .eq("id", owner_id)
+                    .single()
+                    .execute()
+                )
+                profile = profile_result.data or {}
+                if profile.get("email"):
+                    send_review_request(
+                        to_email=profile["email"],
+                        user_name=profile.get("first_name") or "usuario",
+                        booking_date=booking.date,
+                    )
+        except Exception as exc:
+            logger.error("Could not send review request email for booking %s: %s", booking_id, exc)
+
     return booking
 
 

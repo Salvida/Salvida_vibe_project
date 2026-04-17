@@ -7,6 +7,7 @@ import {
   Languages,
   Camera,
   Save,
+  Share2,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -23,6 +24,7 @@ import {
 import DropdownMenu from "../../components/DropdownMenu";
 import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import UserSelector from "../../components/UserSelector/UserSelector";
+import SettingsRRSS from "./SettingsRRSS";
 import { usePushNotifications } from "../../hooks/usePushNotifications";
 import { useCurrentUserStore } from "../../store/useCurrentUserStore";
 import { useSyncCurrentUser } from "../../hooks/useSyncCurrentUser";
@@ -34,6 +36,7 @@ interface Section {
   id: string;
   icon: LucideIcon;
   labelKey: string;
+  adminOnly?: boolean;
 }
 
 const baseSections: Section[] = [
@@ -58,6 +61,12 @@ const baseSections: Section[] = [
     icon: Languages,
     labelKey: "settings.sectionsLabels.language",
   },
+  {
+    id: "rrss",
+    icon: Share2,
+    labelKey: "settings.sectionsLabels.rrss",
+    adminOnly: true,
+  },
 ];
 
 export default function Settings() {
@@ -68,7 +77,7 @@ export default function Settings() {
   const currentUser = useCurrentUserStore((s) => s.currentUser);
   const isAdminUser = currentUser?.role === "admin";
 
-  const sections = baseSections;
+  const sections = baseSections.filter((s) => !s.adminOnly || isAdminUser);
 
   const [searchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState("profile");
@@ -194,7 +203,9 @@ export default function Settings() {
 
           {/* Settings Panel */}
           <div className="settings-panel">
-            {activeSection === "notifications" ? (
+            {activeSection === "rrss" ? (
+              <SettingsRRSS />
+            ) : activeSection === "notifications" ? (
               <div className="settings-notifications">
                 <h3 className="settings-profile__title">
                   {t("settings.notifications.title")}

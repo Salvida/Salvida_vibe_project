@@ -4,9 +4,14 @@
     {
       "name": "frontend",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 3000,
-      "cwd": "frontend"
+      "runtimeArgs": ["run", "dev:frontend"],
+      "port": 3000
+    },
+    {
+      "name": "backend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:backend"],
+      "port": 8000
     }
   ]
 }

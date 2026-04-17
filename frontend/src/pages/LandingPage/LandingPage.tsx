@@ -1,81 +1,308 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './LandingPage.css';
+import { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, A11y } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper/types";
+import "swiper/swiper.css";
+import PLATFORM_ICONS from "../../lib/platformIcons";
+import { SalvidaLogo } from "../../assets/icons/SalvidaLogo";
+import "./LandingPage.css";
 
+// ---------------------------------------------------------------------------
+// Social link type from API
+// ---------------------------------------------------------------------------
+interface ApiSocialLink {
+  id: string;
+  platform: string;
+  label: string;
+  url: string;
+  order: number;
+}
+
+const DEFAULT_SOCIAL_LINKS: ApiSocialLink[] = [
+  {
+    id: "facebook",
+    platform: "facebook",
+    label: "Facebook",
+    url: "https://www.facebook.com/p/Salvida-61565788268475/",
+    order: 0,
+  },
+  {
+    id: "instagram",
+    platform: "instagram",
+    label: "Instagram",
+    url: "https://www.instagram.com",
+    order: 1,
+  },
+  {
+    id: "tiktok",
+    platform: "tiktok",
+    label: "TikTok",
+    url: "https://www.tiktok.com",
+    order: 2,
+  },
+  {
+    id: "google",
+    platform: "google",
+    label: "Google",
+    url: "https://www.google.com",
+    order: 3,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Review type from API
+// ---------------------------------------------------------------------------
+interface ApiReview {
+  id: string;
+  source: string;
+  author_name: string;
+  author_avatar?: string;
+  rating: number;
+  text: string;
+  published_at?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Static mock reviews – shown when API returns nothing
+// ---------------------------------------------------------------------------
 const testimonials = [
   {
     quote:
-      'Excelente servicio. Me sentí respetada y segura durante todo el trayecto al hospital. Los conductores son muy amables.',
-    initials: 'ME',
-    name: 'María Elena',
-    role: 'Usuaria desde 2023',
-    avatarMod: 'purple',
+      "Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite.",
+    initials: "ME",
+    name: "María Elena",
+    role: "Usuaria desde 2023",
+    avatarMod: "purple",
   },
   {
     quote:
-      'Muy puntuales. Es difícil encontrar servicios que realmente cumplan con los horarios cuando se trata de citas médicas.',
-    initials: 'JR',
-    name: 'Juan Rodríguez',
-    role: 'Familiar de Usuario',
-    avatarMod: 'mauve',
+      "Muy puntuales y atentos. Mi madre puede bajar y subir a su casa con total seguridad. El equipo trata a las personas con mucho respeto.",
+    initials: "JR",
+    name: "Juan Rodríguez",
+    role: "Familiar de Usuaria",
+    avatarMod: "mauve",
   },
   {
     quote:
-      'Trato humano excepcional. No es solo un transporte, es acompañamiento real. Gracias Salvida por dignificar el servicio.',
-    initials: 'CG',
-    name: 'Carmen García',
-    role: 'Usuaria Frecuente',
-    avatarMod: 'lime',
+      "Un servicio que devuelve la independencia. No es solo asistencia, es recuperar la libertad de entrar y salir de tu propio hogar.",
+    initials: "CG",
+    name: "Carmen García",
+    role: "Usuaria Frecuente",
+    avatarMod: "lime",
+  },
+  {
+    quote:
+      "Mi padre lleva meses usando el servicio y cada vez que lo veo bajar solo las escaleras, sé que fue la mejor decisión. Gracias por el cuidado y la profesionalidad.",
+    initials: "LM",
+    name: "Luis Martínez",
+    role: "Familiar de Usuario",
+    avatarMod: "purple",
+  },
+  {
+    quote:
+      "Rápidos, amables y muy eficientes. Me han dado una autonomía que pensé que había perdido para siempre. Lo recomiendo sin dudarlo.",
+    initials: "AP",
+    name: "Ana Pérez",
+    role: "Usuaria desde 2024",
+    avatarMod: "mauve",
+  },
+  {
+    quote:
+      "El equipo siempre llega puntual y trata a mi abuela con una delicadeza y un respeto que nos da mucha tranquilidad a toda la familia.",
+    initials: "RS",
+    name: "Roberto Sánchez",
+    role: "Familiar de Usuaria",
+    avatarMod: "lime",
+  },
+  {
+    quote:
+      "Después de mi operación, Salvida fue clave para recuperar mi rutina. Subir y bajar de casa sin ayuda de nadie volvió a ser posible.",
+    initials: "IT",
+    name: "Isabel Torres",
+    role: "Usuaria Habitual",
+    avatarMod: "purple",
   },
 ] as const;
 
-const stats = [
-  {
-    icon: 'medical_services',
-    value: '280',
-    label: 'Servicios Totales',
-    sublabel: null,
-  },
-  {
-    icon: 'groups',
-    value: '47 Usuarios',
-    label: null,
-    sublabel: '20 Hombres / 27 Mujeres',
-  },
-  {
-    icon: 'location_on',
-    value: '15',
-    label: 'Puntos de Asistencia',
-    sublabel: null,
-  },
-] as const;
+// ---------------------------------------------------------------------------
+// Quote popup – rendered via portal so it floats above the swiper
+// ---------------------------------------------------------------------------
+interface PopupState {
+  text: string;
+  left: number;
+  width: number;
+  // below placement
+  top?: number;
+  maxHeightBelow?: number;
+  // above placement
+  bottom?: number;
+  maxHeightAbove?: number;
+}
 
-const SECTIONS = ['home', 'servicios', 'nosotros', 'testimonios'] as const;
+function QuotePopup({ popup }: { popup: PopupState }) {
+  const GAP = 8;
+  const MARGIN = 16;
+  const style: React.CSSProperties =
+    popup.top !== undefined
+      ? {
+          top: popup.top + GAP,
+          left: popup.left,
+          width: popup.width,
+          maxHeight: popup.maxHeightBelow,
+        }
+      : {
+          bottom: popup.bottom! + GAP,
+          left: popup.left,
+          width: popup.width,
+          maxHeight: popup.maxHeightAbove,
+        };
+  void MARGIN;
+  return ReactDOM.createPortal(
+    <div className="lp-quote-popup" data-quote-popup style={style}>
+      "{popup.text}"
+    </div>,
+    document.body,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// KPI types
+// ---------------------------------------------------------------------------
+interface GlobalKpis {
+  totalServices: number;
+  totalUsers: number;
+  assistancePoints: number;
+}
+
+const DEFAULT_KPIS: GlobalKpis = {
+  totalServices: 0,
+  totalUsers: 0,
+  assistancePoints: 0,
+};
+
+// ---------------------------------------------------------------------------
+// Animated counter hook
+// ---------------------------------------------------------------------------
+function useCountUp(target: number, duration = 1400): number {
+  const [value, setValue] = useState(0);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (target === 0) {
+      setValue(0);
+      return;
+    }
+    const start = performance.now();
+    const animate = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(Math.round(eased * target));
+      if (progress < 1) rafRef.current = requestAnimationFrame(animate);
+    };
+    rafRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [target, duration]);
+
+  return value;
+}
+
+// ---------------------------------------------------------------------------
+// Stats card with animated counter
+// ---------------------------------------------------------------------------
+function StatCard({
+  icon,
+  target,
+  label,
+  sublabel,
+}: {
+  icon: string;
+  target: number;
+  label: string;
+  sublabel?: string;
+}) {
+  const value = useCountUp(target);
+  return (
+    <div className="lp-stats__card">
+      <div className="lp-stats__icon-wrap">
+        <span className="lp-material-icon lp-stats__icon">{icon}</span>
+      </div>
+      <div className="lp-stats__value">{value.toLocaleString("es-ES")}</div>
+      <div className="lp-stats__label">{label}</div>
+      {sublabel && <div className="lp-stats__sublabel">{sublabel}</div>}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Sections for the intersection observer
+// ---------------------------------------------------------------------------
+const SECTIONS = ["home", "servicios", "nosotros", "testimonios"] as const;
+
+const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState<string>('home');
+  const { t } = useTranslation();
+  const [activeSection, setActiveSection] = useState<string>("home");
+  const [kpis, setKpis] = useState<GlobalKpis>(DEFAULT_KPIS);
+  const [socialLinks, setSocialLinks] =
+    useState<ApiSocialLink[]>(DEFAULT_SOCIAL_LINKS);
+  const [reviews, setReviews] = useState<ApiReview[] | null>(null);
+  const [popup, setPopup] = useState<PopupState | null>(null);
+  const swiperRef = useRef<SwiperType | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const isScrollingRef = useRef(false);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Fetch reviews on mount; null means "still loading / use mocks"
+  useEffect(() => {
+    fetch(`${BASE_URL}/api/reviews`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data: ApiReview[]) => setReviews(data.length > 0 ? data : null))
+      .catch(() => setReviews(null));
+  }, []);
+
+  // Fetch social links on mount
+  useEffect(() => {
+    fetch(`${BASE_URL}/api/social-links`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data: ApiSocialLink[]) => setSocialLinks(data))
+      .catch(() => {
+        /* silently ignore – no social links shown */
+      });
+  }, []);
+
+  // Fetch global KPIs on mount
+  useEffect(() => {
+    fetch(`${BASE_URL}/globalKpis`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data: GlobalKpis) => setKpis(data))
+      .catch(() => {
+        // fallback – keep zeros, silently ignore (public page must not break)
+      });
+  }, []);
+
   function handleNavClick(id: string) {
-    // Update active state immediately on click
     setActiveSection(id);
-    // Suppress observer updates while smooth scroll is in progress (~1s)
     isScrollingRef.current = true;
     if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
     scrollTimerRef.current = setTimeout(() => {
       isScrollingRef.current = false;
     }, 1000);
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (el) el.scrollIntoView({ behavior: "smooth" });
   }
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        // Ignore observer updates triggered by programmatic scrolls
         if (isScrollingRef.current) return;
         const visible = entries
           .filter((e) => e.isIntersecting)
@@ -84,7 +311,7 @@ export default function LandingPage() {
           setActiveSection(visible[0].target.id);
         }
       },
-      { threshold: 0.3, rootMargin: '-80px 0px 0px 0px' }
+      { threshold: 0.3, rootMargin: "-80px 0px 0px 0px" },
     );
 
     SECTIONS.forEach((id) => {
@@ -92,47 +319,86 @@ export default function LandingPage() {
       if (el) observer.observe(el);
     });
 
+    observerRef.current = observer;
+
     return () => {
       observerRef.current?.disconnect();
       if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
     };
   }, []);
 
+  // Close popup on click outside
+  useEffect(() => {
+    if (!popup) return;
+    function handleClick(e: MouseEvent) {
+      if (!(e.target as Element).closest("[data-quote-popup]")) {
+        setPopup(null);
+      }
+    }
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [popup]);
+
+  function handleQuoteEnter(
+    e: React.MouseEvent<HTMLParagraphElement>,
+    text: string,
+  ) {
+    const el = e.currentTarget;
+    if (el.scrollHeight <= el.clientHeight) return;
+    const rect = el.getBoundingClientRect();
+    const MARGIN = 16;
+    const GAP = 8;
+    const spaceBelow = window.innerHeight - rect.bottom - GAP - MARGIN;
+    const spaceAbove = rect.top - GAP - MARGIN;
+    if (spaceBelow >= 150 || spaceBelow >= spaceAbove) {
+      setPopup({
+        text,
+        left: rect.left,
+        width: rect.width,
+        top: rect.bottom,
+        maxHeightBelow: Math.max(spaceBelow, 80),
+      });
+    } else {
+      setPopup({
+        text,
+        left: rect.left,
+        width: rect.width,
+        bottom: window.innerHeight - rect.top,
+        maxHeightAbove: Math.max(spaceAbove, 80),
+      });
+    }
+  }
+
   return (
     <div className="lp">
       {/* ── Nav ── */}
       <nav className="lp-nav">
         <div className="lp-nav__inner">
-          <span className="lp-nav__logo">Salvida</span>
+          <button
+            className="lp-nav__logo"
+            onClick={() => handleNavClick("home")}
+            aria-label={t("landing.nav.home")}
+          >
+            <SalvidaLogo width={60} height={60} className="lp-nav__logo-img" />
+          </button>
 
           <div className="lp-nav__links">
-            <button
-              className={`lp-nav__link${activeSection === 'home' ? ' lp-nav__link--active' : ''}`}
-              onClick={() => handleNavClick('home')}
-            >
-              Home
-            </button>
-            <button
-              className={`lp-nav__link${activeSection === 'servicios' ? ' lp-nav__link--active' : ''}`}
-              onClick={() => handleNavClick('servicios')}
-            >
-              Servicios
-            </button>
-            <button
-              className={`lp-nav__link${activeSection === 'nosotros' ? ' lp-nav__link--active' : ''}`}
-              onClick={() => handleNavClick('nosotros')}
-            >
-              Nosotros
-            </button>
-            <button
-              className={`lp-nav__link${activeSection === 'testimonios' ? ' lp-nav__link--active' : ''}`}
-              onClick={() => handleNavClick('testimonios')}
-            >
-              Testimonios
-            </button>
+            {(["home", "servicios", "nosotros", "testimonios"] as const).map(
+              (id) => (
+                <button
+                  key={id}
+                  className={`lp-nav__link${activeSection === id ? " lp-nav__link--active" : ""}`}
+                  onClick={() => handleNavClick(id)}
+                >
+                  {t(`landing.nav.${id}`)}
+                </button>
+              ),
+            )}
           </div>
 
-          <button className="lp-nav__cta" onClick={() => navigate('/login')}>Iniciar sesión</button>
+          <button className="lp-nav__cta" onClick={() => navigate("/login")}>
+            {t("landing.nav.login")}
+          </button>
         </div>
         <div className="lp-nav__divider" />
       </nav>
@@ -147,17 +413,20 @@ export default function LandingPage() {
 
           <h1 className="lp-hero__title">Salvida</h1>
 
-          <p className="lp-hero__subtitle">
-            Un proyecto dedicado a transformar el transporte médico y la asistencia para Personas
-            de Movilidad Reducida (PMR), combinando tecnología, cuidado y dignidad.
-          </p>
+          <p className="lp-hero__subtitle">{t("landing.hero.subtitle")}</p>
 
           <div className="lp-hero__actions">
-            <button className="lp-hero__btn-primary" onClick={() => navigate('/login')}>
-              Iniciar sesión
+            <button
+              className="lp-hero__btn-primary"
+              onClick={() => navigate("/login")}
+            >
+              {t("landing.hero.loginBtn")}
             </button>
-            <button className="lp-hero__btn-secondary" onClick={() => navigate('/login?register=true')}>
-              Crear cuenta
+            <button
+              className="lp-hero__btn-secondary"
+              onClick={() => navigate("/login?register=true")}
+            >
+              {t("landing.hero.registerBtn")}
             </button>
           </div>
         </section>
@@ -165,16 +434,21 @@ export default function LandingPage() {
         {/* ── Stats ── */}
         <section className="lp-stats" id="servicios">
           <div className="lp-stats__grid">
-            {stats.map((s) => (
-              <div key={s.icon} className="lp-stats__card">
-                <div className="lp-stats__icon-wrap">
-                  <span className="lp-material-icon lp-stats__icon">{s.icon}</span>
-                </div>
-                <div className="lp-stats__value">{s.value}</div>
-                {s.label && <div className="lp-stats__label">{s.label}</div>}
-                {s.sublabel && <div className="lp-stats__sublabel">{s.sublabel}</div>}
-              </div>
-            ))}
+            <StatCard
+              icon="transfer_within_a_station"
+              target={kpis.totalServices}
+              label={t("landing.stats.services")}
+            />
+            <StatCard
+              icon="groups"
+              target={kpis.totalUsers}
+              label={t("landing.stats.users")}
+            />
+            <StatCard
+              icon="location_on"
+              target={kpis.assistancePoints}
+              label={t("landing.stats.points")}
+            />
           </div>
         </section>
 
@@ -184,29 +458,26 @@ export default function LandingPage() {
             <img
               className="lp-video__img"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc3UX1FguYT2duV0Oc7SWw8_OcNtgzZCPS1aZAmzIro3OZr3HzZMd9qXc_HQTpFDCul_1nHC_pm4rkteqWNQASwgmKM5r0uG8JLttFzElcTnQblsdJj07q7awgW08YdQgu2O4rEMsjd1h-02YwhCeUvmlT97qSX0tGTSd8FPFft6t6LHYSXDCcZLI450wCDkZR4b3w_SwMRhY5ESr2aV2Zbjq-Fc49zcBLyOOC64BNPa8OKLHq56cMqj5XuuCPF9fkPWdX-yPtiw"
-              alt="Personal médico asistiendo a paciente con equipamiento de movilidad"
+              alt={t("landing.video.imgAlt")}
             />
             <div className="lp-video__overlay" aria-hidden="true" />
-            <div className="lp-video__play" role="button" aria-label="Reproducir video">
-              <span className="lp-material-icon lp-video__play-icon">play_arrow</span>
+            <div
+              className="lp-video__play"
+              role="button"
+              aria-label={t("landing.video.playLabel")}
+            >
+              <span className="lp-material-icon lp-video__play-icon">
+                play_arrow
+              </span>
             </div>
             <div className="lp-video__caption">
-              <div className="lp-video__caption-title">Conoce nuestra misión</div>
-              <div className="lp-video__caption-sub">3:45 • Salvida en acción</div>
+              <div className="lp-video__caption-title">
+                {t("landing.video.captionTitle")}
+              </div>
+              <div className="lp-video__caption-sub">
+                {t("landing.video.captionSub")}
+              </div>
             </div>
-          </div>
-        </section>
-
-        {/* ── CTA Band ── */}
-        <section className="lp-cta-band">
-          <div className="lp-cta-band__inner">
-            <h2 className="lp-cta-band__title">
-              ¿Listo para transformar tu experiencia de traslado?
-            </h2>
-            <button className="lp-cta-band__btn" onClick={() => navigate('/login')}>
-              Iniciar sesión
-            </button>
-            <span className="lp-cta-band__note">(Requiere inicio de sesión)</span>
           </div>
         </section>
 
@@ -215,69 +486,213 @@ export default function LandingPage() {
           <div className="lp-testimonials__inner">
             <div className="lp-testimonials__header">
               <div>
-                <span className="lp-testimonials__label">Experiencias Reales</span>
-                <h2 className="lp-testimonials__title">Lo que dicen de nosotros</h2>
+                <span className="lp-testimonials__label">
+                  {t("landing.testimonials.label")}
+                </span>
+                <h2 className="lp-testimonials__title">
+                  {t("landing.testimonials.title")}
+                </h2>
               </div>
               <div className="lp-testimonials__nav">
                 <button
                   className="lp-testimonials__nav-btn"
-                  aria-label="Anterior testimonio"
+                  aria-label={t("landing.testimonials.prevLabel")}
+                  onClick={() => swiperRef.current?.slidePrev()}
                 >
                   chevron_left
                 </button>
                 <button
                   className="lp-testimonials__nav-btn"
-                  aria-label="Siguiente testimonio"
+                  aria-label={t("landing.testimonials.nextLabel")}
+                  onClick={() => swiperRef.current?.slideNext()}
                 >
                   chevron_right
                 </button>
               </div>
             </div>
 
-            <div className="lp-testimonials__grid">
-              {testimonials.map((t) => (
-                <div key={t.initials} className="lp-testimonial-card">
-                  <div className="lp-testimonial-card__stars" aria-label="5 estrellas">
-                    {'star'.repeat(1) /* trick: render 5 spans */}
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <span key={i} className="lp-material-icon lp-material-icon--filled">
-                        star
-                      </span>
-                    ))}
-                  </div>
-                  <p className="lp-testimonial-card__quote">"{t.quote}"</p>
-                  <div className="lp-testimonial-card__author">
-                    <div
-                      className={`lp-testimonial-card__avatar lp-testimonial-card__avatar--${t.avatarMod}`}
-                    >
-                      {t.initials}
+            <Swiper
+              modules={[Navigation, A11y]}
+              onSwiper={(swiper) => {
+                swiperRef.current = swiper;
+              }}
+              spaceBetween={24}
+              loop
+              breakpoints={{
+                0: { slidesPerView: 1 },
+                560: { slidesPerView: 2 },
+                900: { slidesPerView: 3 },
+              }}
+            >
+              {(reviews ?? testimonials).map((item) => {
+                const isApi = "author_name" in item;
+                if (isApi) {
+                  const r = item as ApiReview;
+                  const initials = r.author_name
+                    .split(" ")
+                    .map((w) => w[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2);
+                  return (
+                    <SwiperSlide key={r.id}>
+                      <div className="lp-testimonial-card">
+                        <div className="lp-testimonial-card__source-badge">
+                          {PLATFORM_ICONS[r.source] ?? null}
+                        </div>
+                        <div
+                          className="lp-testimonial-card__stars"
+                          aria-label={t("landing.testimonials.starsLabel", {
+                            count: r.rating,
+                          })}
+                        >
+                          {Array.from({ length: r.rating }).map((_, i) => (
+                            <span
+                              key={i}
+                              className="lp-material-icon lp-material-icon--filled"
+                            >
+                              star
+                            </span>
+                          ))}
+                          {Array.from({ length: 5 - r.rating }).map((_, i) => (
+                            <span key={i} className="lp-material-icon">
+                              star
+                            </span>
+                          ))}
+                        </div>
+                        <p
+                          className="lp-testimonial-card__quote"
+                          onMouseEnter={(e) => handleQuoteEnter(e, r.text)}
+                        >
+                          "{r.text}"
+                        </p>
+                        <div className="lp-testimonial-card__author">
+                          {r.author_avatar ? (
+                            <img
+                              src={r.author_avatar}
+                              alt={r.author_name}
+                              className="lp-testimonial-card__avatar-img"
+                            />
+                          ) : (
+                            <div className="lp-testimonial-card__avatar lp-testimonial-card__avatar--purple">
+                              {initials}
+                            </div>
+                          )}
+                          <div>
+                            <div className="lp-testimonial-card__name">
+                              {r.author_name}
+                            </div>
+                            <div className="lp-testimonial-card__role">
+                              {r.source === "google" ? "Google" : "Facebook"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </SwiperSlide>
+                  );
+                }
+                const mock = item as (typeof testimonials)[number];
+                return (
+                  <SwiperSlide key={mock.initials}>
+                    <div className="lp-testimonial-card">
+                      <div
+                        className="lp-testimonial-card__stars"
+                        aria-label={t("landing.testimonials.starsLabel", {
+                          count: 5,
+                        })}
+                      >
+                        {[0, 1, 2, 3, 4].map((i) => (
+                          <span
+                            key={i}
+                            className="lp-material-icon lp-material-icon--filled"
+                          >
+                            star
+                          </span>
+                        ))}
+                      </div>
+                      <p
+                        className="lp-testimonial-card__quote"
+                        onMouseEnter={(e) => handleQuoteEnter(e, mock.quote)}
+                      >
+                        "{mock.quote}"
+                      </p>
+                      <div className="lp-testimonial-card__author">
+                        <div
+                          className={`lp-testimonial-card__avatar lp-testimonial-card__avatar--${mock.avatarMod}`}
+                        >
+                          {mock.initials}
+                        </div>
+                        <div>
+                          <div className="lp-testimonial-card__name">
+                            {mock.name}
+                          </div>
+                          <div className="lp-testimonial-card__role">
+                            {mock.role}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="lp-testimonial-card__name">{t.name}</div>
-                      <div className="lp-testimonial-card__role">{t.role}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  </SwiperSlide>
+                );
+              })}
+            </Swiper>
           </div>
         </section>
       </main>
+
+      {popup && <QuotePopup popup={popup} />}
 
       {/* ── Footer ── */}
       <footer className="lp-footer">
         <div className="lp-footer__inner">
           <span className="lp-footer__brand">Salvida</span>
+
           <div className="lp-footer__links">
-            <a href="#" className="lp-footer__link">Privacy Policy</a>
-            <a href="#" className="lp-footer__link">Terms of Service</a>
-            <a href="#" className="lp-footer__link">Contact Us</a>
-            <a href="#" className="lp-footer__link">Accessibility</a>
+            <a href="#" className="lp-footer__link">
+              {t("landing.footer.privacy")}
+            </a>
+            <a href="#" className="lp-footer__link">
+              {t("landing.footer.terms")}
+            </a>
+            <a href="#" className="lp-footer__link">
+              {t("landing.footer.contact")}
+            </a>
+            <a href="#" className="lp-footer__link">
+              {t("landing.footer.accessibility")}
+            </a>
           </div>
-          <span className="lp-footer__copy">© 2024 Salvida. Empowering mobility with care.</span>
+
+          {/* Social media */}
+          {socialLinks.length > 0 && (
+            <div className="lp-footer__social">
+              {socialLinks.map((s) => (
+                <a
+                  key={s.id}
+                  href={s.url}
+                  className="lp-footer__social-link"
+                  aria-label={s.label}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {PLATFORM_ICONS[s.platform] ?? (
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                    </svg>
+                  )}
+                </a>
+              ))}
+            </div>
+          )}
+
+          <span className="lp-footer__copy">{t("landing.footer.copy")}</span>
         </div>
       </footer>
-
     </div>
   );
 }

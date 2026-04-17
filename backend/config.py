@@ -23,6 +23,13 @@ class Settings(BaseSettings):
     vapid_public_key: str = ""
     vapid_subject: str = "mailto:hola@salvida.es"
 
+    # Google Places API (for fetching public reviews)
+    google_places_api_key: str = ""
+    google_place_id: str = ""
+
+    # Review request links shown in post-service emails
+    facebook_review_url: str = "https://www.facebook.com/p/Salvida-61565788268475/reviews/"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

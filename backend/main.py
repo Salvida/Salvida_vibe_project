@@ -4,8 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import get_settings
-from routers import profile, addresses, prms, bookings
-from routers import push_subscriptions
+from routers import profile, addresses, prms, bookings, global_kpis, social_links, reviews, push_subscriptions
 from scheduler import start_scheduler, stop_scheduler
 
 settings = get_settings()
@@ -38,8 +37,11 @@ app.add_middleware(
 app.include_router(profile.router,              prefix="/api/profile",    tags=["profile"])
 app.include_router(addresses.router,            prefix="/api/addresses",  tags=["addresses"])
 app.include_router(prms.router,                 prefix="/api/prms",       tags=["prms"])
-app.include_router(bookings.router,             prefix="/api/bookings",   tags=["bookings"])
+app.include_router(bookings.router,               prefix="/api/bookings",   tags=["bookings"])
 app.include_router(push_subscriptions.router,   prefix="/api/push",       tags=["push"])
+app.include_router(global_kpis.router,   prefix="/globalKpis",     tags=["landing"])
+app.include_router(social_links.router, prefix="/api/social-links", tags=["landing"])
+app.include_router(reviews.router,      prefix="/api/reviews",      tags=["landing"])
 
 
 @app.get("/health", tags=["health"])

@@ -71,11 +71,17 @@
 }
 
 .lp-nav__logo {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--lp-primary);
-  letter-spacing: -0.04em;
-  font-family: var(--lp-font);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.lp-nav__logo-img {
+  display: block;
 }
 
 .lp-nav__links {
@@ -87,6 +93,7 @@
 @media (min-width: 768px) {
   .lp-nav__links {
     display: flex;
+    margin-left: 6rem;
   }
 }
 
@@ -152,12 +159,19 @@
   padding-top: 6rem;
 }
 
+.lp-hero,
+.lp-stats,
+.lp-video,
+.lp-testimonials {
+  scroll-margin-top: 6rem;
+}
+
 /* ============================================================
    HERO
    ============================================================ */
 .lp-hero {
   position: relative;
-  padding: 3rem 1.5rem 5rem;
+  padding: 0rem 1rem 2rem;
   max-width: 80rem;
   margin: 0 auto;
   display: flex;
@@ -210,7 +224,7 @@
   font-size: clamp(1rem, 2.5vw, 1.25rem);
   color: var(--lp-on-surface-variant);
   max-width: 40rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1rem;
   line-height: 1.7;
 }
 
@@ -334,7 +348,7 @@
    VIDEO
    ============================================================ */
 .lp-video {
-  padding: 6rem 1.5rem;
+  padding: 3rem 1.5rem;
   max-width: 72rem;
   margin: 0 auto;
 }
@@ -421,69 +435,12 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
-/* ============================================================
-   CTA BAND
-   ============================================================ */
-.lp-cta-band {
-  padding: 6rem 1.5rem;
-  background: var(--lp-surface);
-  text-align: center;
-}
-
-.lp-cta-band__inner {
-  max-width: 48rem;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.lp-cta-band__title {
-  font-family: var(--lp-font);
-  font-size: clamp(1.75rem, 4vw, 2.25rem);
-  font-weight: 700;
-  color: var(--lp-primary);
-  margin-bottom: 2.5rem;
-}
-
-.lp-cta-band__btn {
-  background: linear-gradient(135deg, var(--lp-primary) 0%, var(--lp-primary-container) 100%);
-  color: var(--lp-on-primary);
-  font-family: var(--lp-font);
-  font-size: 1.25rem;
-  font-weight: 800;
-  padding: 1.5rem 3rem;
-  border-radius: 9999px;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 24px 48px rgba(97, 51, 122, 0.3);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.lp-cta-band__btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 28px 56px rgba(97, 51, 122, 0.38);
-}
-
-.lp-cta-band__btn:active {
-  transform: translateY(0);
-}
-
-.lp-cta-band__note {
-  margin-top: 1rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(76, 68, 79, 0.6);
-  font-style: italic;
-}
 
 /* ============================================================
    TESTIMONIALS
    ============================================================ */
 .lp-testimonials {
-  padding: 6rem 1.5rem;
+  padding: 2.5rem 1.5rem;
   background: var(--lp-surface-container-low);
   overflow: hidden;
 }
@@ -518,14 +475,8 @@
 }
 
 .lp-testimonials__nav {
-  display: none;
+  display: flex;
   gap: 0.75rem;
-}
-
-@media (min-width: 768px) {
-  .lp-testimonials__nav {
-    display: flex;
-  }
 }
 
 .lp-testimonials__nav-btn {
@@ -551,16 +502,14 @@
   border-color: var(--lp-primary-container);
 }
 
-.lp-testimonials__grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+.lp-testimonials .swiper {
+  padding-bottom: 0.25rem;
 }
 
-@media (min-width: 768px) {
-  .lp-testimonials__grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+/* Equal-height slides */
+.lp-testimonials .swiper-slide {
+  height: auto;
+  display: flex;
 }
 
 .lp-testimonial-card {
@@ -570,6 +519,9 @@
   border: 1px solid transparent;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   transition: box-shadow 0.25s, border-color 0.25s;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .lp-testimonial-card:hover {
@@ -593,6 +545,36 @@
   color: var(--lp-on-surface-variant);
   font-style: italic;
   margin-bottom: 2rem;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: -webkit-line-clamp 0.2s;
+}
+
+/* Quote popup – fixed overlay showing full text on hover */
+.lp-quote-popup {
+  position: fixed;
+  z-index: 9999;
+  background: var(--lp-surface-container-lowest);
+  border: 1px solid rgba(97, 51, 122, 0.18);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.14);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--lp-on-surface-variant);
+  font-style: italic;
+  pointer-events: auto;
+  overflow-y: auto;
+  animation: lp-popup-in 0.15s ease;
+  max-height: 10rem !important;
+}
+
+@keyframes lp-popup-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .lp-testimonial-card__author {
@@ -643,6 +625,22 @@
   text-transform: uppercase;
   color: var(--lp-on-surface-variant);
   margin-top: 2px;
+}
+
+.lp-testimonial-card__avatar-img {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.lp-testimonial-card__source-badge {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  color: var(--lp-on-surface-variant);
+  opacity: 0.6;
 }
 
 /* ============================================================
@@ -710,6 +708,39 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--lp-on-surface-variant);
+}
+
+/* ── Footer social icons ── */
+.lp-footer__social {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.lp-footer__social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  background: var(--lp-surface-container-high);
+  color: var(--lp-on-surface-variant);
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  text-decoration: none;
+}
+
+.lp-footer__social-link:hover {
+  background: var(--lp-primary-container);
+  color: var(--lp-primary);
+  transform: scale(1.1);
+}
+
+@media (min-width: 768px) {
+  .lp-footer__inner {
+    flex-wrap: wrap;
+    row-gap: 1rem;
+  }
 }
 
 /* ============================================================
