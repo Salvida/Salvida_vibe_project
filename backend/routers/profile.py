@@ -38,7 +38,7 @@ def _row_to_profile(row: dict) -> UserProfile:
 async def get_users(user: dict = Depends(get_current_user)):
     """Get all profiles. Requires the caller to be an admin."""
     supabase = get_supabase()
-    require_admin(user["sub"])
+    require_admin(user)
     result = supabase.table("profiles").select("*").execute()
     return [_row_to_profile(row) for row in result.data]
 
@@ -49,8 +49,8 @@ async def get_profile(user: dict = Depends(get_current_user)):
     supabase = get_supabase()
     try:
         result = supabase.table("profiles").select("*").eq("id", user["sub"]).execute()
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Unexpected error: {type(e).__name__}: {e}")
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to fetch profile")
 
     # user_metadata is populated when options.data is passed to supabase.auth.signUp()
     user_meta = user.get("user_metadata", {})
@@ -120,7 +120,7 @@ async def update_notification_prefs(body: NotificationPrefs, user: dict = Depend
 async def toggle_user_archive(user_id: str, user: dict = Depends(get_current_user)):
     """Toggle is_active for a user. Requires admin."""
     supabase = get_supabase()
-    require_admin(user["sub"])
+    require_admin(user)
 
     result = supabase.table("profiles").select("is_active").eq("id", user_id).single().execute()
     if not result.data:
@@ -143,7 +143,7 @@ async def toggle_user_archive(user_id: str, user: dict = Depends(get_current_use
 async def update_user_profile(user_id: str, body: ProfileUpdate, user: dict = Depends(get_current_user)):
     """Update any user's profile. Requires the caller to be an admin."""
     supabase = get_supabase()
-    require_admin(user["sub"])
+    require_admin(user)
 
     updates: dict = {}
     if body.firstName is not None:

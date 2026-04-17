@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Literal, Optional
 
 AddressValidationStatus = Literal["pending", "validated", "rejected"]
@@ -13,6 +13,30 @@ class AddressBase(BaseModel):
     is_accessible: bool = False
     alias: str = ""
     prm_id: Optional[str] = None
+
+    @field_validator("full_address")
+    @classmethod
+    def validate_full_address(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("full_address cannot be empty")
+        if len(v) > 500:
+            raise ValueError("full_address is too long (max 500 characters)")
+        return v
+
+    @field_validator("lat")
+    @classmethod
+    def validate_lat(cls, v: Optional[float]) -> Optional[float]:
+        if v is not None and not (-90 <= v <= 90):
+            raise ValueError("lat must be between -90 and 90")
+        return v
+
+    @field_validator("lng")
+    @classmethod
+    def validate_lng(cls, v: Optional[float]) -> Optional[float]:
+        if v is not None and not (-180 <= v <= 180):
+            raise ValueError("lng must be between -180 and 180")
+        return v
 
 
 class AddressCreate(AddressBase):

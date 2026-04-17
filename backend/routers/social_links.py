@@ -48,7 +48,7 @@ def get_social_links():
 
 @router.post("", response_model=SocialLink, status_code=status.HTTP_201_CREATED)
 def create_social_link(body: SocialLinkCreate, user: dict = Depends(get_current_user)):
-    require_admin(user["sub"])
+    require_admin(user)
     supabase = get_supabase()
     result = (
         supabase.table("social_links")
@@ -61,7 +61,7 @@ def create_social_link(body: SocialLinkCreate, user: dict = Depends(get_current_
 
 @router.put("/{link_id}", response_model=SocialLink)
 def update_social_link(link_id: str, body: SocialLinkUpdate, user: dict = Depends(get_current_user)):
-    require_admin(user["sub"])
+    require_admin(user)
     supabase = get_supabase()
     patch = {k: v for k, v in body.model_dump().items() if v is not None}
     if not patch:
@@ -75,6 +75,6 @@ def update_social_link(link_id: str, body: SocialLinkUpdate, user: dict = Depend
 
 @router.delete("/{link_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_social_link(link_id: str, user: dict = Depends(get_current_user)):
-    require_admin(user["sub"])
+    require_admin(user)
     supabase = get_supabase()
     supabase.table("social_links").delete().eq("id", link_id).execute()

@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+import re
+from pydantic import BaseModel, field_validator, model_validator
 from typing import Literal, Optional
 
 BookingStatus = Literal["Approved", "Pending", "Completed", "Cancelled"]
@@ -20,6 +21,26 @@ class BookingBase(BaseModel):
     address: str = ""
     service_reason: Optional[ServiceReason] = None
     service_reason_notes: Optional[str] = None
+
+    @field_validator("date")
+    @classmethod
+    def validate_date(cls, v: str) -> str:
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+            raise ValueError("date must be in YYYY-MM-DD format")
+        return v
+
+    @field_validator("startTime", "endTime")
+    @classmethod
+    def validate_time(cls, v: str) -> str:
+        if not re.fullmatch(r"\d{2}:\d{2}", v):
+            raise ValueError("time must be in HH:MM format")
+        return v
+
+    @model_validator(mode="after")
+    def validate_time_range(self) -> "BookingBase":
+        if self.startTime and self.endTime and self.startTime >= self.endTime:
+            raise ValueError("endTime must be after startTime")
+        return self
 
 
 class BookingCreate(BookingBase):
