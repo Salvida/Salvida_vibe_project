@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -7,11 +8,22 @@ from config import get_settings
 from routers import profile, addresses, prms, bookings, global_kpis, social_links, reviews, push_subscriptions
 from scheduler import start_scheduler, stop_scheduler
 
+logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if settings.debug:
+        logger.warning(
+            "⚠️  DEBUG MODE ACTIVE — JWT signature verification is disabled. "
+            "DO NOT use in production."
+        )
+    if not settings.debug and not settings.supabase_jwt_secret:
+        raise RuntimeError(
+            "FATAL: supabase_jwt_secret is required when debug=False. "
+            "Set it in .env or set debug=True only for local development."
+        )
     start_scheduler()
     yield
     stop_scheduler()
@@ -25,14 +37,23 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+if settings.debug:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+        allow_headers=["Authorization", "Content-Type"],
+    )
 
 app.include_router(profile.router,              prefix="/api/profile",    tags=["profile"])
 app.include_router(addresses.router,            prefix="/api/addresses",  tags=["addresses"])

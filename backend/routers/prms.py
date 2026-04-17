@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from typing import Optional
 from db.supabase_client import get_supabase
@@ -10,6 +11,11 @@ from auth.dependencies import get_current_user
 from auth.roles import is_admin
 
 router = APIRouter()
+
+
+def _sanitize_search(value: str) -> str:
+    """Strip PostgREST special characters to prevent filter injection."""
+    return re.sub(r'[,.()\\/\'"]', '', value.strip())[:100]
 
 
 def _row_to_list_item(row: dict) -> PrmListItem:
@@ -144,7 +150,10 @@ async def list_prms(
     if status:
         query = query.eq("status", status)
     if q:
-        query = query.or_(f"name.ilike.%{q}%,email.ilike.%{q}%,phone.ilike.%{q}%")
+        safe_q = _sanitize_search(q)
+        query = query.or_(
+            f"name.ilike.%{safe_q}%,email.ilike.%{safe_q}%,phone.ilike.%{safe_q}%"
+        )
 
     query = query.range(offset, offset + limit - 1)
     result = query.execute()

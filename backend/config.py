@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     # Required in production (debug=False). Found in Supabase Dashboard → Settings → API → JWT Secret
     supabase_jwt_secret: str = ""
     cors_origins: list[str] = ["http://localhost:3000"]
-    debug: bool = True
+    debug: bool = False  # NUNCA True por default — activar solo en .env local
     supabase_mcp_connection: str = ""
 
     # Email notifications (Resend — https://resend.com)
