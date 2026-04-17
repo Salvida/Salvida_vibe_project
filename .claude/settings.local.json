@@ -19,7 +19,14 @@
       "Bash(node -e \"const p = require\\(''./package.json''\\); console.log\\(JSON.stringify\\({leaflet: p.dependencies?.leaflet, ''react-leaflet'': p.dependencies?.[''react-leaflet''], ''@types/leaflet'': p.devDependencies?.[''@types/leaflet'']}, null, 2\\)\\)\")",
       "Bash(python -c \"from main import app; print\\('OK'\\)\")",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(grep -n 'is_admin\\\\|require_admin' /c/Users/admin/Projects/Salvida_vibe_project/backend/routers/*.py)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:v for k,v in {**d.get\\('dependencies',{}\\), **d.get\\('devDependencies',{}\\)}.items\\(\\)}, indent=2\\)\\)\")",
+      "Bash(sed -n '355,365p' c:/Users/admin/Projects/Salvida_vibe_project/frontend/src/pages/Settings/Settings.css)",
+      "Bash(sed -n '13,22p' c:/Users/admin/Projects/Salvida_vibe_project/frontend/src/pages/Notifications/Notifications.css)",
+      "Bash(sed -n '14,22p' c:/Users/admin/Projects/Salvida_vibe_project/frontend/src/pages/NewBooking/NewBooking.css)",
+      "Bash(sed -n '285,295p' c:/Users/admin/Projects/Salvida_vibe_project/frontend/src/pages/NewBooking/NewBooking.css)",
+      "Bash(sed -n '390,398p' c:/Users/admin/Projects/Salvida_vibe_project/frontend/src/pages/NewBooking/NewBooking.css)"
     ]
   },
   "hooks": {
