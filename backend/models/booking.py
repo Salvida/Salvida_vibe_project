@@ -2,6 +2,7 @@ import re
 from pydantic import BaseModel, field_validator, model_validator
 from typing import Literal, Optional
 
+
 BookingStatus = Literal["Approved", "Pending", "Completed", "Cancelled"]
 ServiceReason = Literal[
     "medical_appointment",
@@ -36,15 +37,12 @@ class BookingBase(BaseModel):
             raise ValueError("time must be in HH:MM format")
         return v
 
+class BookingCreate(BookingBase):
     @model_validator(mode="after")
-    def validate_time_range(self) -> "BookingBase":
+    def validate_time_range(self) -> "BookingCreate":
         if self.startTime and self.endTime and self.startTime >= self.endTime:
             raise ValueError("endTime must be after startTime")
         return self
-
-
-class BookingCreate(BookingBase):
-    pass
 
 
 class BookingUpdate(BaseModel):

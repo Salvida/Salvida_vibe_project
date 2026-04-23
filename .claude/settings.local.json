@@ -26,7 +26,9 @@
       "Bash(sed -n '13,22p' c:/Users/admin/Projects/Salvida_vibe_project/frontend/src/pages/Notifications/Notifications.css)",
       "Bash(sed -n '14,22p' c:/Users/admin/Projects/Salvida_vibe_project/frontend/src/pages/NewBooking/NewBooking.css)",
       "Bash(sed -n '285,295p' c:/Users/admin/Projects/Salvida_vibe_project/frontend/src/pages/NewBooking/NewBooking.css)",
-      "Bash(sed -n '390,398p' c:/Users/admin/Projects/Salvida_vibe_project/frontend/src/pages/NewBooking/NewBooking.css)"
+      "Bash(sed -n '390,398p' c:/Users/admin/Projects/Salvida_vibe_project/frontend/src/pages/NewBooking/NewBooking.css)",
+      "mcp__plugin_engram_engram__mem_search",
+      "Bash(python -c ' *)"
     ]
   },
   "hooks": {
