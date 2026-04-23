@@ -160,6 +160,8 @@ async def update_user_profile(user_id: str, body: ProfileUpdate, user: dict = De
         updates["dni"] = body.dni
     if body.avatar is not None:
         updates["avatar"] = body.avatar
+    if body.notification_prefs is not None:
+        updates["notification_prefs"] = body.notification_prefs.model_dump()
 
     if not updates:
         result = supabase.table("profiles").select("*").eq("id", user_id).single().execute()
