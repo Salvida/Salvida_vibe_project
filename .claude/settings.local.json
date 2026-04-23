@@ -28,7 +28,12 @@
       "Bash(sed -n '285,295p' c:/Users/admin/Projects/Salvida_vibe_project/frontend/src/pages/NewBooking/NewBooking.css)",
       "Bash(sed -n '390,398p' c:/Users/admin/Projects/Salvida_vibe_project/frontend/src/pages/NewBooking/NewBooking.css)",
       "mcp__plugin_engram_engram__mem_search",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(bash scripts/start-server.sh --project-dir /c/Users/admin/Projects/Salvida_vibe_project)",
+      "Bash(xargs cat *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\('state_dir',''\\)\\)\")",
+      "mcp__plugin_engram_engram__mem_save",
+      "Bash(npx tsc *)"
     ]
   },
   "hooks": {

@@ -11,3 +11,4 @@ coverage/
 !.env.example
 .claude/worktrees/
 ./.mcp.json
+.superpowers
