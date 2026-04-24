@@ -345,3 +345,21 @@
     padding: 1rem;
   }
 }
+
+@media (max-width: 480px) {
+  .booking-card {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .booking-card__actions {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .booking-card__badges {
+    justify-content: flex-start;
+  }
+}
