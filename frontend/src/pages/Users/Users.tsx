@@ -8,6 +8,7 @@ import type { UserProfile } from '../../types';
 import './Users.css';
 
 const ROLE_LABEL: Record<string, string> = {
+  superadmin: 'Super Admin',
   admin: 'Admin',
   user: 'Usuario',
 };

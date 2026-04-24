@@ -50,7 +50,7 @@ export default function PrmDetail() {
   const { data: prm, isLoading, isError } = usePrm(id!);
   const updatePrm = useUpdatePrm();
   const currentUser = useAuthStore((s) => s.user);
-  const isAdmin = currentUser?.role === 'admin';
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
   const { data: addresses, isLoading: addrLoading } = usePrmAddresses(id!);
   const addPrmAddress = useAddPrmAddress();
   const deletePrmAddress = useDeletePrmAddress();

@@ -10,6 +10,7 @@ export function useProfile() {
   return useQuery<UserProfile>({
     queryKey: PROFILE_KEY,
     queryFn: () => apiClient.get<UserProfile>('/api/profile'),
+    staleTime: 0,
   });
 }
 
@@ -57,9 +58,9 @@ export function useDemoMode() {
     mutationFn: (active: boolean) =>
       apiClient.post<UserProfile>('/api/profile/demo-mode', { active }),
     onSuccess: (data) => {
-      qc.setQueryData(PROFILE_KEY, data);
-      const msg = data.demoModeActive ? 'Modo demo activado' : 'Modo demo desactivado';
+      const msg = data.demoModeActive ? 'Modo demo activado' : 'Modo producción activado';
       toast.success(msg);
+      window.location.href = '/app/bookings';
     },
     onError: (error) => toast.error(parseApiError(error, 'Error al cambiar modo demo')),
   });

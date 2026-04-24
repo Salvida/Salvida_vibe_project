@@ -21,7 +21,7 @@ export default function NewPrm() {
   const navigate = useNavigate();
   const createPrm = useCreatePrm();
   const addPrmAddress = useAddPrmAddress();
-  const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
+  const isAdmin = useAuthStore((s) => s.user?.role === 'admin' || s.user?.role === 'superadmin');
 
   // Admin: selected owner
   const [ownerId, setOwnerId] = useState('');

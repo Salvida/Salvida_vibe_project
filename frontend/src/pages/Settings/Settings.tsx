@@ -70,7 +70,7 @@ const baseSections: Section[] = [
 export default function Settings() {
   const { t } = useTranslation();
   const { data: currentUser } = useProfile();
-  const isAdminUser = currentUser?.role === "admin";
+  const isAdminUser = currentUser?.role === "admin" || currentUser?.role === "superadmin";
 
   const sections = baseSections.filter((s) => !s.adminOnly || isAdminUser);
 

@@ -25,7 +25,7 @@ export default function NewBooking() {
   const { t } = useTranslation();
   const createBooking = useCreateBooking();
   const addPrmAddress = useAddPrmAddress();
-  const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
+  const isAdmin = useAuthStore((s) => s.user?.role === 'admin' || s.user?.role === 'superadmin');
 
   const [address, setAddress] = useState<Partial<Address>>({});
   const [saveAddressAlias, setSaveAddressAlias] = useState('');
