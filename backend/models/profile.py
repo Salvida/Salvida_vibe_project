@@ -31,5 +31,11 @@ class UserProfile(BaseModel):
     avatar: Optional[str] = None
     notification_prefs: Optional[NotificationPrefs] = None
     isActive: bool = True
+    demoModeActive: bool = False
+    isDemo: bool = False
 
     model_config = {"from_attributes": True}
+
+
+class DemoModeUpdate(BaseModel):
+    active: bool

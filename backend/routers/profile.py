@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from postgrest import APIError as PostgrestAPIError
 from db.supabase_client import get_supabase
-from models.profile import UserProfile, ProfileUpdate, NotificationPrefs
+from models.profile import UserProfile, ProfileUpdate, NotificationPrefs, DemoModeUpdate
 from auth.dependencies import get_current_user
-from auth.roles import require_admin
+from auth.roles import require_admin, require_superadmin
 
 router = APIRouter()
 
@@ -31,6 +31,8 @@ def _row_to_profile(row: dict) -> UserProfile:
         avatar=row.get("avatar"),
         notification_prefs=prefs,
         isActive=row.get("is_active", True),
+        demoModeActive=row.get("demo_mode_active", False),
+        isDemo=row.get("is_demo", False),
     )
 
 
@@ -179,6 +181,24 @@ async def update_user_profile(user_id: str, body: ProfileUpdate, user: dict = De
     except PostgrestAPIError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
 
+    if not result.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+
+    return _row_to_profile(result.data[0])
+
+
+@router.post("/demo-mode", response_model=UserProfile)
+async def toggle_demo_mode(body: DemoModeUpdate, user: dict = Depends(get_current_user)):
+    """Toggle demo mode for the calling superadmin. Requires superadmin role."""
+    supabase = get_supabase()
+    require_superadmin(user)
+
+    result = (
+        supabase.table("profiles")
+        .update({"demo_mode_active": body.active})
+        .eq("id", user["sub"])
+        .execute()
+    )
     if not result.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
 

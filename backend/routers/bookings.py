@@ -89,10 +89,12 @@ async def list_bookings(
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    demo_filter = user.get("demo_mode_active", False)
     query = (
         supabase.table("bookings")
         .select("*, prms(name, avatar)")
         .order("start_time")
+        .eq("is_demo", demo_filter)
     )
 
     if not is_admin(user):

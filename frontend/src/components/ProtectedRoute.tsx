@@ -17,9 +17,10 @@ function ProfileSync() {
 
 interface ProtectedRouteProps {
   requireAdmin?: boolean;
+  requireSuperAdmin?: boolean;
 }
 
-export default function ProtectedRoute({ requireAdmin = false }: ProtectedRouteProps) {
+export default function ProtectedRoute({ requireAdmin = false, requireSuperAdmin = false }: ProtectedRouteProps) {
   const session = useAuthStore((s) => s.session);
   const isInitialized = useAuthStore((s) => s.isInitialized);
   const user = useAuthStore((s) => s.user);
@@ -35,12 +36,19 @@ export default function ProtectedRoute({ requireAdmin = false }: ProtectedRouteP
     return <Navigate to="/login" replace />;
   }
 
+  const needsRoleCheck = requireAdmin || requireSuperAdmin;
+
   // Wait for profile to load before enforcing role checks
-  if (requireAdmin && user === null) {
+  if (needsRoleCheck && user === null) {
     return <AppLoader />;
   }
 
-  if (requireAdmin && user?.role !== 'admin') {
+  if (requireSuperAdmin && user?.role !== 'superadmin') {
+    return <Navigate to="/app/bookings" replace />;
+  }
+
+  // superadmin inherits admin access
+  if (requireAdmin && user?.role !== 'admin' && user?.role !== 'superadmin') {
     return <Navigate to="/app/bookings" replace />;
   }
 

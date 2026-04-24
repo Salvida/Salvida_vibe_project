@@ -50,6 +50,21 @@ export function useArchiveUser() {
   });
 }
 
+export function useDemoMode() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (active: boolean) =>
+      apiClient.post<UserProfile>('/api/profile/demo-mode', { active }),
+    onSuccess: (data) => {
+      qc.setQueryData(PROFILE_KEY, data);
+      const msg = data.demoModeActive ? 'Modo demo activado' : 'Modo demo desactivado';
+      toast.success(msg);
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al cambiar modo demo')),
+  });
+}
+
 export function useUpdateProfile() {
   const qc = useQueryClient();
 

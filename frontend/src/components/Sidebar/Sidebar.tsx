@@ -6,12 +6,15 @@ import {
   LogOut,
   MapPin,
   UserCog,
+  ShieldCheck,
+  FlaskConical,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { SalvidaLogo } from "../../assets/icons/SalvidaLogo";
 import { useUIStore } from "../../store/useUIStore";
+import { useDemoMode } from "../../hooks/useProfile";
 import "./Sidebar.css";
 
 const allNavItems = [
@@ -20,20 +23,30 @@ const allNavItems = [
     labelKey: "nav.bookings",
     path: "/app/bookings",
     adminOnly: false,
+    superAdminOnly: false,
   },
-  { icon: UserCog, labelKey: "nav.users", path: "/app/users", adminOnly: true },
-  { icon: Users, labelKey: "nav.prms", path: "/app/prms", adminOnly: false },
+  { icon: UserCog, labelKey: "nav.users", path: "/app/users", adminOnly: true, superAdminOnly: false },
+  { icon: Users, labelKey: "nav.prms", path: "/app/prms", adminOnly: false, superAdminOnly: false },
   {
     icon: MapPin,
     labelKey: "nav.addresses",
     path: "/app/addresses",
     adminOnly: true,
+    superAdminOnly: false,
   },
   {
     icon: Settings,
     labelKey: "nav.settings",
     path: "/app/settings",
     adminOnly: false,
+    superAdminOnly: false,
+  },
+  {
+    icon: ShieldCheck,
+    labelKey: "nav.superadmin",
+    path: "/app/superadmin",
+    adminOnly: false,
+    superAdminOnly: true,
   },
 ];
 
@@ -46,8 +59,15 @@ export default function Sidebar() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
 
-  const isAdmin = user?.role === "admin";
-  const navItems = allNavItems.filter((item) => !item.adminOnly || isAdmin);
+  const isAdmin = user?.role === "admin" || user?.role === "superadmin";
+  const isSuperAdmin = user?.role === "superadmin";
+  const demoMode = useDemoMode();
+  const isDemo = user?.demoModeActive ?? false;
+  const navItems = allNavItems.filter((item) => {
+    if (item.superAdminOnly) return isSuperAdmin;
+    if (item.adminOnly) return isAdmin;
+    return true;
+  });
 
   const hasName = user && (user.firstName || user.lastName);
   const fullName = hasName
@@ -92,6 +112,18 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar__footer">
+        {isSuperAdmin && (
+          <button
+            className={`sidebar__demo-toggle${isDemo ? " sidebar__demo-toggle--active" : ""}`}
+            onClick={() => demoMode.mutate(!isDemo)}
+            disabled={demoMode.isPending}
+            aria-pressed={isDemo}
+          >
+            <FlaskConical size={15} />
+            <span>{isDemo ? "Demo activo" : "Modo demo"}</span>
+            <span className={`sidebar__demo-pip${isDemo ? " sidebar__demo-pip--on" : ""}`} />
+          </button>
+        )}
         <div className="sidebar__user">
           <div className="sidebar__user-info">
             <div className="sidebar__user-avatar">{initials}</div>

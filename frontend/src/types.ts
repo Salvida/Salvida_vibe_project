@@ -81,6 +81,8 @@ export interface NotificationPrefs {
   booking_reminder: boolean;
 }
 
+export type UserRole = 'user' | 'admin' | 'superadmin';
+
 export interface UserProfile {
   id: string;
   firstName: string;
@@ -89,8 +91,10 @@ export interface UserProfile {
   phone: string;
   organization: string;
   dni?: string;
-  role: string;
+  role: UserRole;
   avatar?: string;
   notification_prefs?: NotificationPrefs;
   isActive?: boolean;
+  demoModeActive?: boolean;
+  isDemo?: boolean;
 }
