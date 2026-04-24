@@ -1,0 +1,133 @@
+.install-prompt {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  width: 18rem;
+}
+
+.install-prompt__card {
+  background: #ffffff;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(107, 70, 145, 0.12);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.07),
+    0 10px 32px -4px rgba(107, 70, 145, 0.18);
+}
+
+.install-prompt__bar {
+  height: 4px;
+  width: 100%;
+  background-color: var(--color-primary);
+}
+
+.install-prompt__body {
+  padding: 1rem;
+}
+
+.install-prompt__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.install-prompt__icon-wrap {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.625rem;
+  background-color: rgba(107, 70, 145, 0.08);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.install-prompt__icon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.install-prompt__text {
+  flex: 1;
+  min-width: 0;
+  padding-top: 0.125rem;
+}
+
+.install-prompt__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.install-prompt__desc {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0.25rem 0 0;
+  line-height: 1.4;
+}
+
+.install-prompt__close {
+  flex-shrink: 0;
+  margin: -0.25rem -0.25rem 0 0;
+  padding: 0.375rem;
+  border-radius: 0.5rem;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s, color 0.15s;
+  cursor: pointer;
+}
+
+.install-prompt__close:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.install-prompt__actions {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.install-prompt__btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.625rem;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.install-prompt__btn:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.install-prompt__ios {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.install-prompt__ios-icon {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.install-prompt__ios strong {
+  color: #1f2937;
+}

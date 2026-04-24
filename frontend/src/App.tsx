@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AppLoader from './components/AppLoader';
 import ProtectedRoute from './components/ProtectedRoute';
+import InstallPrompt from './components/InstallPrompt/InstallPrompt';
 
 // Public pages — loaded eagerly (small, needed immediately)
 import Login from './pages/Login/Login';
@@ -24,6 +25,7 @@ const Users        = lazy(() => import('./pages/Users/Users'));
 export default function App() {
   return (
     <BrowserRouter>
+      <InstallPrompt />
       <Suspense fallback={<AppLoader />}>
         <Routes>
           {/* Public routes */}

@@ -457,6 +457,15 @@
   "header": {
     "date": "{{month}} {{year}}"
   },
+  "installPrompt": {
+    "title": "Instala Salvida",
+    "description": "Acceso rápido y uso sin conexión desde tu dispositivo",
+    "installBtn": "Instalar aplicación",
+    "iosTap": "Toca",
+    "iosShare": "Compartir",
+    "iosThen": "y selecciona «Añadir a pantalla de inicio»",
+    "dismiss": "Cerrar"
+  },
   "landing": {
     "nav": {
       "home": "Inicio",
