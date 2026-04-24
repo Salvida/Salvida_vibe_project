@@ -41,7 +41,8 @@ async def get_users(user: dict = Depends(get_current_user)):
     """Get all profiles. Requires the caller to be an admin."""
     supabase = get_supabase()
     require_admin(user)
-    result = supabase.table("profiles").select("*").execute()
+    demo_filter = user.get("demo_mode_active", False)
+    result = supabase.table("profiles").select("*").eq("is_demo", demo_filter).execute()
     return [_row_to_profile(row) for row in result.data]
 
 

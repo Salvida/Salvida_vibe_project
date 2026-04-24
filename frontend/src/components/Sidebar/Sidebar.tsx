@@ -10,7 +10,7 @@ import {
   FlaskConical,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { SalvidaLogo } from "../../assets/icons/SalvidaLogo";
 import { useUIStore } from "../../store/useUIStore";
@@ -63,6 +63,7 @@ export default function Sidebar() {
   const isSuperAdmin = user?.role === "superadmin";
   const demoMode = useDemoMode();
   const isDemo = user?.demoModeActive ?? false;
+  const [confirming, setConfirming] = useState(false);
   const navItems = allNavItems.filter((item) => {
     if (item.superAdminOnly) return isSuperAdmin;
     if (item.adminOnly) return isAdmin;
@@ -113,16 +114,38 @@ export default function Sidebar() {
 
       <div className="sidebar__footer">
         {isSuperAdmin && (
-          <button
-            className={`sidebar__demo-toggle${isDemo ? " sidebar__demo-toggle--active" : ""}`}
-            onClick={() => demoMode.mutate(!isDemo)}
-            disabled={demoMode.isPending}
-            aria-pressed={isDemo}
-          >
-            <FlaskConical size={15} />
-            <span>{isDemo ? "Demo activo" : "Modo demo"}</span>
-            <span className={`sidebar__demo-pip${isDemo ? " sidebar__demo-pip--on" : ""}`} />
-          </button>
+          confirming ? (
+            <div className="sidebar__demo-confirm">
+              <span className="sidebar__demo-confirm-label">
+                {isDemo ? "¿Salir del modo demo?" : "¿Activar modo demo?"}
+              </span>
+              <div className="sidebar__demo-confirm-actions">
+                <button
+                  className="sidebar__demo-confirm-yes"
+                  onClick={() => { demoMode.mutate(!isDemo); setConfirming(false); }}
+                  disabled={demoMode.isPending}
+                >
+                  Confirmar
+                </button>
+                <button
+                  className="sidebar__demo-confirm-no"
+                  onClick={() => setConfirming(false)}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              className={`sidebar__demo-toggle${isDemo ? " sidebar__demo-toggle--active" : ""}`}
+              onClick={() => setConfirming(true)}
+              aria-pressed={isDemo}
+            >
+              <FlaskConical size={15} />
+              <span>{isDemo ? "Modo demo" : "Modo producción"}</span>
+              <span className={`sidebar__demo-pip${isDemo ? " sidebar__demo-pip--on" : ""}`} />
+            </button>
+          )
         )}
         <div className="sidebar__user">
           <div className="sidebar__user-info">

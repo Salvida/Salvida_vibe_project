@@ -1,15 +1,22 @@
 .demo-banner {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 22px;
+  z-index: 200;
+  background: #f59e0b;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: var(--color-warning, #f59e0b);
-  color: #fff;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: default;
+  user-select: none;
 }
