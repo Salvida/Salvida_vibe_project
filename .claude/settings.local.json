@@ -37,7 +37,8 @@
       "Bash(python -c \"import reportlab, cairosvg\")",
       "Bash(pip install *)",
       "Bash(python generate_proposal.py)",
-      "Bash(python -c \"from svglib.svglib import svg2rlg; from reportlab.graphics import renderPDF; rlg = svg2rlg\\(r'C:\\\\Users\\\\admin\\\\Projects\\\\Salvida_vibe_project\\\\frontend\\\\public\\\\icons\\\\icon-192.svg'\\); print\\('OK', rlg\\)\")"
+      "Bash(python -c \"from svglib.svglib import svg2rlg; from reportlab.graphics import renderPDF; rlg = svg2rlg\\(r'C:\\\\Users\\\\admin\\\\Projects\\\\Salvida_vibe_project\\\\frontend\\\\public\\\\icons\\\\icon-192.svg'\\); print\\('OK', rlg\\)\")",
+      "Bash(.venv/Scripts/pip install *)"
     ]
   },
   "hooks": {
