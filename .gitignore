@@ -10,7 +10,6 @@ coverage/
 .env*
 !.env.example
 .claude/worktrees/
-.claude/settings.local.json
 ./.mcp.json
 .superpowers
 docs
