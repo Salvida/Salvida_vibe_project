@@ -40,7 +40,7 @@ class BookingBase(BaseModel):
 class BookingCreate(BookingBase):
     @model_validator(mode="after")
     def validate_time_range(self) -> "BookingCreate":
-        if self.startTime and self.endTime and self.startTime >= self.endTime:
+        if self.startTime and self.endTime and self.startTime > self.endTime:
             raise ValueError("endTime must be after startTime")
         return self
 
