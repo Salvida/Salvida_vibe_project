@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, field_validator
+from typing import Optional, Literal
 
 
 class NotificationPrefs(BaseModel):
@@ -39,3 +39,26 @@ class UserProfile(BaseModel):
 
 class DemoModeUpdate(BaseModel):
     active: bool
+
+
+class UserCreateRequest(BaseModel):
+    email: str
+    method: Literal["invite", "direct"]
+    password: Optional[str] = None  # requerido solo si method="direct"
+    firstName: str = ""
+    lastName: str = ""
+    phone: str = ""
+    organization: str = ""
+    role: str = "user"
+    is_demo: bool = False
+
+    @field_validator("email")
+    @classmethod
+    def email_not_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("El email es requerido")
+        return v.strip().lower()
+
+
+class UserDemoUpdate(BaseModel):
+    is_demo: bool

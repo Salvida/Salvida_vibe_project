@@ -1,0 +1,229 @@
+.cum-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.cum-modal {
+  background: var(--color-surface, #fff);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.cum-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem 0;
+}
+
+.cum-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text, #111);
+  margin: 0;
+}
+
+.cum-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted, #666);
+  padding: 4px;
+  display: flex;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.cum-close:hover {
+  background: var(--color-hover, #f3f4f6);
+}
+
+/* Tabs */
+.cum-tabs {
+  display: flex;
+  gap: 0;
+  padding: 1rem 1.5rem 0;
+  border-bottom: 1.5px solid var(--color-border, #e5e7eb);
+}
+
+.cum-tab {
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted, #6b7280);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1.5px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.cum-tab--active {
+  color: var(--color-primary, #2563eb);
+  border-bottom-color: var(--color-primary, #2563eb);
+}
+
+/* Form */
+.cum-form {
+  padding: 1.25rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cum-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.cum-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.cum-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text, #374151);
+}
+
+.cum-input,
+.cum-select {
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid var(--color-border, #d1d5db);
+  border-radius: 7px;
+  font-size: 0.875rem;
+  color: var(--color-text, #111);
+  background: var(--color-bg, #fff);
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cum-input:focus,
+.cum-select:focus {
+  outline: none;
+  border-color: var(--color-primary, #2563eb);
+}
+
+.cum-input--error {
+  border-color: #ef4444;
+}
+
+.cum-error {
+  font-size: 0.75rem;
+  color: #ef4444;
+}
+
+/* Toggle switch */
+.cum-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.875rem;
+  border: 1.5px solid var(--color-border, #d1d5db);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.cum-toggle-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text, #374151);
+}
+
+.cum-switch {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--color-border, #d1d5db);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.cum-switch--on {
+  background: var(--color-primary, #2563eb);
+}
+
+.cum-switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+
+.cum-switch--on .cum-switch-thumb {
+  transform: translateX(18px);
+}
+
+/* Hint */
+.cum-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #6b7280);
+  margin: -0.25rem 0 0;
+}
+
+/* Actions */
+.cum-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.cum-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s;
+}
+
+.cum-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cum-btn--secondary {
+  background: var(--color-hover, #f3f4f6);
+  color: var(--color-text, #374151);
+}
+
+.cum-btn--secondary:hover:not(:disabled) {
+  background: var(--color-border, #e5e7eb);
+}
+
+.cum-btn--primary {
+  background: var(--color-primary, #2563eb);
+  color: #fff;
+}
+
+.cum-btn--primary:hover:not(:disabled) {
+  opacity: 0.88;
+}

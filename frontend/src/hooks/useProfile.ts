@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { apiClient, parseApiError } from '../lib/api';
-import type { UserProfile, NotificationPrefs } from '../types';
+import type { UserProfile, NotificationPrefs, CreateUserRequest } from '../types';
 
 export const PROFILE_KEY = ['profile'] as const;
 export const USERS_KEY = ['users'] as const;
@@ -63,6 +63,38 @@ export function useDemoMode() {
       window.location.href = '/app/bookings';
     },
     onError: (error) => toast.error(parseApiError(error, 'Error al cambiar modo demo')),
+  });
+}
+
+export function useCreateUser() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: CreateUserRequest) =>
+      apiClient.post<UserProfile>('/api/profile/users', body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: USERS_KEY });
+      toast.success('Usuario creado correctamente');
+    },
+    onError: (error) => {
+      toast.error(parseApiError(error, 'Error al crear el usuario'));
+    },
+  });
+}
+
+export function useToggleUserDemo() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ userId, isDemo }: { userId: string; isDemo: boolean }) =>
+      apiClient.patch<UserProfile>(`/api/profile/${userId}/demo`, { is_demo: isDemo }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: USERS_KEY });
+      toast.success('Estado demo actualizado');
+    },
+    onError: (error) => {
+      toast.error(parseApiError(error, 'Error al cambiar estado demo'));
+    },
   });
 }
 

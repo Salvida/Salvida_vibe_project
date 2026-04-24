@@ -98,3 +98,15 @@ export interface UserProfile {
   demoModeActive?: boolean;
   isDemo?: boolean;
 }
+
+export interface CreateUserRequest {
+  email: string;
+  method: 'invite' | 'direct';
+  password?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  organization?: string;
+  role: UserRole;
+  is_demo?: boolean;
+}

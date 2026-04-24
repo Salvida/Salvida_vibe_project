@@ -166,6 +166,10 @@ async def create_booking(body: BookingCreate, background_tasks: BackgroundTasks,
     owner_id = prm_data.get("created_by") or user["sub"]
     booking_owner = owner_id if caller_is_admin else user["sub"]
 
+    # Inherit is_demo from the booking owner's profile
+    owner_profile = supabase.table("profiles").select("is_demo").eq("id", booking_owner).single().execute()
+    inherited_is_demo = owner_profile.data.get("is_demo", False) if owner_profile.data else False
+
     payload = {
         "prm_id": body.prmId,
         "start_time": body.startTime,
@@ -177,6 +181,7 @@ async def create_booking(body: BookingCreate, background_tasks: BackgroundTasks,
         "user_id": booking_owner,
         "created_by": booking_owner,
         "created_by_admin": caller_is_admin,
+        "is_demo": inherited_is_demo,
     }
 
     result = supabase.table("bookings").insert(payload).execute()

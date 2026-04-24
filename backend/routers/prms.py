@@ -215,6 +215,10 @@ async def create_prm(body: PrmCreate, user: dict = Depends(get_current_user)):
     caller_is_admin = is_admin(user)
     owner = body.owner_id if (caller_is_admin and body.owner_id) else user["sub"]
 
+    # Inherit is_demo from the owner's profile — overrides whatever the body sent
+    owner_profile = supabase.table("profiles").select("is_demo").eq("id", owner).single().execute()
+    inherited_is_demo = owner_profile.data.get("is_demo", False) if owner_profile.data else False
+
     prm_payload = {
         "name": body.name,
         "email": body.email or "",
@@ -226,7 +230,7 @@ async def create_prm(body: PrmCreate, user: dict = Depends(get_current_user)):
         "status": body.status,
         "avatar": body.avatar,
         "dni": body.dni,
-        "is_demo": body.is_demo,
+        "is_demo": inherited_is_demo,
         "user_id": owner,
         "created_by": owner,
     }
