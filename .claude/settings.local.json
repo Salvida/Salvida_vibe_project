@@ -40,7 +40,10 @@
       "Bash(python -c \"from svglib.svglib import svg2rlg; from reportlab.graphics import renderPDF; rlg = svg2rlg\\(r'C:\\\\Users\\\\admin\\\\Projects\\\\Salvida_vibe_project\\\\frontend\\\\public\\\\icons\\\\icon-192.svg'\\); print\\('OK', rlg\\)\")",
       "Bash(.venv/Scripts/pip install *)",
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d['scripts'].get\\('dev',''\\)\\)\")",
-      "mcp__plugin_engram_engram__mem_session_summary"
+      "mcp__plugin_engram_engram__mem_session_summary",
+      "Bash(xargs grep *)",
+      "Bash(find /c/Users/admin/Projects/Salvida_vibe_project -type f \\\\\\( -name \"*.sql\" -o -name \"*.ts\" -o -name \"*.tsx\" -o -name \"*.py\" \\\\\\) ! -path \"*/node_modules/*\" ! -path \"*/.vite/*\" -exec grep -l \"avatars\\\\|storage.*bucket\" {} \\\\;)",
+      "Bash(find /c/Users/admin/Projects/Salvida_vibe_project/backend/db -name \"*.sql\" -exec grep -l \"storage\\\\|RLS\\\\|policy\" {} \\\\;)"
     ]
   },
   "hooks": {
