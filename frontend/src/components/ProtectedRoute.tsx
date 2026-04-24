@@ -1,11 +1,17 @@
+import { useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { useProfile } from '../hooks/useProfile';
 import AppLoader from './AppLoader';
 
 function ProfileSync() {
-  // Fetches profile from backend once and syncs to Zustand (replaces MOCK_USER)
-  useProfile();
+  const { data: profile } = useProfile();
+  const setUser = useAuthStore((s) => s.setUser);
+
+  useEffect(() => {
+    if (profile) setUser(profile);
+  }, [profile, setUser]);
+
   return null;
 }
 

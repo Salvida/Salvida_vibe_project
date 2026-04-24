@@ -13,7 +13,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { LucideIcon } from "lucide-react";
-import type { NotificationPrefs } from "../../types";
+import type { NotificationPrefs, UserProfile } from "../../types";
 import {
   useProfile,
   useUpdateProfile,
@@ -26,8 +26,6 @@ import ConfirmDialog from "../../components/ConfirmDialog/ConfirmDialog";
 import UserSelector from "../../components/UserSelector/UserSelector";
 import SettingsRRSS from "./SettingsRRSS";
 import { usePushNotifications } from "../../hooks/usePushNotifications";
-import { useCurrentUserStore } from "../../store/useCurrentUserStore";
-import { useSyncCurrentUser } from "../../hooks/useSyncCurrentUser";
 import { supabase } from "../../lib/supabaseClient";
 import { toast } from "react-toastify";
 import "./Settings.css";
@@ -71,10 +69,7 @@ const baseSections: Section[] = [
 
 export default function Settings() {
   const { t } = useTranslation();
-  // Sincronizar usuario actual
-  useSyncCurrentUser();
-
-  const currentUser = useCurrentUserStore((s) => s.currentUser);
+  const { data: currentUser } = useProfile();
   const isAdminUser = currentUser?.role === "admin";
 
   const sections = baseSections.filter((s) => !s.adminOnly || isAdminUser);
@@ -91,6 +86,7 @@ export default function Settings() {
   const { subscribe: subscribePush, unsubscribe: unsubscribePush } =
     usePushNotifications();
   const archiveUser = useArchiveUser();
+  const [notifTargetUser, setNotifTargetUser] = useState<UserProfile | null>(null);
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -144,6 +140,12 @@ export default function Settings() {
     push: true,
     booking_reminder: true,
   });
+
+  useEffect(() => {
+    if (notifTargetUser?.notification_prefs) {
+      setNotifPrefs(notifTargetUser.notification_prefs);
+    }
+  }, [notifTargetUser]);
 
   useEffect(() => {
     if (selectedUserId) return;
@@ -214,6 +216,15 @@ export default function Settings() {
                   {t("settings.notifications.desc")}
                 </p>
 
+                {isAdminUser && (
+                  <UserSelector
+                    value={notifTargetUser?.id ?? ''}
+                    onChange={(_id, user) => setNotifTargetUser(user)}
+                    label="Gestionar usuario"
+                    placeholder="Buscar usuario… (vacío = mis preferencias)"
+                  />
+                )}
+
                 <div className="settings-notifications__group">
                   <h4 className="settings-notifications__group-title">
                     {t("settings.notifications.channel")}
@@ -238,7 +249,7 @@ export default function Settings() {
                       type="button"
                       role="switch"
                       aria-checked={notifPrefs.email}
-                      disabled={!profile?.email}
+                      disabled={!(notifTargetUser ? notifTargetUser.email : profile?.email)}
                       className={`settings-toggle${notifPrefs.email ? " settings-toggle--on" : ""}${!profile?.email ? " settings-toggle--disabled" : ""}`}
                       onClick={() =>
                         setNotifPrefs((p) => ({ ...p, email: !p.email }))
@@ -265,13 +276,20 @@ export default function Settings() {
                       onClick={() => {
                         const next = !notifPrefs.push;
                         setNotifPrefs((p) => ({ ...p, push: next }));
-                        if (next) subscribePush();
-                        else unsubscribePush();
+                        if (!notifTargetUser) {
+                          if (next) subscribePush();
+                          else unsubscribePush();
+                        }
                       }}
                     >
                       <span className="settings-toggle__thumb" />
                     </button>
                   </div>
+                  {isAdminUser && notifTargetUser && (
+                    <p className="settings-notif-row__sub" style={{ marginTop: '-8px', marginBottom: '8px' }}>
+                      La suscripción del navegador la activa el propio usuario desde su sesión.
+                    </p>
+                  )}
                 </div>
 
                 <div className="settings-notifications__group">
@@ -309,8 +327,14 @@ export default function Settings() {
                   <button
                     type="button"
                     className="settings-save-btn"
-                    disabled={isSavingPrefs}
-                    onClick={() => updateNotificationPrefs(notifPrefs)}
+                    disabled={isSavingPrefs || isPending}
+                    onClick={() => {
+                      if (notifTargetUser) {
+                        updateProfile({ notification_prefs: notifPrefs, targetUserId: notifTargetUser.id });
+                      } else {
+                        updateNotificationPrefs(notifPrefs);
+                      }
+                    }}
                   >
                     <Save size={20} />
                     <span>

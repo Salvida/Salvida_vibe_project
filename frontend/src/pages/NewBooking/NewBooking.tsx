@@ -1,4 +1,5 @@
 import { ArrowLeft, Accessibility, Send, Clock, CalendarDays, Loader2, Check } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -75,7 +76,7 @@ export default function NewBooking() {
       });
       navigate(-1);
     } catch {
-      // error handled silently
+      toast.error(t('booking.errorCreate'));
     }
   }
 

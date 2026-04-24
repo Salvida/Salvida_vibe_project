@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+import re
+from pydantic import BaseModel, field_validator
 from typing import Literal, Optional
 from .address import Address
 
@@ -36,6 +37,21 @@ class PrmBase(BaseModel):
     avatar: Optional[str] = None
     dni: Optional[str] = None
     is_demo: bool = False
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("name cannot be empty")
+        return v
+
+    @field_validator("birthDate")
+    @classmethod
+    def validate_birth_date(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+            raise ValueError("birthDate must be in YYYY-MM-DD format")
+        return v
 
 
 class PrmCreate(PrmBase):

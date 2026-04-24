@@ -22,7 +22,7 @@
 
 .dropdown__menu {
   position: fixed;
-  z-index: 50;
+  z-index: var(--z-dropdown);
   min-width: 160px;
   background-color: white;
   border-radius: 0.75rem;

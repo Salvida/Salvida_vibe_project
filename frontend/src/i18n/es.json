@@ -252,6 +252,7 @@
       "dateSelected": "Fecha",
       "timeSelected": "Hora de asistencia"
     },
+    "errorCreate": "Error al crear la reserva. Por favor, inténtalo de nuevo.",
     "menu": {
       "viewDetail": "Ver detalle",
       "edit": "Editar",

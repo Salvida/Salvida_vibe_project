@@ -16,6 +16,7 @@ class ProfileUpdate(BaseModel):
     organization: Optional[str] = None
     dni: Optional[str] = None
     avatar: Optional[str] = None
+    notification_prefs: Optional[NotificationPrefs] = None
 
 
 class UserProfile(BaseModel):

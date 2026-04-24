@@ -14,7 +14,7 @@
   border-bottom: 1px solid var(--color-slate-100);
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: var(--z-overlay);
 }
 
 .prm-detail__back-btn {
@@ -366,7 +366,7 @@
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  z-index: 30;
+  z-index: var(--z-sticky);
 }
 
 .booking-fab__btn {

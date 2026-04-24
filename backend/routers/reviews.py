@@ -3,7 +3,7 @@ GET  /api/reviews        – public, returns cached reviews from DB
                            (syncs from Google if DB is empty and API is configured)
 POST /api/reviews/sync   – admin only, forces a fresh sync from Google
 """
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Depends, status
 from pydantic import BaseModel
 from typing import Optional
 from db.supabase_client import get_supabase
@@ -41,11 +41,20 @@ def _rows_to_reviews(rows: list[dict]) -> list[Review]:
     ]
 
 
+def _trigger_sync_in_background() -> None:
+    """Fire-and-forget: syncs Google reviews. Errors are logged, not raised."""
+    try:
+        sync_google_reviews()
+    except Exception as exc:
+        logger.error("Background review sync failed: %s", exc)
+
+
 @router.get("", response_model=list[Review])
-def get_reviews():
+def get_reviews(background_tasks: BackgroundTasks):
     """
     Returns cached reviews. If the DB is empty and Google Places is configured,
-    performs a one-time sync first. Falls back to empty list on any error.
+    schedules a background sync so this request returns immediately.
+    Falls back to empty list on any error.
     """
     supabase = get_supabase()
     try:
@@ -58,18 +67,10 @@ def get_reviews():
         )
         rows = result.data or []
 
-        # Auto-sync if table is empty
+        # Schedule a background sync when the table is empty so this
+        # request is not blocked by the Google Places API call.
         if not rows:
-            synced = sync_google_reviews()
-            if synced > 0:
-                result = (
-                    supabase.table("reviews")
-                    .select("*")
-                    .order("published_at", desc=True)
-                    .limit(6)
-                    .execute()
-                )
-                rows = result.data or []
+            background_tasks.add_task(_trigger_sync_in_background)
 
         return _rows_to_reviews(rows)
     except Exception as exc:
@@ -80,6 +81,6 @@ def get_reviews():
 @router.post("/sync", status_code=status.HTTP_200_OK)
 def force_sync_reviews(user: dict = Depends(get_current_user)):
     """Admin only – forces a fresh sync from Google Places."""
-    require_admin(user["sub"])
+    require_admin(user)
     count = sync_google_reviews()
     return {"synced": count}

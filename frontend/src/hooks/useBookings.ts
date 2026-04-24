@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { apiClient, ApiError } from '../lib/api';
+import { apiClient, parseApiError } from '../lib/api';
 import type { Booking } from '../types';
 
 // ---- Query keys ----
@@ -12,18 +12,6 @@ export interface BookingFilters {
   date?: string;
   status?: string;
   prmId?: string;
-}
-
-function parseApiError(error: unknown, fallback: string): string {
-  if (error instanceof ApiError) {
-    try {
-      const parsed = JSON.parse(error.message);
-      return parsed.detail ?? fallback;
-    } catch {
-      return error.message || fallback;
-    }
-  }
-  return fallback;
 }
 
 // ---- Hooks ----
@@ -78,7 +66,11 @@ export function useDeleteBooking() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => apiClient.delete<void>(`/api/bookings/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: BOOKINGS_KEY }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: BOOKINGS_KEY });
+      toast.success('Reserva eliminada correctamente');
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al eliminar la reserva')),
   });
 }
 
