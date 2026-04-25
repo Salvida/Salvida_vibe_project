@@ -51,7 +51,8 @@
       "mcp__supabase__list_migrations",
       "mcp__supabase__execute_sql",
       "Bash(cp \"supabase/migrations/20260425_bookings_add_address_coords.sql\" \"backend/db/migrations/014_bookings_add_address_coords.sql\")",
-      "Bash(rm \"supabase/migrations/20260425_bookings_add_address_coords.sql\")"
+      "Bash(rm \"supabase/migrations/20260425_bookings_add_address_coords.sql\")",
+      "mcp__supabase__apply_migration"
     ]
   },
   "hooks": {

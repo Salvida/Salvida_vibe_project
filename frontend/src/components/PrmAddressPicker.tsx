@@ -92,7 +92,7 @@ export default function PrmAddressPicker({
         ))}
       </div>
 
-      {selectedAddress?.lat && selectedAddress?.lng && (
+      {selectedAddress?.lat != null && selectedAddress?.lng != null && (
         <div className="prm-addr-picker__map">
           <AddressMapPreview lat={selectedAddress.lat} lng={selectedAddress.lng} height="160px" />
         </div>
