@@ -43,7 +43,8 @@
       "mcp__plugin_engram_engram__mem_session_summary",
       "Bash(xargs grep *)",
       "Bash(find /c/Users/admin/Projects/Salvida_vibe_project -type f \\\\\\( -name \"*.sql\" -o -name \"*.ts\" -o -name \"*.tsx\" -o -name \"*.py\" \\\\\\) ! -path \"*/node_modules/*\" ! -path \"*/.vite/*\" -exec grep -l \"avatars\\\\|storage.*bucket\" {} \\\\;)",
-      "Bash(find /c/Users/admin/Projects/Salvida_vibe_project/backend/db -name \"*.sql\" -exec grep -l \"storage\\\\|RLS\\\\|policy\" {} \\\\;)"
+      "Bash(find /c/Users/admin/Projects/Salvida_vibe_project/backend/db -name \"*.sql\" -exec grep -l \"storage\\\\|RLS\\\\|policy\" {} \\\\;)",
+      "Bash(find \"C:\\\\Users\\\\luthe\\\\Desktop\\\\DEV\\\\Salvida_vibe_project\\\\frontend\\\\src\\\\pages\" -name \"*.tsx\" -exec grep -l \"booking\\\\|reservation\\\\|Booking\\\\|Reservation\" {} \\\\;)"
     ]
   },
   "hooks": {

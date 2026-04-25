@@ -1,4 +1,4 @@
-import { ArrowLeft, Accessibility, Send, Clock, CalendarDays, Loader2, Check } from 'lucide-react';
+import { ArrowLeft, Send, Clock, CalendarDays, Loader2, Check } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import PrmAddressPicker from '../../components/PrmAddressPicker';
 import UserSelector from '../../components/UserSelector/UserSelector';
 import { useCreateBooking } from '../../hooks/useBookings';
-import { useAddPrmAddress } from '../../hooks/usePrmAddresses';
 import { usePrms } from '../../hooks/usePrms';
 import { useAuthStore } from '../../store/useAuthStore';
 import type { Address } from '../../types';
@@ -24,11 +23,9 @@ export default function NewBooking() {
   const location = useLocation();
   const { t } = useTranslation();
   const createBooking = useCreateBooking();
-  const addPrmAddress = useAddPrmAddress();
   const isAdmin = useAuthStore((s) => s.user?.role === 'admin' || s.user?.role === 'superadmin');
 
   const [address, setAddress] = useState<Partial<Address>>({});
-  const [saveAddressAlias, setSaveAddressAlias] = useState('');
   const [date, setDate] = useState(() => (location.state as { date?: string } | null)?.date || todayIso());
   const [time, setTime] = useState('');
 
@@ -48,31 +45,21 @@ export default function NewBooking() {
     if (prms.length !== 1) {
       setSelectedPrm(null);
       setAddress({});
-      setSaveAddressAlias('');
     }
   }, [prms]);
 
   async function handleSubmit() {
     if (!selectedPrm || !address.full_address || !date || !time) return;
     try {
-      // Save new address to PRM if requested (and it's not already a saved address)
-      if (saveAddressAlias && !address.id && selectedPrm) {
-        await addPrmAddress.mutateAsync({
-          prmId: selectedPrm.id,
-          full_address: address.full_address,
-          lat: address.lat,
-          lng: address.lng,
-          is_accessible: address.is_accessible ?? false,
-          alias: saveAddressAlias,
-        });
-      }
-
       await createBooking.mutateAsync({
         prmId: selectedPrm.id,
         date,
         startTime: time,
         endTime: time,
-        address: address.full_address ?? '',
+        address: address.full_address,
+        addressId: address.id,
+        lat: address.lat,
+        lng: address.lng,
       });
       navigate(-1);
     } catch {
@@ -118,7 +105,6 @@ export default function NewBooking() {
                   setSelectedOwnerId(id);
                   setSelectedPrm(null);
                   setAddress({});
-                  setSaveAddressAlias('');
                 }}
               />
             </section>
@@ -154,7 +140,7 @@ export default function NewBooking() {
                       <button
                         type="button"
                         className="prm-selected-card__change"
-                        onClick={() => { setSelectedPrm(null); setAddress({}); setSaveAddressAlias(''); }}
+                        onClick={() => { setSelectedPrm(null); setAddress({}); }}
                       >
                         {t('booking.changePrm')}
                       </button>
@@ -181,7 +167,6 @@ export default function NewBooking() {
                                 setSelectedPrm(p);
                                 setPrmDropdownOpen(false);
                                 setAddress({});
-                                setSaveAddressAlias('');
                               }}
                             >
                               <div className="prm-dropdown-option__avatar">
@@ -215,41 +200,14 @@ export default function NewBooking() {
               prmId={selectedPrm?.id ?? null}
               value={address}
               onChange={setAddress}
-              onSaveRequest={setSaveAddressAlias}
             />
           </section>
 
-          {/* Step 3 (user) / Step 4 (admin): Passenger */}
-          <section className="booking-section">
-            <div className="booking-section__heading">
-              <span className="booking-section__num booking-section__num--inactive">{isAdmin ? 4 : 3}</span>
-              <h3 className="booking-section__title">{t('booking.passengerDetails')}</h3>
-            </div>
-
-            <div className="passenger-card">
-              <div className="passenger-card__left">
-                <div className="passenger-card__icon">
-                  <Accessibility size={24} />
-                </div>
-                <div>
-                  <p className="passenger-card__title">{t('booking.pmrStatus')}</p>
-                  <p className="passenger-card__sub">{t('booking.reducedMobility')}</p>
-                </div>
-              </div>
-              <label className="toggle-label">
-                <input type="checkbox" />
-                <div className="toggle-track">
-                  <div className="toggle-thumb" />
-                </div>
-              </label>
-            </div>
-          </section>
-
-          {/* Step 4 (user) / Step 5 (admin): Date & Time */}
+          {/* Step 3 (user) / Step 4 (admin): Date & Time */}
           <section className="booking-section">
             <div className="booking-section__heading">
               <span className={`booking-section__num${time ? ' booking-section__num--complete' : ' booking-section__num--inactive'}`}>
-                {time ? <Check size={14} /> : (isAdmin ? 5 : 4)}
+                {time ? <Check size={14} /> : (isAdmin ? 4 : 3)}
               </span>
               <h3 className="booking-section__title">{t('booking.dateTime')}</h3>
             </div>

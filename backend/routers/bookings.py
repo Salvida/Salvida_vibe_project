@@ -40,6 +40,9 @@ def _row_to_booking(row: dict, prm_name: str = "", prm_avatar: Optional[str] = N
         endTime=row.get("end_time", ""),
         date=str(row["date"]),
         address=row.get("address", ""),
+        addressId=row.get("address_id"),
+        lat=row.get("lat"),
+        lng=row.get("lng"),
         status=row.get("status", "Pending"),
         service_reason=row.get("service_reason"),
         service_reason_notes=row.get("service_reason_notes"),
@@ -166,6 +169,26 @@ async def create_booking(body: BookingCreate, background_tasks: BackgroundTasks,
     owner_id = prm_data.get("created_by") or user["sub"]
     booking_owner = owner_id if caller_is_admin else user["sub"]
 
+    # Validate address belongs to the PRM and is validated
+    addr_lat: Optional[float] = body.lat
+    addr_lng: Optional[float] = body.lng
+    if body.addressId:
+        try:
+            addr_res = supabase.table("addresses").select("id, prm_id, validation_status, lat, lng").eq("id", body.addressId).single().execute()
+            if not addr_res.data:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Address not found")
+            addr_data = addr_res.data
+            if str(addr_data.get("prm_id")) != str(body.prmId):
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Address does not belong to this PRM")
+            if addr_data.get("validation_status") != "validated":
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Address is not validated")
+            addr_lat = addr_data.get("lat")
+            addr_lng = addr_data.get("lng")
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not verify address")
+
     # Inherit is_demo from the booking owner's profile
     owner_profile = supabase.table("profiles").select("is_demo").eq("id", booking_owner).single().execute()
     inherited_is_demo = owner_profile.data.get("is_demo", False) if owner_profile.data else False
@@ -176,6 +199,9 @@ async def create_booking(body: BookingCreate, background_tasks: BackgroundTasks,
         "end_time": body.endTime,
         "date": body.date,
         "address": body.address,
+        "address_id": body.addressId,
+        "lat": addr_lat,
+        "lng": addr_lng,
         "service_reason": body.service_reason,
         "service_reason_notes": body.service_reason_notes,
         "user_id": booking_owner,
@@ -214,6 +240,9 @@ async def update_booking(
         "endTime": "end_time",
         "date": "date",
         "address": "address",
+        "addressId": "address_id",
+        "lat": "lat",
+        "lng": "lng",
         "status": "status",
         "service_reason": "service_reason",
         "service_reason_notes": "service_reason_notes",

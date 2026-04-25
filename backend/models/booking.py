@@ -20,6 +20,9 @@ class BookingBase(BaseModel):
     endTime: str            # 'HH:MM'
     date: str               # 'YYYY-MM-DD'
     address: str = ""
+    addressId: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
     service_reason: Optional[ServiceReason] = None
     service_reason_notes: Optional[str] = None
 
@@ -50,6 +53,9 @@ class BookingUpdate(BaseModel):
     endTime: Optional[str] = None
     date: Optional[str] = None
     address: Optional[str] = None
+    addressId: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
     status: Optional[BookingStatus] = None
     service_reason: Optional[ServiceReason] = None
     service_reason_notes: Optional[str] = None

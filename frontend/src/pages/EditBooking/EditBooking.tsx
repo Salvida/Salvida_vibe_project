@@ -22,7 +22,12 @@ export default function EditBooking() {
     if (booking) {
       setDate(booking.date);
       setTime(booking.startTime);
-      setAddress({ full_address: booking.address });
+      setAddress({
+        full_address: booking.address,
+        id: booking.addressId,
+        lat: booking.lat,
+        lng: booking.lng,
+      });
     }
   }, [booking]);
 
@@ -35,6 +40,9 @@ export default function EditBooking() {
         startTime: time,
         endTime: time,
         address: address.full_address,
+        addressId: address.id,
+        lat: address.lat,
+        lng: address.lng,
       });
       navigate(-1);
     } catch {

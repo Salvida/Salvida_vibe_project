@@ -6,7 +6,6 @@ import {
   ShieldCheck,
   Clock,
   AlertTriangle,
-  Accessibility,
   X,
 } from 'lucide-react';
 import type { Address } from '../types';
@@ -131,7 +130,6 @@ export default function AddressSelector({
         lat,
         lng,
         validation_status: value?.validation_status ?? 'pending',
-        is_accessible: value?.is_accessible ?? false,
         floor: floor || undefined,
         door: door || undefined,
       });
@@ -150,7 +148,6 @@ export default function AddressSelector({
     setOpen(false);
     onChange({
       validation_status: value?.validation_status ?? 'pending',
-      is_accessible: value?.is_accessible ?? false,
     });
   }, [value, onChange]);
 
@@ -196,7 +193,6 @@ export default function AddressSelector({
                 setBaseAddress('');
                 onChange({
                   validation_status: value?.validation_status ?? 'pending',
-                  is_accessible: value?.is_accessible ?? false,
                 });
               }
             }}
@@ -264,7 +260,6 @@ export default function AddressSelector({
                       lat: undefined,
                       lng: undefined,
                       validation_status: value?.validation_status ?? 'pending',
-                      is_accessible: value?.is_accessible ?? false,
                     });
                   }}
                   className="address-selector__use-manual"
@@ -297,18 +292,9 @@ export default function AddressSelector({
         </div>
       )}
 
-      {/* Accessible + validation badges */}
+      {/* Validation badges */}
       {value?.full_address && (
         <div className="address-selector__badges">
-          <button
-            type="button"
-            onClick={() => onChange({ ...value, is_accessible: !value?.is_accessible })}
-            className={`address-selector__badge ${value?.is_accessible ? 'address-selector__badge--accessible-on' : 'address-selector__badge--accessible-off'}`}
-          >
-            <Accessibility size={13} />
-            Accesible para PMR
-          </button>
-
           {showValidation && (
             <>
               {(['pending', 'validated', 'rejected'] as Address['validation_status'][]).map((s) => {
