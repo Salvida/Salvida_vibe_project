@@ -254,6 +254,8 @@
       "dateSelected": "Fecha",
       "timeSelected": "Hora de asistencia"
     },
+    "noValidatedAddresses": "Este PMR no tiene direcciones validadas.",
+    "addAddressFromProfile": "Añade una desde su perfil",
     "errorCreate": "Error al crear la reserva. Por favor, inténtalo de nuevo.",
     "menu": {
       "viewDetail": "Ver detalle",

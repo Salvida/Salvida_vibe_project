@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { Address } from '../types';
 import { usePrmAddresses } from '../hooks/usePrmAddresses';
 import AddressMapPreview from '../pages/Addresses/AddressMapPreview';
@@ -17,6 +18,7 @@ export default function PrmAddressPicker({
   value,
   onChange,
 }: PrmAddressPickerProps) {
+  const { t } = useTranslation();
   const { data: addresses, isLoading } = usePrmAddresses(prmId);
   const [selectedChipId, setSelectedChipId] = useState<string | null>(null);
 
@@ -65,10 +67,10 @@ export default function PrmAddressPicker({
       <div className="prm-addr-picker__empty">
         <MapPin size={15} />
         <span>
-          Este PMR no tiene direcciones validadas.{' '}
+          {t('booking.noValidatedAddresses')}{' '}
           {prmId && (
             <Link to={`/app/prms/${prmId}`} className="prm-addr-picker__empty-link">
-              Agregá una desde su perfil
+              {t('booking.addAddressFromProfile')}
             </Link>
           )}
         </span>
