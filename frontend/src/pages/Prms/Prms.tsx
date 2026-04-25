@@ -21,7 +21,7 @@ export default function Prms() {
     statusTab === 'all' ? undefined : statusTab,
   );
   const updatePrm = useUpdatePrm();
-  const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
+  const isAdmin = useAuthStore((s) => s.user?.role === 'admin' || s.user?.role === 'superadmin');
 
   return (
     <div className="prms">

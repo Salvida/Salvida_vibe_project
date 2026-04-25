@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Search, Plus, FlaskConical } from 'lucide-react';
 import Header from '../../components/Header/Header';
 import DropdownMenu from '../../components/DropdownMenu';
-import { useUsers, useArchiveUser } from '../../hooks/useProfile';
+import { useUsers, useArchiveUser, useToggleUserDemo, useProfile } from '../../hooks/useProfile';
+import CreateUserModal from './CreateUserModal';
 import type { UserProfile } from '../../types';
 import './Users.css';
 
 const ROLE_LABEL: Record<string, string> = {
+  superadmin: 'Super Admin',
   admin: 'Admin',
   user: 'Usuario',
 };
@@ -21,10 +23,14 @@ function getInitials(u: UserProfile) {
 
 export default function Users() {
   const navigate = useNavigate();
+  const { data: liveProfile } = useProfile();
+  const isSuperAdmin = liveProfile?.role === 'superadmin';
   const { data: users = [], isLoading } = useUsers(true);
   const archiveUser = useArchiveUser();
+  const toggleDemo = useToggleUserDemo();
   const [query, setQuery] = useState('');
   const [statusTab, setStatusTab] = useState<'active' | 'all' | 'archived'>('all');
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const filtered = users.filter((u) => {
     if (statusTab === 'active' && u.isActive === false) return false;
@@ -45,6 +51,8 @@ export default function Users() {
     <div className="users">
       <Header title="Usuarios" subtitle="Gestión de cuentas de usuario" />
 
+      {showCreateModal && <CreateUserModal onClose={() => setShowCreateModal(false)} />}
+
       <div className="users__body">
         <div className="users__inner">
 
@@ -61,6 +69,13 @@ export default function Users() {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
+            <button
+              className="users__create-btn"
+              onClick={() => setShowCreateModal(true)}
+            >
+              <Plus size={16} />
+              <span>Nuevo usuario</span>
+            </button>
           </div>
 
           <div className="users__filter-tabs">
@@ -132,9 +147,17 @@ export default function Users() {
                         <td className="users__email">{u.email || '—'}</td>
                         <td className="users__org">{u.organization || '—'}</td>
                         <td>
-                          <span className={`user-role-badge user-role-badge--${u.role}`}>
-                            {ROLE_LABEL[u.role ?? ''] ?? u.role}
-                          </span>
+                          <div className="users__role-cell">
+                            <span className={`user-role-badge user-role-badge--${u.role}`}>
+                              {ROLE_LABEL[u.role ?? ''] ?? u.role}
+                            </span>
+                            {isSuperAdmin && u.isDemo && (
+                              <span className="user-demo-badge" title="Usuario demo">
+                                <FlaskConical size={12} />
+                                demo
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td>
                           <span className={`user-status-badge${u.isActive === false ? ' user-status-badge--archived' : ' user-status-badge--active'}`}>
@@ -149,6 +172,11 @@ export default function Users() {
                                 onClick: () => archiveUser.mutate(u.id),
                                 variant: u.isActive === false ? 'default' : 'danger',
                               },
+                              ...(isSuperAdmin ? [{
+                                label: u.isDemo ? 'Quitar demo' : 'Marcar como demo',
+                                onClick: () => toggleDemo.mutate({ userId: u.id, isDemo: !u.isDemo }),
+                                variant: 'default' as const,
+                              }] : []),
                             ]}
                           />
                         </td>

@@ -31,7 +31,8 @@
   },
   "userRoles": {
     "user": "Usuario",
-    "admin": "Administrador"
+    "admin": "Administrador",
+    "superadmin": "Super Admin"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -40,6 +41,7 @@
     "users": "Usuarios",
     "addresses": "Direcciones",
     "settings": "Ajustes",
+    "superadmin": "Super Admin",
     "brand": "Salvida",
     "brandSubtitle": "Management Portal"
   },

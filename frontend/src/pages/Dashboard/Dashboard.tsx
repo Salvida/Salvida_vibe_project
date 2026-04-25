@@ -115,7 +115,7 @@ export default function Dashboard() {
   const deleteBooking = useDeleteBooking();
   const updateStatus = useUpdateBookingStatus();
   const user = useAuthStore((s) => s.user);
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   const dateStr = formatDateISO(selectedDate);

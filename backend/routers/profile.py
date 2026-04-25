@@ -1,9 +1,16 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from postgrest import APIError as PostgrestAPIError
 from db.supabase_client import get_supabase
-from models.profile import UserProfile, ProfileUpdate, NotificationPrefs
+from models.profile import (
+    UserProfile,
+    ProfileUpdate,
+    NotificationPrefs,
+    DemoModeUpdate,
+    UserCreateRequest,
+    UserDemoUpdate,
+)
 from auth.dependencies import get_current_user
-from auth.roles import require_admin
+from auth.roles import require_admin, require_superadmin
 
 router = APIRouter()
 
@@ -31,6 +38,8 @@ def _row_to_profile(row: dict) -> UserProfile:
         avatar=row.get("avatar"),
         notification_prefs=prefs,
         isActive=row.get("is_active", True),
+        demoModeActive=row.get("demo_mode_active", False),
+        isDemo=row.get("is_demo", False),
     )
 
 
@@ -39,8 +48,56 @@ async def get_users(user: dict = Depends(get_current_user)):
     """Get all profiles. Requires the caller to be an admin."""
     supabase = get_supabase()
     require_admin(user)
-    result = supabase.table("profiles").select("*").execute()
+    demo_filter = user.get("demo_mode_active", False)
+    result = supabase.table("profiles").select("*").eq("is_demo", demo_filter).execute()
     return [_row_to_profile(row) for row in result.data]
+
+
+@router.post("/users", response_model=UserProfile, status_code=status.HTTP_201_CREATED)
+async def create_user(body: UserCreateRequest, user: dict = Depends(get_current_user)):
+    """Create a new user (invite or direct). Requires admin. Superadmin-only for role != 'user' or is_demo."""
+    require_admin(user)
+
+    if body.role != "user":
+        require_superadmin(user)
+    if body.is_demo:
+        require_superadmin(user)
+    if body.method == "direct" and not body.password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="password es requerido para el método 'direct'")
+
+    supabase = get_supabase()
+
+    try:
+        if body.method == "invite":
+            auth_response = supabase.auth.admin.invite_user_by_email(body.email)
+        else:
+            auth_response = supabase.auth.admin.create_user({
+                "email": body.email,
+                "password": body.password,
+                "email_confirm": True,
+            })
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+    new_user_id = auth_response.user.id
+
+    profile_row = {
+        "id": new_user_id,
+        "email": body.email,
+        "first_name": body.firstName,
+        "last_name": body.lastName,
+        "phone": body.phone,
+        "organization": body.organization,
+        "role": body.role,
+        "is_demo": body.is_demo,
+    }
+
+    # Upsert to safely handle any trigger-created stub row
+    result = supabase.table("profiles").upsert(profile_row).execute()
+    if not result.data:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="No se pudo crear el perfil")
+
+    return _row_to_profile(result.data[0])
 
 
 @router.get("", response_model=UserProfile)
@@ -139,6 +196,28 @@ async def toggle_user_archive(user_id: str, user: dict = Depends(get_current_use
     return _row_to_profile(updated.data[0])
 
 
+@router.patch("/{user_id}/demo", response_model=UserProfile)
+async def toggle_user_demo(user_id: str, body: UserDemoUpdate, user: dict = Depends(get_current_user)):
+    """Toggle is_demo on a user and cascade to all their PRMs and bookings. Requires superadmin."""
+    require_superadmin(user)
+    supabase = get_supabase()
+
+    result = (
+        supabase.table("profiles")
+        .update({"is_demo": body.is_demo})
+        .eq("id", user_id)
+        .execute()
+    )
+    if not result.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Cascade to all records owned by this user
+    supabase.table("prms").update({"is_demo": body.is_demo}).eq("created_by", user_id).execute()
+    supabase.table("bookings").update({"is_demo": body.is_demo}).eq("created_by", user_id).execute()
+
+    return _row_to_profile(result.data[0])
+
+
 @router.put("/{user_id}", response_model=UserProfile)
 async def update_user_profile(user_id: str, body: ProfileUpdate, user: dict = Depends(get_current_user)):
     """Update any user's profile. Requires the caller to be an admin."""
@@ -179,6 +258,24 @@ async def update_user_profile(user_id: str, body: ProfileUpdate, user: dict = De
     except PostgrestAPIError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
 
+    if not result.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
+
+    return _row_to_profile(result.data[0])
+
+
+@router.post("/demo-mode", response_model=UserProfile)
+async def toggle_demo_mode(body: DemoModeUpdate, user: dict = Depends(get_current_user)):
+    """Toggle demo mode for the calling superadmin. Requires superadmin role."""
+    supabase = get_supabase()
+    require_superadmin(user)
+
+    result = (
+        supabase.table("profiles")
+        .update({"demo_mode_active": body.active})
+        .eq("id", user["sub"])
+        .execute()
+    )
     if not result.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found")
 

@@ -14,28 +14,34 @@ security = HTTPBearer(auto_error=False)
 DEV_USER = {
     "sub": "dev-user-id",
     "email": "dev@salvida.com",
-    "role": "admin",  # admin in dev mode so all features are accessible
+    "role": "superadmin",  # superadmin in dev mode so all features are accessible
+    "demo_mode_active": False,
 }
 
 
-def _fetch_role_safe(user_id: str) -> str:
-    """Fetch user role from profiles table once per request. Returns 'user' on any error."""
+def _fetch_profile_fields(user_id: str) -> dict:
+    """Fetch role and demo_mode_active from profiles once per request."""
     if not user_id:
-        return "user"
+        return {"role": "user", "demo_mode_active": False}
     try:
         from db.supabase_client import get_supabase
         supabase = get_supabase()
         result = (
             supabase.table("profiles")
-            .select("role")
+            .select("role, demo_mode_active")
             .eq("id", user_id)
             .single()
             .execute()
         )
-        return result.data.get("role", "user") if result.data else "user"
+        if result.data:
+            return {
+                "role": result.data.get("role", "user"),
+                "demo_mode_active": result.data.get("demo_mode_active", False),
+            }
+        return {"role": "user", "demo_mode_active": False}
     except Exception as e:
-        logger.warning("Could not fetch role for user %s: %s", user_id, e)
-        return "user"
+        logger.warning("Could not fetch profile fields for user %s: %s", user_id, e)
+        return {"role": "user", "demo_mode_active": False}
 
 
 async def get_current_user(
@@ -72,10 +78,10 @@ async def get_current_user(
                 options={"verify_aud": False},
             )
 
-        # Fetch role once per request and attach — routers use is_admin(user)
+        # Fetch role + demo_mode_active once per request — routers use is_admin(user)
         user_id = payload.get("sub", "")
-        role = _fetch_role_safe(user_id)
-        return {**payload, "role": role}
+        profile_fields = _fetch_profile_fields(user_id)
+        return {**payload, **profile_fields}
 
     except JWTError:
         raise HTTPException(
