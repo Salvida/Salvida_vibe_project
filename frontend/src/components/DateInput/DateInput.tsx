@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { DatePicker, ConfigProvider } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
@@ -6,6 +7,14 @@ import './DateInput.css';
 dayjs.locale('es');
 
 const FORMAT = 'YYYY-MM-DD';
+
+const THEME = {
+  token: {
+    colorPrimary: '#6b4691',
+    borderRadius: 12,
+    fontFamily: 'inherit',
+  },
+} as const;
 
 interface DateInputProps {
   value?: string;
@@ -24,22 +33,17 @@ export default function DateInput({
   className,
   disabled,
 }: DateInputProps) {
-  const disabledDate = min
-    ? (d: dayjs.Dayjs) => d.isBefore(dayjs(min), 'day')
-    : undefined;
+  // Memoize so antd doesn't see a new object reference on every render
+  const dayjsValue = useMemo(() => (value ? dayjs(value, FORMAT) : null), [value]);
+  const disabledDate = useMemo(
+    () => (min ? (d: dayjs.Dayjs) => d.isBefore(dayjs(min), 'day') : undefined),
+    [min],
+  );
 
   return (
-    <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: '#6b4691',
-          borderRadius: 12,
-          fontFamily: 'inherit',
-        },
-      }}
-    >
+    <ConfigProvider theme={THEME}>
       <DatePicker
-        value={value ? dayjs(value, FORMAT) : null}
+        value={dayjsValue}
         onChange={(d) => onChange?.(d ? d.format(FORMAT) : '')}
         format="DD/MM/YYYY"
         placeholder={placeholder}
@@ -47,7 +51,7 @@ export default function DateInput({
         disabled={disabled}
         className={`date-input ${className ?? ''}`}
         style={{ width: '100%' }}
-        getPopupContainer={(trigger) => trigger.parentElement ?? document.body}
+        getPopupContainer={() => document.body}
       />
     </ConfigProvider>
   );
