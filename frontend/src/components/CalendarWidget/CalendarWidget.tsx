@@ -86,14 +86,6 @@ export default function CalendarWidget({
         )
       : [];
 
-    const indicator = uniqueStatuses.length ? (
-      <span className="calendar__dots">
-        {uniqueStatuses.map((s) => (
-          <span key={s} className={`calendar__dot ${STATUS_DOT[s]}`} />
-        ))}
-      </span>
-    ) : null;
-
     const btn = (
       <button
         key={day}
@@ -101,7 +93,11 @@ export default function CalendarWidget({
         className={`calendar__day${selected ? ' calendar__day--selected' : ''}${dayBookings?.length ? ' calendar__day--has-bookings' : ''}`}
       >
         <span className="calendar__day-num">{day}</span>
-        {indicator}
+        <span className="calendar__dots">
+          {uniqueStatuses.map((s) => (
+            <span key={s} className={`calendar__dot ${STATUS_DOT[s]}`} />
+          ))}
+        </span>
       </button>
     );
 
@@ -113,6 +109,9 @@ export default function CalendarWidget({
           <div key={b.id} className="calendar__tooltip-row">
             <span className="calendar__tooltip-time">{b.startTime}</span>
             <span className="calendar__tooltip-name">{b.prmName}</span>
+            <span className={`calendar__tooltip-status calendar__tooltip-status--${b.status.toLowerCase()}`}>
+              {t(`bookingStatuses.${b.status}`)}
+            </span>
           </div>
         ))}
         {dayBookings.length > 5 && (

@@ -38,12 +38,14 @@ function BookingCard({
   onDelete,
   onStatusChange,
   isAdmin,
+  showDate,
 }: {
   booking: Booking;
   onEdit: () => void;
   onDelete: () => void;
   onStatusChange: (status: Booking['status']) => void;
   isAdmin: boolean;
+  showDate?: boolean;
 }) {
   const { t } = useTranslation();
   const mapsUrl = booking.address
@@ -62,6 +64,15 @@ function BookingCard({
       <div className="booking-card__info">
         <div className="booking-card__name">{booking.prmName}</div>
         <div className="booking-card__meta">
+          {showDate && booking.date && (
+            <span className="booking-card__meta-item">
+              <CalendarDays size={13} />
+              {(() => {
+                const [y, m, d] = booking.date.split('-').map(Number);
+                return new Date(y, m - 1, d).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+              })()}
+            </span>
+          )}
           <span className="booking-card__meta-item">
             <Clock size={13} />
             {booking.startTime}
@@ -445,6 +456,7 @@ export default function Dashboard() {
                     onDelete={() => deleteBooking.mutate(b.id)}
                     onStatusChange={(status) => updateStatus.mutate({ id: b.id, status })}
                     isAdmin={isAdmin}
+                    showDate
                   />
                 ))}
               </div>
