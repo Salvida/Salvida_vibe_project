@@ -66,7 +66,28 @@
       "deleteBooking": "Eliminar reserva"
     },
     "createdByAdmin": "Creado por admin",
-    "viewOnMaps": "Ver en Google Maps"
+    "viewOnMaps": "Ver en Google Maps",
+    "viewCalendar": "Calendario",
+    "viewList": "Lista",
+    "noBookings": "No hay reservas con los filtros aplicados",
+    "filters": {
+      "user": "Usuario",
+      "prm": "PMR",
+      "status": "Estado",
+      "dateFrom": "Desde",
+      "dateTo": "Hasta",
+      "allUsers": "Todos los usuarios",
+      "allPrms": "Todos los PMRs",
+      "allStatuses": "Todos los estados"
+    },
+    "sort": {
+      "label": "Ordenar por",
+      "date": "Fecha",
+      "time": "Hora",
+      "prm": "PMR",
+      "status": "Estado",
+      "responsible": "Responsable"
+    }
   },
   "prms": {
     "title": "Mis PMRs",

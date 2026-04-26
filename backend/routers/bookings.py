@@ -1,5 +1,5 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status, Depends, Query
-from typing import Optional
+from typing import Optional, List
 from db.supabase_client import get_supabase
 from models.booking import (
     Booking, BookingCreate, BookingUpdate,
@@ -87,8 +87,9 @@ async def list_bookings(
     date: Optional[str] = Query(None, description="Filter by exact date (YYYY-MM-DD)"),
     date_from: Optional[str] = Query(None, description="Filter from date inclusive (YYYY-MM-DD)"),
     date_to: Optional[str] = Query(None, description="Filter to date inclusive (YYYY-MM-DD)"),
-    booking_status: Optional[str] = Query(None, alias="status"),
-    prm_id: Optional[str] = Query(None),
+    booking_status: Optional[List[str]] = Query(None, alias="status"),
+    prm_id: Optional[List[str]] = Query(None),
+    owner_id: Optional[List[str]] = Query(None, description="Admin only: filter by booking owner (created_by)"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     user: dict = Depends(get_current_user),
@@ -105,6 +106,8 @@ async def list_bookings(
 
     if not is_admin(user):
         query = query.eq("created_by", user["sub"])
+    elif owner_id:
+        query = query.in_("created_by", owner_id)
 
     if date:
         query = query.eq("date", date)
@@ -113,9 +116,9 @@ async def list_bookings(
     if date_to:
         query = query.lte("date", date_to)
     if booking_status:
-        query = query.eq("status", booking_status)
+        query = query.in_("status", booking_status)
     if prm_id:
-        query = query.eq("prm_id", prm_id)
+        query = query.in_("prm_id", prm_id)
 
     query = query.range(offset, offset + limit - 1)
     result = query.execute()
