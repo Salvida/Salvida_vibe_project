@@ -16,6 +16,8 @@
     "@tanstack/react-query-devtools": "^5.95.2",
     "@types/leaflet": "^1.9.21",
     "@vitejs/plugin-react": "^5.0.4",
+    "antd": "^6.3.6",
+    "dayjs": "^1.11.20",
     "i18next": "^25.10.5",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.546.0",

@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Tooltip, ConfigProvider } from 'antd';
 import { useTranslation } from 'react-i18next';
+import type { Booking } from '../../types';
 import './CalendarWidget.css';
 
 function getDaysInMonth(year: number, month: number) {
@@ -11,11 +13,28 @@ function getFirstDayOfWeek(year: number, month: number) {
   return new Date(year, month, 1).getDay(); // 0=Sun
 }
 
-interface CalendarWidgetProps {
-  onDateSelect?: (date: Date) => void;
+function dayKey(year: number, month: number, day: number) {
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-export default function CalendarWidget({ onDateSelect }: CalendarWidgetProps) {
+const STATUS_DOT: Record<Booking['status'], string> = {
+  Pending: 'calendar__dot--pending',
+  Approved: 'calendar__dot--approved',
+  Completed: 'calendar__dot--completed',
+  Cancelled: 'calendar__dot--cancelled',
+};
+
+interface CalendarWidgetProps {
+  onDateSelect?: (date: Date) => void;
+  onMonthChange?: (v: { year: number; month: number }) => void;
+  bookingsByDate?: Record<string, Booking[]>;
+}
+
+export default function CalendarWidget({
+  onDateSelect,
+  onMonthChange,
+  bookingsByDate,
+}: CalendarWidgetProps) {
   const { t } = useTranslation();
   const today = new Date();
 
@@ -30,6 +49,10 @@ export default function CalendarWidget({ onDateSelect }: CalendarWidgetProps) {
 
   const months = t('calendar.months', { returnObjects: true }) as string[];
   const weekdays = t('calendar.weekdays', { returnObjects: true }) as string[];
+
+  useEffect(() => {
+    onMonthChange?.({ year, month });
+  }, [year, month]);
 
   function prevMonth() {
     if (month === 0) { setYear(y => y - 1); setMonth(11); }
@@ -50,6 +73,61 @@ export default function CalendarWidget({ onDateSelect }: CalendarWidgetProps) {
 
   function isSelected(day: number) {
     return day === selectedDay && month === selectedMonth && year === selectedYear;
+  }
+
+  function renderDay(day: number) {
+    const key = dayKey(year, month, day);
+    const dayBookings = bookingsByDate?.[key];
+    const selected = isSelected(day);
+
+    const uniqueStatuses = dayBookings?.length
+      ? (Object.keys(STATUS_DOT) as Booking['status'][]).filter((s) =>
+          dayBookings.some((b) => b.status === s)
+        )
+      : [];
+
+    const indicator = uniqueStatuses.length ? (
+      <span className="calendar__dots">
+        {uniqueStatuses.map((s) => (
+          <span key={s} className={`calendar__dot ${STATUS_DOT[s]}`} />
+        ))}
+      </span>
+    ) : null;
+
+    const btn = (
+      <button
+        key={day}
+        onClick={() => handleDayClick(day)}
+        className={`calendar__day${selected ? ' calendar__day--selected' : ''}${dayBookings?.length ? ' calendar__day--has-bookings' : ''}`}
+      >
+        <span className="calendar__day-num">{day}</span>
+        {indicator}
+      </button>
+    );
+
+    if (!dayBookings?.length) return btn;
+
+    const tooltipContent = (
+      <div className="calendar__tooltip">
+        {dayBookings.slice(0, 5).map((b) => (
+          <div key={b.id} className="calendar__tooltip-row">
+            <span className="calendar__tooltip-time">{b.startTime}</span>
+            <span className="calendar__tooltip-name">{b.prmName}</span>
+          </div>
+        ))}
+        {dayBookings.length > 5 && (
+          <div className="calendar__tooltip-more">+{dayBookings.length - 5} más</div>
+        )}
+      </div>
+    );
+
+    return (
+      <ConfigProvider key={day} theme={{ token: { colorPrimary: '#6b4691', borderRadius: 8 } }}>
+        <Tooltip title={tooltipContent} placement="top" mouseEnterDelay={0.2}>
+          {btn}
+        </Tooltip>
+      </ConfigProvider>
+    );
   }
 
   return (
@@ -76,15 +154,7 @@ export default function CalendarWidget({ onDateSelect }: CalendarWidgetProps) {
         {Array.from({ length: firstDayOffset }).map((_, i) => (
           <div key={`spacer-${i}`} className="calendar__spacer" />
         ))}
-        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => (
-          <button
-            key={day}
-            onClick={() => handleDayClick(day)}
-            className={`calendar__day${isSelected(day) ? ' calendar__day--selected' : ''}`}
-          >
-            {day}
-          </button>
-        ))}
+        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => renderDay(day))}
       </div>
     </div>
   );

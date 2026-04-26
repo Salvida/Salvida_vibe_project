@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Header from '../../components/Header/Header';
 import CalendarWidget from '../../components/CalendarWidget/CalendarWidget';
 import DropdownMenu from '../../components/DropdownMenu';
@@ -7,14 +7,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useBookings, useDeleteBooking, useUpdateBookingStatus } from '../../hooks/useBookings';
 import { useAuthStore } from '../../store/useAuthStore';
+import { formatDateISO } from '../../utils';
 import type { Booking } from '../../types';
 import './Dashboard.css';
-
-function formatDateISO(date: Date): string {
-  return date.getFullYear() + '-' +
-    String(date.getMonth() + 1).padStart(2, '0') + '-' +
-    String(date.getDate()).padStart(2, '0');
-}
 
 const STATUS_CLASS: Record<Booking['status'], string> = {
   Approved: 'booking-status--approved',
@@ -117,9 +112,28 @@ export default function Dashboard() {
   const user = useAuthStore((s) => s.user);
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [calendarMonth, setCalendarMonth] = useState<{ year: number; month: number }>({
+    year: new Date().getFullYear(),
+    month: new Date().getMonth(),
+  });
 
   const dateStr = formatDateISO(selectedDate);
+
+  // Fetch bookings for selected day
   const { data: bookings = [], isLoading } = useBookings({ date: dateStr });
+
+  // Fetch all bookings for the visible month for calendar indicators
+  const monthDateFrom = `${calendarMonth.year}-${String(calendarMonth.month + 1).padStart(2, '0')}-01`;
+  const lastDay = new Date(calendarMonth.year, calendarMonth.month + 1, 0).getDate();
+  const monthDateTo = `${calendarMonth.year}-${String(calendarMonth.month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+  const { data: monthBookings = [] } = useBookings({ date_from: monthDateFrom, date_to: monthDateTo });
+
+  const bookingsByDate = useMemo<Record<string, Booking[]>>(() => {
+    return monthBookings.reduce<Record<string, Booking[]>>((acc, b) => {
+      (acc[b.date] ??= []).push(b);
+      return acc;
+    }, {});
+  }, [monthBookings]);
 
   const total = bookings.length;
   const pending = bookings.filter((b) => b.status === 'Pending').length;
@@ -143,7 +157,11 @@ export default function Dashboard() {
 
           {/* Left Column: Calendar & Summary */}
           <div className="dashboard__left">
-            <CalendarWidget onDateSelect={setSelectedDate} />
+            <CalendarWidget
+              onDateSelect={setSelectedDate}
+              onMonthChange={setCalendarMonth}
+              bookingsByDate={bookingsByDate}
+            />
 
             <div className="summary-card">
               <h4 className="summary-card__title">{t('dashboard.summary')}</h4>

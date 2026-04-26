@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, CalendarDays, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import PrmAddressPicker from '../../components/PrmAddressPicker';
+import DateInput from '../../components/DateInput/DateInput';
+import TimeInput from '../../components/TimeInput/TimeInput';
 import { useBooking, useUpdateBooking } from '../../hooks/useBookings';
 import type { Address } from '../../types';
 import '../NewBooking/NewBooking.css';
@@ -139,26 +141,22 @@ export default function EditBooking() {
               <div className="datetime-card__row">
                 <div className="datetime-card__field">
                   <label className="datetime-card__label">
-                    <CalendarDays size={14} />
                     {t('booking.assistDate')}
                   </label>
-                  <input
-                    type="date"
+                  <DateInput
                     value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="location-field__input"
+                    onChange={setDate}
+                    placeholder={t('booking.assistDate')}
                   />
                 </div>
                 <div className="datetime-card__field">
                   <label className="datetime-card__label">
-                    <Clock size={14} />
                     {t('booking.assistTime')}
                   </label>
-                  <input
-                    type="time"
+                  <TimeInput
                     value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="location-field__input"
+                    onChange={setTime}
+                    placeholder={t('booking.assistTime')}
                   />
                 </div>
               </div>

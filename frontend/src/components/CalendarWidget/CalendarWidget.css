@@ -62,15 +62,22 @@
 }
 
 .calendar__day {
-  height: 2.5rem;
+  height: 2.75rem;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.2rem;
   font-size: 0.875rem;
   font-weight: 500;
   border-radius: 0.75rem;
   transition: background-color 0.15s;
   color: var(--color-slate-600);
+  padding: 0.25rem 0;
+}
+
+.calendar__day-num {
+  line-height: 1;
 }
 
 .calendar__day:hover {
@@ -86,4 +93,58 @@
 
 .calendar__day--selected:hover {
   background-color: var(--color-primary);
+}
+
+/* Booking indicator dots */
+.calendar__dots {
+  display: flex;
+  gap: 0.175rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar__dot {
+  width: 0.3rem;
+  height: 0.3rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.calendar__dot--pending   { background-color: #f59e0b; }
+.calendar__dot--approved  { background-color: #16a34a; }
+.calendar__dot--completed { background-color: #a78bfa; }
+.calendar__dot--cancelled { background-color: #cbd5e1; }
+
+
+/* Tooltip content */
+.calendar__tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  min-width: 9rem;
+}
+
+.calendar__tooltip-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.calendar__tooltip-time {
+  font-weight: 700;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.calendar__tooltip-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.calendar__tooltip-more {
+  opacity: 0.6;
+  font-size: 0.7rem;
+  text-align: right;
 }

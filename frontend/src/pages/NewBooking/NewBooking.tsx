@@ -1,22 +1,18 @@
-import { ArrowLeft, Send, Clock, CalendarDays, Loader2, Check } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Check } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import PrmAddressPicker from '../../components/PrmAddressPicker';
 import UserSelector from '../../components/UserSelector/UserSelector';
+import DateInput from '../../components/DateInput/DateInput';
+import TimeInput from '../../components/TimeInput/TimeInput';
 import { useCreateBooking } from '../../hooks/useBookings';
 import { usePrms } from '../../hooks/usePrms';
 import { useAuthStore } from '../../store/useAuthStore';
+import { todayIso } from '../../utils';
 import type { Address } from '../../types';
 import './NewBooking.css';
-
-function todayIso() {
-  const d = new Date();
-  return d.getFullYear() + '-' +
-    String(d.getMonth() + 1).padStart(2, '0') + '-' +
-    String(d.getDate()).padStart(2, '0');
-}
 
 export default function NewBooking() {
   const navigate = useNavigate();
@@ -216,27 +212,23 @@ export default function NewBooking() {
               <div className="datetime-card__row">
                 <div className="datetime-card__field">
                   <label className="datetime-card__label">
-                    <CalendarDays size={14} />
                     {t('booking.assistDate')}
                   </label>
-                  <input
-                    type="date"
+                  <DateInput
                     value={date}
                     min={todayIso()}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="location-field__input"
+                    onChange={setDate}
+                    placeholder={t('booking.assistDate')}
                   />
                 </div>
                 <div className="datetime-card__field">
                   <label className="datetime-card__label">
-                    <Clock size={14} />
                     {t('booking.assistTime')}
                   </label>
-                  <input
-                    type="time"
+                  <TimeInput
                     value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="location-field__input"
+                    onChange={setTime}
+                    placeholder={t('booking.assistTime')}
                   />
                 </div>
               </div>

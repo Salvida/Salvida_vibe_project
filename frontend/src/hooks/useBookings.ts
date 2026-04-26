@@ -10,6 +10,8 @@ export const bookingsByDateKey = (date: string) => ['bookings', 'date', date] as
 // ---- Filter params ----
 export interface BookingFilters {
   date?: string;
+  date_from?: string;
+  date_to?: string;
   status?: string;
   prmId?: string;
 }
@@ -27,6 +29,8 @@ export function useBooking(id: string) {
 export function useBookings(filters?: BookingFilters) {
   const params = new URLSearchParams();
   if (filters?.date) params.set('date', filters.date);
+  if (filters?.date_from) params.set('date_from', filters.date_from);
+  if (filters?.date_to) params.set('date_to', filters.date_to);
   if (filters?.status) params.set('status', filters.status);
   if (filters?.prmId) params.set('prm_id', filters.prmId);
 

@@ -7,6 +7,7 @@ import { useAddPrmAddress } from '../../hooks/usePrmAddresses';
 import AddressSelector from '../../components/AddressSelector';
 import UserSelector from '../../components/UserSelector/UserSelector';
 import { useAuthStore } from '../../store/useAuthStore';
+import DateInput from '../../components/DateInput/DateInput';
 import type { Address, EmergencyContact } from '../../types';
 import './NewPrm.css';
 
@@ -214,12 +215,10 @@ export default function NewPrm() {
 
               <div className="new-prm__field">
                 <label className="new-prm__label" htmlFor="birthDate">{t('prms.newPrm.birthDate')}</label>
-                <input
-                  id="birthDate"
-                  type="date"
-                  className="new-prm__input"
+                <DateInput
                   value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
+                  onChange={setBirthDate}
+                  placeholder={t('prms.newPrm.birthDate')}
                 />
               </div>
 

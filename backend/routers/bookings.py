@@ -36,8 +36,8 @@ def _row_to_booking(row: dict, prm_name: str = "", prm_avatar: Optional[str] = N
         prmId=row["prm_id"],
         prmName=prm_name,
         prmAvatar=prm_avatar,
-        startTime=row.get("start_time", ""),
-        endTime=row.get("end_time", ""),
+        startTime=str(row.get("start_time", ""))[:5],
+        endTime=str(row.get("end_time", ""))[:5],
         date=str(row["date"]),
         address=row.get("address", ""),
         addressId=row.get("address_id"),
@@ -84,7 +84,9 @@ def _fetch_full_booking(booking_id: str, supabase) -> Booking:
 # ---------------------------------------------------------------------------
 @router.get("", response_model=list[Booking])
 async def list_bookings(
-    date: Optional[str] = Query(None, description="Filter by date (YYYY-MM-DD)"),
+    date: Optional[str] = Query(None, description="Filter by exact date (YYYY-MM-DD)"),
+    date_from: Optional[str] = Query(None, description="Filter from date inclusive (YYYY-MM-DD)"),
+    date_to: Optional[str] = Query(None, description="Filter to date inclusive (YYYY-MM-DD)"),
     booking_status: Optional[str] = Query(None, alias="status"),
     prm_id: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=200),
@@ -96,6 +98,7 @@ async def list_bookings(
     query = (
         supabase.table("bookings")
         .select("*, prms(name, avatar)")
+        .order("date")
         .order("start_time")
         .eq("is_demo", demo_filter)
     )
@@ -105,6 +108,10 @@ async def list_bookings(
 
     if date:
         query = query.eq("date", date)
+    if date_from:
+        query = query.gte("date", date_from)
+    if date_to:
+        query = query.lte("date", date_to)
     if booking_status:
         query = query.eq("status", booking_status)
     if prm_id:
