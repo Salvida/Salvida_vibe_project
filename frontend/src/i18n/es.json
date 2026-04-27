@@ -277,6 +277,7 @@
     },
     "noValidatedAddresses": "Este PMR no tiene direcciones validadas.",
     "addAddressFromProfile": "Añade una desde su perfil",
+    "missingFields": "Falta completar",
     "errorCreate": "Error al crear la reserva. Por favor, inténtalo de nuevo.",
     "menu": {
       "viewDetail": "Ver detalle",
