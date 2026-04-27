@@ -231,7 +231,6 @@ export default function NewBooking() {
             <div className="booking-card__content">
               <div className="datetime-card__row">
                 <div className="datetime-card__field">
-                  <label className="datetime-card__label">{t('booking.assistDate')}</label>
                   <DateInput
                     value={date}
                     min={todayIso()}
@@ -240,7 +239,6 @@ export default function NewBooking() {
                   />
                 </div>
                 <div className="datetime-card__field">
-                  <label className="datetime-card__label">{t('booking.assistTime')}</label>
                   <TimeInput
                     value={time}
                     onChange={setTime}

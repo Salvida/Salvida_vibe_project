@@ -435,7 +435,16 @@
   border: 1.5px solid #e5e7eb;
   background: #fff;
   padding: 1.125rem 1.25rem;
+  display: flex;
+  flex-direction: column;
   transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+/* Strip inner card chrome — the booking-card is the container */
+.booking-card .prm-selected-card {
+  background: transparent;
+  border-color: transparent;
+  padding: 0;
 }
 
 .booking-card.bc-filled {
@@ -453,7 +462,17 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  padding-bottom: 0.625rem;
+  margin-bottom: 0.625rem;
+  border-bottom: 1px solid #f0ecf7;
+}
+
+.booking-card.bc-empty .booking-card__header {
+  border-bottom-color: #f3f4f6;
+}
+
+.booking-card.bc-error .booking-card__header {
+  border-bottom-color: #fee2e2;
 }
 
 .booking-card__icon {

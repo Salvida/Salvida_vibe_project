@@ -163,7 +163,6 @@ export default function EditBooking() {
             <div className="booking-card__content">
               <div className="datetime-card__row">
                 <div className="datetime-card__field">
-                  <label className="datetime-card__label">{t('booking.assistDate')}</label>
                   <DateInput
                     value={date}
                     onChange={setDate}
@@ -171,7 +170,6 @@ export default function EditBooking() {
                   />
                 </div>
                 <div className="datetime-card__field">
-                  <label className="datetime-card__label">{t('booking.assistTime')}</label>
                   <TimeInput
                     value={time}
                     onChange={setTime}
