@@ -260,6 +260,7 @@
     "saving": "Guardando...",
     "prm": "PMR",
     "prmSelect": "Seleccionar PMR…",
+    "prmWaitingOwner": "Seleccioná primero un responsable…",
     "noPrms": "No tienes PMRs registrados.",
     "noPrmsForUser": "Este usuario no tiene PMRs asociados.",
     "changePrm": "Cambiar",

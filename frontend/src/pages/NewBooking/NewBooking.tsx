@@ -11,7 +11,7 @@ import { useCreateBooking } from '../../hooks/useBookings';
 import { usePrms } from '../../hooks/usePrms';
 import { useAuthStore } from '../../store/useAuthStore';
 import { todayIso } from '../../utils';
-import type { Address } from '../../types';
+import type { Address, UserProfile } from '../../types';
 import './NewBooking.css';
 
 function cardState(
@@ -36,6 +36,7 @@ export default function NewBooking() {
 
   // Admin: selected user
   const [selectedOwnerId, setSelectedOwnerId] = useState('');
+  const [selectedOwner, setSelectedOwner] = useState<UserProfile | null>(null);
 
   // PRM dropdown
   const { data: prms = [] } = usePrms(undefined, selectedOwnerId || undefined, 'Activo');
@@ -109,16 +110,40 @@ export default function NewBooking() {
                 <span className="booking-card__label">{t('booking.responsible')}</span>
               </div>
               <div className="booking-card__content">
-                <UserSelector
-                  value={selectedOwnerId}
-                  label=""
-                  placeholder={t('booking.responsibleSelect')}
-                  onChange={(id) => {
-                    setSelectedOwnerId(id);
-                    setSelectedPrm(null);
-                    setAddress({});
-                  }}
-                />
+                {selectedOwner ? (
+                  <div className="prm-selected-card">
+                    <div className="prm-selected-card__avatar">
+                      {selectedOwner.avatar
+                        ? <img src={selectedOwner.avatar} alt={selectedOwner.firstName} />
+                        : `${selectedOwner.firstName[0]}${selectedOwner.lastName[0]}`}
+                    </div>
+                    <div className="prm-selected-card__info">
+                      <span className="prm-selected-card__name">{selectedOwner.firstName} {selectedOwner.lastName}</span>
+                      {selectedOwner.email && (
+                        <span className="prm-selected-card__dni">{selectedOwner.email}</span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      className="prm-selected-card__change"
+                      onClick={() => { setSelectedOwnerId(''); setSelectedOwner(null); setSelectedPrm(null); setAddress({}); }}
+                    >
+                      {t('booking.changePrm')}
+                    </button>
+                  </div>
+                ) : (
+                  <UserSelector
+                    value={selectedOwnerId}
+                    label=""
+                    placeholder={t('booking.responsibleSelect')}
+                    onChange={(id, user) => {
+                      setSelectedOwnerId(id);
+                      setSelectedOwner(user);
+                      setSelectedPrm(null);
+                      setAddress({});
+                    }}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -130,9 +155,13 @@ export default function NewBooking() {
               <span className="booking-card__label">{t('booking.prm')}</span>
             </div>
             <div className="booking-card__content">
-              {(!isAdmin || selectedOwnerId) && (
-                <>
-                  {prms.length === 0 ? (
+              {isAdmin && !selectedOwnerId ? (
+                <button type="button" disabled className="location-field__input prm-dropdown-trigger" style={{ opacity: 0.45, cursor: 'default' }}>
+                  {t('booking.prmWaitingOwner')}
+                </button>
+              ) : (
+              <>
+                {prms.length === 0 ? (
                     <p style={{ fontSize: '0.875rem', color: 'var(--color-slate-400)' }}>
                       {isAdmin ? t('booking.noPrmsForUser') : t('booking.noPrms')}
                     </p>

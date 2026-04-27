@@ -502,6 +502,22 @@
   gap: 0.75rem;
 }
 
+/* Ant Design pickers inside bc-filled — match card background */
+.booking-card.bc-filled .ant-picker {
+  background: transparent;
+  border-color: rgba(107, 70, 145, 0.25);
+}
+
+.booking-card.bc-filled .ant-picker:hover,
+.booking-card.bc-filled .ant-picker-focused {
+  border-color: #c4b5d4;
+  background: transparent;
+}
+
+.booking-card.bc-filled .ant-picker .ant-picker-input > input {
+  background: transparent;
+}
+
 /* Submit hint */
 .booking-submit__hint {
   margin-top: 0.5rem;
