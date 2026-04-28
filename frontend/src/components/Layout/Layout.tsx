@@ -3,6 +3,7 @@ import Sidebar from '../Sidebar/Sidebar';
 import DemoModeBanner from '../DemoModeBanner/DemoModeBanner';
 import { motion } from 'motion/react';
 import { useUIStore } from '../../store/useUIStore';
+import WhatsAppFAB from '../WhatsAppFAB/WhatsAppFAB';
 import './Layout.css';
 
 export default function Layout() {
@@ -28,6 +29,7 @@ export default function Layout() {
           <Outlet />
         </motion.div>
       </main>
+      <WhatsAppFAB variant="app" />
     </div>
   );
 }

@@ -9,6 +9,8 @@ import "swiper/swiper.css";
 import PLATFORM_ICONS from "../../lib/platformIcons";
 import { SalvidaLogo } from "../../assets/icons/SalvidaLogo";
 import "./LandingPage.css";
+import videoSrc from "../../assets/video/Y0S8F6SYMHLHC1WP.mp4";
+import WhatsAppFAB from "../../components/WhatsAppFAB/WhatsAppFAB";
 
 // ---------------------------------------------------------------------------
 // Social link type from API
@@ -455,21 +457,11 @@ export default function LandingPage() {
         {/* ── Video ── */}
         <section className="lp-video" id="nosotros">
           <div className="lp-video__frame">
-            <img
-              className="lp-video__img"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc3UX1FguYT2duV0Oc7SWw8_OcNtgzZCPS1aZAmzIro3OZr3HzZMd9qXc_HQTpFDCul_1nHC_pm4rkteqWNQASwgmKM5r0uG8JLttFzElcTnQblsdJj07q7awgW08YdQgu2O4rEMsjd1h-02YwhCeUvmlT97qSX0tGTSd8FPFft6t6LHYSXDCcZLI450wCDkZR4b3w_SwMRhY5ESr2aV2Zbjq-Fc49zcBLyOOC64BNPa8OKLHq56cMqj5XuuCPF9fkPWdX-yPtiw"
-              alt={t("landing.video.imgAlt")}
+            <video
+              className="lp-video__video"
+              src={videoSrc}
+              controls
             />
-            <div className="lp-video__overlay" aria-hidden="true" />
-            <div
-              className="lp-video__play"
-              role="button"
-              aria-label={t("landing.video.playLabel")}
-            >
-              <span className="lp-material-icon lp-video__play-icon">
-                play_arrow
-              </span>
-            </div>
             <div className="lp-video__caption">
               <div className="lp-video__caption-title">
                 {t("landing.video.captionTitle")}
@@ -641,6 +633,7 @@ export default function LandingPage() {
       </main>
 
       {popup && <QuotePopup popup={popup} />}
+      <WhatsAppFAB variant="landing" />
 
       {/* ── Footer ── */}
       <footer className="lp-footer">
