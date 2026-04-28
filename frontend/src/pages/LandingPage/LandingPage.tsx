@@ -259,6 +259,7 @@ export default function LandingPage() {
   const [reviews, setReviews] = useState<ApiReview[] | null>(null);
   const [popup, setPopup] = useState<PopupState | null>(null);
   const swiperRef = useRef<SwiperType | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const isScrollingRef = useRef(false);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -458,10 +459,21 @@ export default function LandingPage() {
         <section className="lp-video" id="nosotros">
           <div className="lp-video__frame">
             <video
+              ref={videoRef}
               className="lp-video__video"
               src={videoSrc}
               controls
+              onTimeUpdate={() => {
+                const v = videoRef.current;
+                if (v && v.currentTime >= 71) {
+                  v.pause();
+                  v.currentTime = 71;
+                }
+              }}
             />
+            <div className="lp-video__watermark-cover" aria-hidden="true" style={{ height: 58 }}>
+              <SalvidaLogo width={200} height={55} className="" />
+            </div>
             <div className="lp-video__caption">
               <div className="lp-video__caption-title">
                 {t("landing.video.captionTitle")}
