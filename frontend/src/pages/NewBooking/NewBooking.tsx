@@ -104,12 +104,12 @@ export default function NewBooking() {
 
           {/* Responsable (admin only) */}
           {isAdmin && (
-            <div className={`booking-card ${cardState(selectedOwnerId, submitAttempted)}`}>
-              <div className="booking-card__header">
-                <span className="booking-card__icon">👤</span>
-                <span className="booking-card__label">{t('booking.responsible')}</span>
+            <div className={`field-card ${cardState(selectedOwnerId, submitAttempted)}`}>
+              <div className="field-card__header">
+                <span className="field-card__icon">👤</span>
+                <span className="field-card__label">{t('booking.responsible')}</span>
               </div>
-              <div className="booking-card__content">
+              <div className="field-card__content">
                 {selectedOwner ? (
                   <div className="prm-selected-card">
                     <div className="prm-selected-card__avatar">
@@ -149,14 +149,14 @@ export default function NewBooking() {
           )}
 
           {/* PRM */}
-          <div className={`booking-card ${cardState(selectedPrm, submitAttempted)}`}>
-            <div className="booking-card__header">
-              <span className="booking-card__icon">♿</span>
-              <span className="booking-card__label">{t('booking.prm')}</span>
+          <div className={`field-card ${cardState(selectedPrm, submitAttempted)}`}>
+            <div className="field-card__header">
+              <span className="field-card__icon">♿</span>
+              <span className="field-card__label">{t('booking.prm')}</span>
             </div>
-            <div className="booking-card__content">
+            <div className="field-card__content">
               {isAdmin && !selectedOwnerId ? (
-                <button type="button" disabled className="location-field__input prm-dropdown-trigger" style={{ opacity: 0.45, cursor: 'default' }}>
+                <button type="button" disabled className="field-card-placeholder">
                   {t('booking.prmWaitingOwner')}
                 </button>
               ) : (
@@ -194,7 +194,7 @@ export default function NewBooking() {
                     <div style={{ position: 'relative' }}>
                       <button
                         type="button"
-                        className="location-field__input prm-dropdown-trigger"
+                        className="field-card-placeholder"
                         onClick={() => setPrmDropdownOpen((o) => !o)}
                         onBlur={() => setTimeout(() => setPrmDropdownOpen(false), 150)}
                       >
@@ -237,12 +237,12 @@ export default function NewBooking() {
           </div>
 
           {/* Dirección */}
-          <div className={`booking-card ${cardState(address.full_address, submitAttempted)}`}>
-            <div className="booking-card__header">
-              <span className="booking-card__icon">📍</span>
-              <span className="booking-card__label">{t('booking.locationDetails')}</span>
+          <div className={`field-card ${cardState(address.full_address, submitAttempted)}`}>
+            <div className="field-card__header">
+              <span className="field-card__icon">📍</span>
+              <span className="field-card__label">{t('booking.locationDetails')}</span>
             </div>
-            <div className="booking-card__content">
+            <div className="field-card__content">
               <PrmAddressPicker
                 prmId={selectedPrm?.id ?? null}
                 value={address}
@@ -252,12 +252,12 @@ export default function NewBooking() {
           </div>
 
           {/* Fecha y hora */}
-          <div className={`booking-card ${cardState(date && time, submitAttempted)}`}>
-            <div className="booking-card__header">
-              <span className="booking-card__icon">📅</span>
-              <span className="booking-card__label">{t('booking.dateTime')}</span>
+          <div className={`field-card ${cardState(date && time, submitAttempted)}`}>
+            <div className="field-card__header">
+              <span className="field-card__icon">📅</span>
+              <span className="field-card__label">{t('booking.dateTime')}</span>
             </div>
-            <div className="booking-card__content">
+            <div className="field-card__content">
               <div className="datetime-card__row">
                 <div className="datetime-card__field">
                   <DateInput

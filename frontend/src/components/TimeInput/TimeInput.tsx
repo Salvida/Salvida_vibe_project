@@ -24,7 +24,7 @@ interface TimeInputProps {
 export default function TimeInput({
   value,
   onChange,
-  placeholder = 'Seleccioná una hora',
+  placeholder = 'Selecciona una hora',
   className,
   disabled,
 }: TimeInputProps) {

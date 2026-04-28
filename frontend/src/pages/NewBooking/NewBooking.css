@@ -298,6 +298,40 @@
 }
 
 
+/* Standard empty placeholder — dashed, matches Dirección empty style */
+.field-card-placeholder {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px dashed var(--color-slate-200);
+  background-color: var(--color-slate-50);
+  color: var(--color-slate-500);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-align: left;
+  transition: border-color 0.15s;
+}
+
+.field-card-placeholder:not(:disabled) {
+  cursor: pointer;
+}
+
+.field-card-placeholder:not(:disabled):hover {
+  border-color: var(--color-primary-30);
+}
+
+/* UserSelector inside a booking card — match dashed placeholder style */
+.field-card .settings-user-selector__input {
+  border: 1px dashed var(--color-slate-200);
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+}
+
+.field-card .settings-user-selector__input::placeholder {
+  color: var(--color-slate-500);
+  opacity: 1;
+}
+
 /* PRM dropdown */
 .prm-dropdown-trigger {
   text-align: left;
@@ -429,8 +463,8 @@
 }
 
 /* ── Booking cards ────────────────────────────────── */
-/* bc-empty is the base state (no modifier class needed — base .booking-card covers it) */
-.booking-card {
+/* bc-empty is the base state (no modifier class needed — base .field-card covers it) */
+.field-card {
   border-radius: 1rem;
   border: 1.5px solid #e5e7eb;
   background: #fff;
@@ -440,25 +474,25 @@
   transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
 
-/* Strip inner card chrome — the booking-card is the container */
-.booking-card .prm-selected-card {
+/* Strip inner card chrome — the field-card is the container */
+.field-card .prm-selected-card {
   background: transparent;
   border-color: transparent;
   padding: 0;
 }
 
-.booking-card.bc-filled {
+.field-card.bc-filled {
   border-color: #c4b5d4;
   background: #faf7fd;
   box-shadow: 0 2px 8px rgba(107, 70, 145, 0.07);
 }
 
-.booking-card.bc-error {
+.field-card.bc-error {
   border-color: #fca5a5;
   background: #fff5f5;
 }
 
-.booking-card__header {
+.field-card__header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -467,20 +501,20 @@
   border-bottom: 1px solid #f0ecf7;
 }
 
-.booking-card.bc-empty .booking-card__header {
+.field-card.bc-empty .field-card__header {
   border-bottom-color: #f3f4f6;
 }
 
-.booking-card.bc-error .booking-card__header {
+.field-card.bc-error .field-card__header {
   border-bottom-color: #fee2e2;
 }
 
-.booking-card__icon {
+.field-card__icon {
   font-size: 1rem;
   line-height: 1;
 }
 
-.booking-card__label {
+.field-card__label {
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -488,33 +522,33 @@
   color: var(--color-slate-400);
 }
 
-.booking-card.bc-filled .booking-card__label {
+.field-card.bc-filled .field-card__label {
   color: #7c5fa0;
 }
 
-.booking-card.bc-error .booking-card__label {
+.field-card.bc-error .field-card__label {
   color: #b91c1c;
 }
 
-.booking-card__content {
+.field-card__content {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
 /* Ant Design pickers inside bc-filled — match card background */
-.booking-card.bc-filled .ant-picker {
+.field-card.bc-filled .ant-picker {
   background: transparent;
   border-color: rgba(107, 70, 145, 0.25);
 }
 
-.booking-card.bc-filled .ant-picker:hover,
-.booking-card.bc-filled .ant-picker-focused {
+.field-card.bc-filled .ant-picker:hover,
+.field-card.bc-filled .ant-picker-focused {
   border-color: #c4b5d4;
   background: transparent;
 }
 
-.booking-card.bc-filled .ant-picker .ant-picker-input > input {
+.field-card.bc-filled .ant-picker .ant-picker-input > input {
   background: transparent;
 }
 

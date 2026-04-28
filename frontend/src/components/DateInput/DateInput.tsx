@@ -29,7 +29,7 @@ export default function DateInput({
   value,
   onChange,
   min,
-  placeholder = 'Seleccioná una fecha',
+  placeholder = 'Selecciona una fecha',
   className,
   disabled,
 }: DateInputProps) {

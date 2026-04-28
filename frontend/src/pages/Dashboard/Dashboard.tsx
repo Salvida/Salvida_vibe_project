@@ -62,7 +62,32 @@ function BookingCard({
         </div>
       )}
       <div className="booking-card__info">
-        <div className="booking-card__name">{booking.prmName}</div>
+        <div className="booking-card__top">
+          <div className="booking-card__name">{booking.prmName}</div>
+          <div className="booking-card__right">
+            <div className="booking-card__badges">
+              {booking.created_by_admin && (
+                <span className="booking-admin-badge">{t('dashboard.createdByAdmin')}</span>
+              )}
+              <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
+                {t(`bookingStatuses.${booking.status}`)}
+              </span>
+            </div>
+            <DropdownMenu
+              items={[
+                ...(isAdmin && booking.status === 'Pending' ? [
+                  { label: t('dashboard.actions.approve'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Approved') },
+                ] : []),
+                ...(isAdmin && (booking.status === 'Pending' || booking.status === 'Approved') ? [
+                  { label: t('dashboard.actions.complete'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Completed') },
+                  { label: t('dashboard.actions.cancelBooking'), icon: <X size={14} />, onClick: () => onStatusChange('Cancelled'), variant: 'danger' as const },
+                ] : []),
+                { label: t('dashboard.actions.editBooking'), icon: <Pencil size={14} />, onClick: onEdit },
+                { label: t('dashboard.actions.deleteBooking'), icon: <Trash2 size={14} />, onClick: onDelete, variant: 'danger' as const },
+              ]}
+            />
+          </div>
+        </div>
         <div className="booking-card__meta">
           {showDate && booking.date && (
             <span className="booking-card__meta-item">
@@ -101,29 +126,6 @@ function BookingCard({
             </span>
           )}
         </div>
-      </div>
-      <div className="booking-card__actions">
-        <div className="booking-card__badges">
-          {booking.created_by_admin && (
-            <span className="booking-admin-badge">{t('dashboard.createdByAdmin')}</span>
-          )}
-          <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
-            {t(`bookingStatuses.${booking.status}`)}
-          </span>
-        </div>
-        <DropdownMenu
-          items={[
-            ...(isAdmin && booking.status === 'Pending' ? [
-              { label: t('dashboard.actions.approve'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Approved') },
-            ] : []),
-            ...(isAdmin && (booking.status === 'Pending' || booking.status === 'Approved') ? [
-              { label: t('dashboard.actions.complete'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Completed') },
-              { label: t('dashboard.actions.cancelBooking'), icon: <X size={14} />, onClick: () => onStatusChange('Cancelled'), variant: 'danger' as const },
-            ] : []),
-            { label: t('dashboard.actions.editBooking'), icon: <Pencil size={14} />, onClick: onEdit },
-            { label: t('dashboard.actions.deleteBooking'), icon: <Trash2 size={14} />, onClick: onDelete, variant: 'danger' as const },
-          ]}
-        />
       </div>
     </div>
   );

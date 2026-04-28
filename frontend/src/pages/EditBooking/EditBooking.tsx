@@ -120,12 +120,12 @@ export default function EditBooking() {
         <div className="new-booking__inner">
 
           {/* PRM — read-only, always filled */}
-          <div className="booking-card bc-filled">
-            <div className="booking-card__header">
-              <span className="booking-card__icon">♿</span>
-              <span className="booking-card__label">{t('booking.prm')}</span>
+          <div className="field-card bc-filled">
+            <div className="field-card__header">
+              <span className="field-card__icon">♿</span>
+              <span className="field-card__label">{t('booking.prm')}</span>
             </div>
-            <div className="booking-card__content">
+            <div className="field-card__content">
               <div className="prm-selected-card">
                 <div className="prm-selected-card__avatar">
                   {booking.prmAvatar
@@ -140,12 +140,12 @@ export default function EditBooking() {
           </div>
 
           {/* Dirección */}
-          <div className={`booking-card ${cardState(address.full_address, submitAttempted)}`}>
-            <div className="booking-card__header">
-              <span className="booking-card__icon">📍</span>
-              <span className="booking-card__label">{t('booking.locationDetails')}</span>
+          <div className={`field-card ${cardState(address.full_address, submitAttempted)}`}>
+            <div className="field-card__header">
+              <span className="field-card__icon">📍</span>
+              <span className="field-card__label">{t('booking.locationDetails')}</span>
             </div>
-            <div className="booking-card__content">
+            <div className="field-card__content">
               <PrmAddressPicker
                 prmId={booking.prmId}
                 value={address}
@@ -155,12 +155,12 @@ export default function EditBooking() {
           </div>
 
           {/* Fecha y hora */}
-          <div className={`booking-card ${cardState(date && time, submitAttempted)}`}>
-            <div className="booking-card__header">
-              <span className="booking-card__icon">📅</span>
-              <span className="booking-card__label">{t('booking.dateTime')}</span>
+          <div className={`field-card ${cardState(date && time, submitAttempted)}`}>
+            <div className="field-card__header">
+              <span className="field-card__icon">📅</span>
+              <span className="field-card__label">{t('booking.dateTime')}</span>
             </div>
-            <div className="booking-card__content">
+            <div className="field-card__content">
               <div className="datetime-card__row">
                 <div className="datetime-card__field">
                   <DateInput

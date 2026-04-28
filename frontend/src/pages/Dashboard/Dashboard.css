@@ -121,7 +121,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   border: 1px solid var(--color-slate-100);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1.5rem;
   transition: border-color 0.15s;
   min-width: 0;
@@ -132,16 +132,27 @@
 }
 
 .booking-card__avatar {
-  width: 4rem;
-  height: 4rem;
+  width: 3.5rem;
+  height: 3.5rem;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--color-slate-50);
   flex-shrink: 0;
+  margin-top: 0.125rem;
 }
 
 .booking-card__info {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.booking-card__top {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   min-width: 0;
 }
 
@@ -152,6 +163,15 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.booking-card__right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .booking-card__meta {
@@ -181,21 +201,10 @@
   text-overflow: ellipsis;
 }
 
-.booking-card__actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.75rem;
-  flex-shrink: 0;
-}
-
 .booking-card__badges {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 0.4rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
 }
 
 .booking-admin-badge {
@@ -510,8 +519,8 @@
     font-size: 0.8125rem;
   }
 
-  .booking-card__actions {
-    gap: 0.5rem;
+  .booking-card__right {
+    gap: 0.375rem;
   }
 
   .summary-card {
