@@ -28,13 +28,16 @@
 .login__logo-icon {
   width: 3rem;
   height: 3rem;
-  background-color: var(--color-primary);
+  background-color: white;
   border-radius: 0.875rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
   flex-shrink: 0;
+}
+
+.login__logo-img {
+  display: block;
 }
 
 .login__logo-name {

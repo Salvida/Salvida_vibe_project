@@ -10,8 +10,11 @@ export const bookingsByDateKey = (date: string) => ['bookings', 'date', date] as
 // ---- Filter params ----
 export interface BookingFilters {
   date?: string;
-  status?: string;
-  prmId?: string;
+  date_from?: string;
+  date_to?: string;
+  status?: string[];
+  prmId?: string[];
+  ownerId?: string[];
 }
 
 // ---- Hooks ----
@@ -24,15 +27,19 @@ export function useBooking(id: string) {
   });
 }
 
-export function useBookings(filters?: BookingFilters) {
+export function useBookings(filters?: BookingFilters, options?: { enabled?: boolean }) {
   const params = new URLSearchParams();
   if (filters?.date) params.set('date', filters.date);
-  if (filters?.status) params.set('status', filters.status);
-  if (filters?.prmId) params.set('prm_id', filters.prmId);
+  if (filters?.date_from) params.set('date_from', filters.date_from);
+  if (filters?.date_to) params.set('date_to', filters.date_to);
+  filters?.status?.forEach((s) => params.append('status', s));
+  filters?.prmId?.forEach((id) => params.append('prm_id', id));
+  filters?.ownerId?.forEach((id) => params.append('owner_id', id));
 
   return useQuery<Booking[]>({
     queryKey: [...BOOKINGS_KEY, filters],
     queryFn: () => apiClient.get<Booking[]>(`/api/bookings?${params}`),
+    enabled: options?.enabled !== false,
   });
 }
 

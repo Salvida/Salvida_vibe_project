@@ -30,6 +30,7 @@ import {
   useUpdatePrmAddress,
 } from '../../hooks/usePrmAddresses';
 import AddressSelector from '../../components/AddressSelector';
+import DateInput from '../../components/DateInput/DateInput';
 import type { Address } from '../../types';
 import PrmRecentHistory from './PrmRecentHistory';
 import './PrmDetail.css';
@@ -437,13 +438,10 @@ export default function PrmDetail() {
                   </span>
                 </div>
                 {editing ? (
-                  <input
-                    className="prm-edit-input"
-                    type="date"
+                  <DateInput
                     value={draft.birthDate}
-                    onChange={(e) =>
-                      setDraft({ ...draft, birthDate: e.target.value })
-                    }
+                    onChange={(v) => setDraft({ ...draft, birthDate: v })}
+                    placeholder={t('prmDetail.birthdate')}
                   />
                 ) : (
                   <span className="prm-info__row-value">

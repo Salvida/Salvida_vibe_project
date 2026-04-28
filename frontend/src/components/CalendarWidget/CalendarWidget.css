@@ -62,15 +62,22 @@
 }
 
 .calendar__day {
-  height: 2.5rem;
+  height: 2.75rem;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.15rem;
   font-size: 0.875rem;
   font-weight: 500;
   border-radius: 0.75rem;
   transition: background-color 0.15s;
   color: var(--color-slate-600);
+  padding: 0.2rem 0 0.15rem;
+}
+
+.calendar__day-num {
+  line-height: 1;
 }
 
 .calendar__day:hover {
@@ -87,3 +94,73 @@
 .calendar__day--selected:hover {
   background-color: var(--color-primary);
 }
+
+/* Booking indicator dots */
+.calendar__dots {
+  display: flex;
+  gap: 0.175rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 0.3rem;
+}
+
+.calendar__dot {
+  width: 0.3rem;
+  height: 0.3rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.calendar__dot--pending   { background-color: #f59e0b; }
+.calendar__dot--approved  { background-color: #16a34a; }
+.calendar__dot--completed { background-color: #64748b; }
+.calendar__dot--cancelled { background-color: #ef4444; }
+
+
+/* Tooltip content */
+.calendar__tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  min-width: 9rem;
+}
+
+.calendar__tooltip-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.calendar__tooltip-time {
+  font-weight: 700;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.calendar__tooltip-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.calendar__tooltip-more {
+  opacity: 0.6;
+  font-size: 0.7rem;
+  text-align: right;
+}
+
+.calendar__tooltip-status {
+  flex-shrink: 0;
+  padding: 0.1rem 0.4rem;
+  border-radius: 9999px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.calendar__tooltip-status--pending   { background-color: rgba(245,158,11,0.25); color: #fcd34d; }
+.calendar__tooltip-status--approved  { background-color: rgba(22,163,74,0.25);  color: #6ee7b7; }
+.calendar__tooltip-status--completed { background-color: rgba(100,116,139,0.25); color: #cbd5e1; }
+.calendar__tooltip-status--cancelled { background-color: rgba(239,68,68,0.25);  color: #fca5a5; }
