@@ -743,6 +743,34 @@
   }
 }
 
+/* ── Footer contact info ── */
+.lp-footer__contact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.lp-footer__contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--lp-on-surface-variant);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.lp-footer__contact-item:hover {
+  color: var(--lp-primary);
+}
+
+.lp-footer__contact-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
 /* ============================================================
    AUTH MODAL
    ============================================================ */

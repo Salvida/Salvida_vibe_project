@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, A11y } from "swiper/modules";
@@ -648,17 +648,37 @@ export default function LandingPage() {
           <span className="lp-footer__brand">Salvida</span>
 
           <div className="lp-footer__links">
-            <a href="#" className="lp-footer__link">
+            <Link to="/privacidad" className="lp-footer__link">
               {t("landing.footer.privacy")}
-            </a>
-            <a href="#" className="lp-footer__link">
+            </Link>
+            <Link to="/terminos" className="lp-footer__link">
               {t("landing.footer.terms")}
-            </a>
-            <a href="#" className="lp-footer__link">
+            </Link>
+            <Link to="/contacto" className="lp-footer__link">
               {t("landing.footer.contact")}
-            </a>
-            <a href="#" className="lp-footer__link">
+            </Link>
+            <Link to="/accesibilidad" className="lp-footer__link">
               {t("landing.footer.accessibility")}
+            </Link>
+          </div>
+
+          {/* Contact info */}
+          <div className="lp-footer__contact">
+            <a
+              href="mailto:hola@salvida.es"
+              className="lp-footer__contact-item"
+              aria-label="Correo electrónico"
+            >
+              <span className="lp-material-icon lp-footer__contact-icon">mail</span>
+              {t("landing.footer.email")}
+            </a>
+            <a
+              href="tel:+34644572604"
+              className="lp-footer__contact-item"
+              aria-label="Teléfono"
+            >
+              <span className="lp-material-icon lp-footer__contact-icon">phone</span>
+              {t("landing.footer.phone")}
             </a>
           </div>
 
