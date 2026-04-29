@@ -493,6 +493,11 @@
   background-color: var(--color-slate-50);
 }
 
+.addresses__prm-link:hover {
+  color: var(--color-primary);
+  background-color: rgba(var(--color-primary-rgb, 99, 102, 241), 0.08);
+}
+
 /* Map preview row */
 .addresses__map-row td {
   padding: 0 1.25rem 1rem;

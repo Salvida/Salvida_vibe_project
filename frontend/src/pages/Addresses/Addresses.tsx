@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Check, X, RotateCcw, ChevronDown, ChevronUp, List, Map } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { MapPin, Check, X, RotateCcw, ChevronDown, ChevronUp, List, Map, ExternalLink } from 'lucide-react';
 import Header from '../../components/Header/Header';
 import { useAddresses, useValidateAddress } from '../../hooks/useAddresses';
 import type { AccessibilityFilter } from '../../hooks/useAddresses';
@@ -34,6 +35,7 @@ function AccessibilityBadge({ value }: { value: boolean | null }) {
 
 export default function Addresses() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [filter, setFilter]           = useState<AccessibilityFilter | 'all'>('all');
   const [viewMode, setViewMode]       = useState<ViewMode>('list');
   const [expandedId, setExpandedId]   = useState<string | null>(null);
@@ -172,6 +174,7 @@ export default function Addresses() {
                       <th>{t('addresses.columns.accessibility')}</th>
                       <th>{t('addresses.columns.actions')}</th>
                       <th />
+                      <th />
                     </tr>
                   </thead>
                   <tbody>
@@ -236,10 +239,21 @@ export default function Addresses() {
                               </button>
                             )}
                           </td>
+                          <td>
+                            {address.prm_id && (
+                              <button
+                                className="addresses__expand-btn addresses__prm-link"
+                                onClick={() => navigate(`/app/prms/${address.prm_id}`)}
+                                title={address.prm_name ? `Ver perfil de ${address.prm_name}` : 'Ver perfil del PMR'}
+                              >
+                                <ExternalLink size={15} />
+                              </button>
+                            )}
+                          </td>
                         </tr>
                         {expandedId === address.id && address.lat && address.lng && (
                           <tr className="addresses__map-row">
-                            <td colSpan={4}>
+                            <td colSpan={5}>
                               <div className="addresses__map-preview">
                                 <AddressMapPreview lat={address.lat} lng={address.lng} height="180px" />
                               </div>
