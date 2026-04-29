@@ -3,7 +3,7 @@ from pydantic import BaseModel, field_validator, model_validator
 from typing import Literal, Optional
 
 
-BookingStatus = Literal["Approved", "Pending", "Completed", "Cancelled"]
+BookingStatus = Literal["Approved", "Pending", "Completed", "Cancelled", "SignPending"]
 ServiceReason = Literal[
     "medical_appointment",
     "physiotherapy",
@@ -77,5 +77,11 @@ class Booking(BookingBase):
     is_demo: bool = False
     created_by_admin: bool = False
     owner_name: Optional[str] = None
+    signed_at: Optional[str] = None
+    signature_url: Optional[str] = None
 
     model_config = {"from_attributes": True}
+
+
+class BookingSign(BaseModel):
+    signature_image: str  # base64-encoded PNG from canvas, no data-URI prefix
