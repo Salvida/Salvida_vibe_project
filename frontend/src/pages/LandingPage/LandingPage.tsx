@@ -471,8 +471,8 @@ export default function LandingPage() {
                 }
               }}
             />
-            <div className="lp-video__watermark-cover" aria-hidden="true" style={{ height: 58 }}>
-              <SalvidaLogo width={200} height={55} className="" />
+            <div className="lp-video__watermark-cover" aria-hidden="true">
+              <SalvidaLogo width={undefined} height={undefined} className="" />
             </div>
             <div className="lp-video__caption">
               <div className="lp-video__caption-title">

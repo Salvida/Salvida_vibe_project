@@ -387,13 +387,21 @@
 
 .lp-video__watermark-cover {
   position: absolute;
-  bottom: 2rem;
-  right: 1.25rem;
+  bottom: 5%;
+  right: 2%;
+  width: clamp(90px, 20%, 210px);
   z-index: 20;
   pointer-events: none;
   background: var(--lp-surface-bright);
   border-radius: 0.5rem;
   padding: 0.25rem;
+}
+
+.lp-video__watermark-cover svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 200 / 55;
 }
 
 .lp-video__overlay {

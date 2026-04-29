@@ -5,9 +5,6 @@ export const SalvidaLogo = ({
   height: heightProp,
   className,
 }) => {
-  // width & height come straight from props
-
-
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
