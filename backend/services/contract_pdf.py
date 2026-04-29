@@ -16,7 +16,7 @@ _MONTHS_ES = [
 ]
 
 _BODY_1 = (
-    "La empresa SALVIDA se compromete con Don/Doa: {name} con DNI {dni}, "
+    "La empresa SALVIDA se compromete con Don/Doña: {name} con DNI {dni}, "
     "a ofrecerle sus servicios de movilizacion en escaleras con silla "
     "especializada, en la fecha y hora acordadas previamente."
 )
