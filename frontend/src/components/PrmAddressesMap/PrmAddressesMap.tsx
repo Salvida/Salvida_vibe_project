@@ -42,18 +42,20 @@ function FitBounds({ positions }: { positions: [number, number][] }) {
 interface PrmAddressesMapProps {
   addresses: Address[];
   previewAddress?: Partial<Address>;
+  defaultCenter?: [number, number];
   height?: string;
 }
 
 export default function PrmAddressesMap({
   addresses,
   previewAddress,
+  defaultCenter,
   height = '220px',
 }: PrmAddressesMapProps) {
   const mappable = addresses.filter((a) => a.lat != null && a.lng != null);
   const hasPreview = previewAddress?.lat != null && previewAddress?.lng != null;
 
-  if (mappable.length === 0 && !hasPreview) return null;
+  if (mappable.length === 0 && !hasPreview && !defaultCenter) return null;
 
   const existingPositions = mappable.map((a): [number, number] => [a.lat!, a.lng!]);
   const previewPos: [number, number] | null = hasPreview
@@ -61,7 +63,7 @@ export default function PrmAddressesMap({
     : null;
 
   const allPositions = previewPos ? [...existingPositions, previewPos] : existingPositions;
-  const initialCenter = allPositions[0];
+  const initialCenter = allPositions[0] ?? defaultCenter!;
 
   return (
     <div className="prm-addresses-map" style={{ height }}>
@@ -73,7 +75,7 @@ export default function PrmAddressesMap({
         attributionControl={false}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <FitBounds positions={allPositions} />
+        {allPositions.length > 0 && <FitBounds positions={allPositions} />}
 
         {mappable.map((addr) => (
           <Marker key={addr.id} position={[addr.lat!, addr.lng!]}>

@@ -44,6 +44,7 @@ interface AddressSelectorProps {
   onValidationChange?: (status: Address['validation_status']) => void;
   showValidation?: boolean;
   showMap?: boolean;
+  defaultCenter?: [number, number];
 }
 
 const VALIDATION_LABELS: Record<Address['validation_status'], string> = {
@@ -86,6 +87,7 @@ export default function AddressSelector({
   onValidationChange,
   showValidation = false,
   showMap = true,
+  defaultCenter,
 }: AddressSelectorProps) {
   const [query, setQuery] = useState(value?.full_address ?? '');
   const [baseAddress, setBaseAddress] = useState(value?.full_address ?? '');
@@ -369,17 +371,17 @@ export default function AddressSelector({
       )}
 
       {/* Interactive map */}
-      {showMap && markerPos && (
+      {showMap && (markerPos ?? defaultCenter) && (
         <div className="address-selector__map">
           <MapContainer
-            center={markerPos}
-            zoom={16}
+            center={markerPos ?? defaultCenter!}
+            zoom={markerPos ? 16 : 12}
             style={{ height: '200px', width: '100%' }}
             scrollWheelZoom={false}
             attributionControl={false}
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <Marker position={markerPos} />
+            {markerPos && <Marker position={markerPos} />}
             {mapCenter && <Recenter lat={mapCenter[0]} lng={mapCenter[1]} />}
             <MapClickHandler onMapClick={handleMapClick} />
           </MapContainer>

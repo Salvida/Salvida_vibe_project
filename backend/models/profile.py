@@ -17,6 +17,9 @@ class ProfileUpdate(BaseModel):
     dni: Optional[str] = None
     avatar: Optional[str] = None
     notification_prefs: Optional[NotificationPrefs] = None
+    municipality: Optional[str] = None
+    default_lat: Optional[float] = None
+    default_lng: Optional[float] = None
 
 
 class UserProfile(BaseModel):
@@ -33,6 +36,9 @@ class UserProfile(BaseModel):
     isActive: bool = True
     demoModeActive: bool = False
     isDemo: bool = False
+    municipality: Optional[str] = None
+    default_lat: Optional[float] = None
+    default_lng: Optional[float] = None
 
     model_config = {"from_attributes": True}
 

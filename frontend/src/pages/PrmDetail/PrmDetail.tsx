@@ -54,6 +54,10 @@ export default function PrmDetail() {
   const currentUser = useAuthStore((s) => s.user);
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
   const { data: addresses, isLoading: addrLoading } = usePrmAddresses(id!);
+  const defaultCenter: [number, number] | undefined =
+    prm?.owner_default_lat != null && prm?.owner_default_lng != null
+      ? [prm.owner_default_lat, prm.owner_default_lng]
+      : undefined;
   const addPrmAddress = useAddPrmAddress();
   const deletePrmAddress = useDeletePrmAddress();
   const updatePrmAddress = useUpdatePrmAddress();
@@ -677,6 +681,7 @@ export default function PrmDetail() {
                         ? editAddrDraft.value
                         : undefined
                   }
+                  defaultCenter={defaultCenter}
                 />
 
                 {(!addresses || addresses.length === 0) && !showAddAddr && (

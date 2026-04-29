@@ -37,6 +37,8 @@ export interface Prm {
   is_demo?: boolean;
   created_by?: string;
   owner_name?: string;
+  owner_default_lat?: number;
+  owner_default_lng?: number;
   booking_count?: number;
   last_booking_date?: string;
 }
@@ -100,6 +102,9 @@ export interface UserProfile {
   isActive?: boolean;
   demoModeActive?: boolean;
   isDemo?: boolean;
+  municipality?: string;
+  default_lat?: number;
+  default_lng?: number;
 }
 
 export interface CreateUserRequest {
