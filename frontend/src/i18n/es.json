@@ -475,7 +475,10 @@
     "empty": "No hay direcciones con este filtro",
     "addAddress": "Añadir dirección",
     "saveSuccess": "Dirección actualizada",
-    "saveError": "Error al actualizar la dirección"
+    "saveError": "Error al actualizar la dirección",
+    "viewList": "Ver lista",
+    "viewMap": "Ver mapa",
+    "mapEmpty": "Ninguna dirección tiene coordenadas para mostrar en el mapa"
   },
   "calendar": {
     "months": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],

@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Check, X, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
+import { MapPin, Check, X, RotateCcw, ChevronDown, ChevronUp, List, Map } from 'lucide-react';
 import Header from '../../components/Header/Header';
 import { useAddresses, useValidateAddress } from '../../hooks/useAddresses';
 import type { Address } from '../../types';
 import AddressMapPreview from './AddressMapPreview';
+import AddressesMapView from './AddressesMapView';
 import './Addresses.css';
 
 type Filter = 'all' | 'pending' | 'validated' | 'rejected';
+type ViewMode = 'list' | 'map';
 
 export default function Addresses() {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<Filter>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const validationStatus = filter === 'all' ? undefined : filter;
@@ -43,21 +46,47 @@ export default function Addresses() {
       <div className="addresses__body">
         <div className="addresses__inner">
 
-          {/* Filter bar */}
-          <div className="addresses__filter-bar">
-            {filters.map(({ key, label }) => (
+          {/* Toolbar: filters + view toggle */}
+          <div className="addresses__toolbar">
+            <div className="addresses__filter-bar">
+              {filters.map(({ key, label }) => (
+                <button
+                  key={key}
+                  className={`addresses__filter-btn${filter === key ? ' addresses__filter-btn--active' : ''}`}
+                  onClick={() => setFilter(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="addresses__view-toggle">
               <button
-                key={key}
-                className={`addresses__filter-btn${filter === key ? ' addresses__filter-btn--active' : ''}`}
-                onClick={() => setFilter(key)}
+                className={`addresses__view-btn${viewMode === 'list' ? ' addresses__view-btn--active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title={t('addresses.viewList')}
               >
-                {label}
+                <List size={16} />
               </button>
-            ))}
+              <button
+                className={`addresses__view-btn${viewMode === 'map' ? ' addresses__view-btn--active' : ''}`}
+                onClick={() => setViewMode('map')}
+                title={t('addresses.viewMap')}
+              >
+                <Map size={16} />
+              </button>
+            </div>
           </div>
 
-          {/* Table */}
-          <div className="addresses__table-wrap">
+          {/* Map view */}
+          {viewMode === 'map' && (
+            <AddressesMapView
+              addresses={addresses}
+              onValidate={handleValidate}
+            />
+          )}
+
+          {/* List view */}
+          {viewMode === 'list' && <div className="addresses__table-wrap">
             {isLoading ? (
               <div className="addresses__loading">
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -164,7 +193,7 @@ export default function Addresses() {
                 </tbody>
               </table>
             )}
-          </div>
+          </div>}
 
         </div>
       </div>
