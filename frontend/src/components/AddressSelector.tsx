@@ -43,6 +43,7 @@ interface AddressSelectorProps {
   onChange: (address: Partial<Address>) => void;
   onValidationChange?: (status: Address['validation_status']) => void;
   showValidation?: boolean;
+  showMap?: boolean;
 }
 
 const VALIDATION_LABELS: Record<Address['validation_status'], string> = {
@@ -84,6 +85,7 @@ export default function AddressSelector({
   onChange,
   onValidationChange,
   showValidation = false,
+  showMap = true,
 }: AddressSelectorProps) {
   const [query, setQuery] = useState(value?.full_address ?? '');
   const [baseAddress, setBaseAddress] = useState(value?.full_address ?? '');
@@ -367,7 +369,7 @@ export default function AddressSelector({
       )}
 
       {/* Interactive map */}
-      {markerPos && (
+      {showMap && markerPos && (
         <div className="address-selector__map">
           <MapContainer
             center={markerPos}

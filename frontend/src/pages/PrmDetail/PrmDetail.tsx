@@ -30,6 +30,7 @@ import {
   useUpdatePrmAddress,
 } from '../../hooks/usePrmAddresses';
 import AddressSelector from '../../components/AddressSelector';
+import PrmAddressesMap from '../../components/PrmAddressesMap/PrmAddressesMap';
 import DateInput from '../../components/DateInput/DateInput';
 import type { Address } from '../../types';
 import PrmRecentHistory from './PrmRecentHistory';
@@ -632,7 +633,7 @@ export default function PrmDetail() {
                     {addresses.map((addr) => (
                       editingAddressId === addr.id ? (
                         <div key={addr.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1rem', borderBottom: '1px solid var(--color-slate-50)' }}>
-                          <AddressSelector value={editAddrDraft.value} onChange={(v) => setEditAddrDraft({ ...editAddrDraft, value: v })} showValidation={false} />
+                          <AddressSelector value={editAddrDraft.value} onChange={(v) => setEditAddrDraft({ ...editAddrDraft, value: v })} showValidation={false} showMap={false} />
                           <input type="text" className="prm-edit-input" placeholder={t('prmDetail.addressAlias')} value={editAddrDraft.alias} onChange={(e) => setEditAddrDraft({ ...editAddrDraft, alias: e.target.value })} maxLength={40} style={{ maxWidth: '100%', width: '100%' }} />
                           <div className="prm-edit-actions" style={{ justifyContent: 'flex-end' }}>
                             <button type="button" className="prm-edit-actions__cancel" onClick={() => setEditingAddressId(null)}><X size={14} /> {t('common.cancel')}</button>
@@ -663,6 +664,21 @@ export default function PrmDetail() {
                   </div>
                 )}
 
+                <PrmAddressesMap
+                  addresses={
+                    editingAddressId
+                      ? (addresses ?? []).filter((a) => a.id !== editingAddressId)
+                      : (addresses ?? [])
+                  }
+                  previewAddress={
+                    showAddAddr
+                      ? newAddrValue
+                      : editingAddressId
+                        ? editAddrDraft.value
+                        : undefined
+                  }
+                />
+
                 {(!addresses || addresses.length === 0) && !showAddAddr && (
                   <p
                     style={{
@@ -690,6 +706,7 @@ export default function PrmDetail() {
                       value={newAddrValue}
                       onChange={setNewAddrValue}
                       showValidation={false}
+                      showMap={false}
                     />
                     <input
                       type="text"
