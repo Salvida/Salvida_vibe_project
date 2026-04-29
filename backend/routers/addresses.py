@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query
-from typing import Optional
+from typing import Optional, List
 from db.supabase_client import get_supabase
 from models.address import Address, AddressCreate, AddressUpdate, AddressValidationUpdate
 from auth.dependencies import get_current_user
@@ -20,7 +20,8 @@ def _assert_address_access(address_id: str, user: dict, supabase) -> dict:
     return row.data
 
 
-def _row_to_address(row: dict) -> Address:
+def _row_to_address(row: dict, prm_map: dict | None = None) -> Address:
+    prm_info = (prm_map or {}).get(row.get("prm_id"), {})
     return Address(
         id=str(row["id"]),
         full_address=row["full_address"],
@@ -28,26 +29,77 @@ def _row_to_address(row: dict) -> Address:
         lng=row.get("lng"),
         validation_status=row.get("validation_status", "pending"),
         validation_notes=row.get("validation_notes"),
-        is_accessible=row.get("is_accessible", False),
+        is_accessible=row.get("is_accessible"),  # None = pending, True/False = assessed
         alias=row.get("alias", ""),
         prm_id=row.get("prm_id"),
         user_id=row.get("user_id"),
         created_by=row.get("created_by"),
+        prm_name=prm_info.get("prm_name"),
+        owner_name=prm_info.get("owner_name"),
     )
+
+
+def _build_prm_map(supabase, rows: list[dict]) -> dict:
+    """Batch-fetch PRM names and owner names for a list of address rows."""
+    prm_ids = list({r["prm_id"] for r in rows if r.get("prm_id")})
+    if not prm_ids:
+        return {}
+
+    prm_rows = (
+        supabase.table("prms")
+        .select("id, name, user_id")
+        .in_("id", prm_ids)
+        .execute()
+        .data or []
+    )
+
+    owner_ids = list({p["user_id"] for p in prm_rows if p.get("user_id")})
+    owner_map: dict = {}
+    if owner_ids:
+        profile_rows = (
+            supabase.table("profiles")
+            .select("id, first_name, last_name")
+            .in_("id", owner_ids)
+            .execute()
+            .data or []
+        )
+        owner_map = {
+            p["id"]: f"{p.get('first_name', '')} {p.get('last_name', '')}".strip()
+            for p in profile_rows
+        }
+
+    return {
+        p["id"]: {
+            "prm_name": p["name"],
+            "owner_name": owner_map.get(p.get("user_id", ""), None),
+        }
+        for p in prm_rows
+    }
 
 
 @router.get("", response_model=list[Address])
 async def list_addresses(
-    validation_status: Optional[str] = Query(None),
+    accessibility: Optional[str] = Query(None),  # "pending" | "accessible" | "not_accessible"
+    owner_id: Optional[List[str]] = Query(None),
+    prm_id: Optional[List[str]] = Query(None),
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
     require_admin(user)
     query = supabase.table("addresses").select("*").order("created_at", desc=True)
-    if validation_status:
-        query = query.eq("validation_status", validation_status)
-    result = query.execute()
-    return [_row_to_address(r) for r in (result.data or [])]
+    if accessibility == "pending":
+        query = query.is_("is_accessible", "null")
+    elif accessibility == "accessible":
+        query = query.eq("is_accessible", True)
+    elif accessibility == "not_accessible":
+        query = query.eq("is_accessible", False)
+    if owner_id:
+        query = query.in_("user_id", owner_id)
+    if prm_id:
+        query = query.in_("prm_id", prm_id)
+    rows = query.execute().data or []
+    prm_map = _build_prm_map(supabase, rows)
+    return [_row_to_address(r, prm_map) for r in rows]
 
 
 @router.get("/{address_id}", response_model=Address)
@@ -95,16 +147,13 @@ async def validate_address(
     body: AddressValidationUpdate,
     user: dict = Depends(get_current_user),
 ):
-    """Update only the validation status and notes of an address."""
+    """Assess whether an address is apt for service.
+    is_accessible: True = apt, False = not apt, None = reset to pending."""
     supabase = get_supabase()
     require_admin(user)
-    updates = {"validation_status": body.validation_status}
-    if body.validation_notes is not None:
-        updates["validation_notes"] = body.validation_notes
-
     result = (
         supabase.table("addresses")
-        .update(updates)
+        .update({"is_accessible": body.is_accessible})
         .eq("id", address_id)
         .execute()
     )

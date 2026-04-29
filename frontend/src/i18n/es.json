@@ -452,19 +452,21 @@
     "subtitle": "Revisa y valida las direcciones de los PMRs",
     "filterAll": "Todas",
     "filterPending": "Pendientes",
-    "filterValidated": "Validadas",
-    "filterRejected": "Rechazadas",
+    "filterAccessible": "Aptas",
+    "filterNotAccessible": "No aptas",
     "columns": {
       "address": "Dirección",
-      "accessible": "Accesible",
-      "status": "Estado",
+      "accessibility": "Aptitud para el servicio",
       "actions": "Acciones"
     },
-    "accessible": "Sí",
-    "notAccessible": "No",
+    "access": {
+      "pending": "Pendiente de revisión",
+      "yes": "Apta para el servicio",
+      "no": "No apta para el servicio"
+    },
     "actions": {
-      "validate": "Validar",
-      "reject": "Rechazar",
+      "markAccessible": "Apta",
+      "markNotAccessible": "No apta",
       "resetPending": "Pendiente"
     },
     "status": {
@@ -478,7 +480,13 @@
     "saveError": "Error al actualizar la dirección",
     "viewList": "Ver lista",
     "viewMap": "Ver mapa",
-    "mapEmpty": "Ninguna dirección tiene coordenadas para mostrar en el mapa"
+    "mapEmpty": "Ninguna dirección tiene coordenadas para mostrar en el mapa",
+    "filters": {
+      "user": "Usuario responsable",
+      "allUsers": "Todos los usuarios",
+      "prm": "PMR",
+      "allPrms": "Todos los PMRs"
+    }
   },
   "calendar": {
     "months": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],

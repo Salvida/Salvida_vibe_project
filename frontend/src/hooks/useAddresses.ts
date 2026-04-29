@@ -5,12 +5,23 @@ import type { Address } from '../types';
 
 export const ADDRESSES_KEY = ['addresses'] as const;
 
-export function useAddresses(validationStatus?: string) {
+export type AccessibilityFilter = 'pending' | 'accessible' | 'not_accessible';
+
+export interface AddressFilters {
+  accessibility?: AccessibilityFilter;
+  ownerIds?: string[];
+  prmIds?: string[];
+}
+
+export function useAddresses(filters: AddressFilters = {}) {
+  const { accessibility, ownerIds = [], prmIds = [] } = filters;
   const params = new URLSearchParams();
-  if (validationStatus) params.set('validation_status', validationStatus);
+  if (accessibility) params.set('accessibility', accessibility);
+  ownerIds.forEach((id) => params.append('owner_id', id));
+  prmIds.forEach((id)   => params.append('prm_id', id));
 
   return useQuery<Address[]>({
-    queryKey: [...ADDRESSES_KEY, validationStatus],
+    queryKey: [...ADDRESSES_KEY, accessibility, ownerIds, prmIds],
     queryFn: () => apiClient.get<Address[]>(`/api/addresses?${params}`),
   });
 }
@@ -31,24 +42,13 @@ export function useCreateAddress() {
 export function useValidateAddress() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      id,
-      validation_status,
-      validation_notes,
-    }: {
-      id: string;
-      validation_status: Address['validation_status'];
-      validation_notes?: string;
-    }) =>
-      apiClient.patch<Address>(`/api/addresses/${id}/validate`, {
-        validation_status,
-        validation_notes,
-      }),
+    mutationFn: ({ id, is_accessible }: { id: string; is_accessible: boolean | null }) =>
+      apiClient.patch<Address>(`/api/addresses/${id}/validate`, { is_accessible }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ADDRESSES_KEY });
       qc.invalidateQueries({ queryKey: ['prms'] });
-      toast.success('Dirección validada correctamente');
+      toast.success('Dirección actualizada');
     },
-    onError: (error) => toast.error(parseApiError(error, 'Error al validar la dirección')),
+    onError: (error) => toast.error(parseApiError(error, 'Error al actualizar la dirección')),
   });
 }

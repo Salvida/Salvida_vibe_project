@@ -12,8 +12,26 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
+// null = pending (grey), true = accessible (green), false = not accessible (red)
+function accessibilityIcon(isAccessible: boolean | null) {
+  const url = isAccessible === true
+    ? 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png'
+    : isAccessible === false
+    ? 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png'
+    : 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png';
+
+  return new L.Icon({
+    iconUrl: url,
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+  });
+}
+
 const previewIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -78,16 +96,38 @@ export default function PrmAddressesMap({
         {allPositions.length > 0 && <FitBounds positions={allPositions} />}
 
         {mappable.map((addr) => (
-          <Marker key={addr.id} position={[addr.lat!, addr.lng!]}>
-            <Popup>
+          <Marker key={addr.id} position={[addr.lat!, addr.lng!]} icon={accessibilityIcon(addr.is_accessible)}>
+            <Popup minWidth={200}>
               <div className="prm-addresses-map__popup">
                 {addr.alias && (
                   <p className="prm-addresses-map__popup-alias">{addr.alias}</p>
                 )}
                 <p className="prm-addresses-map__popup-address">{addr.full_address}</p>
-                <span className={`prm-addresses-map__popup-badge prm-addresses-map__popup-badge--${addr.validation_status}`}>
-                  {VALIDATION_LABELS[addr.validation_status]}
-                </span>
+                {(addr.floor || addr.door) && (
+                  <p className="prm-addresses-map__popup-detail">
+                    {[addr.floor && `Piso ${addr.floor}`, addr.door && `Puerta ${addr.door}`].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+                <div className="prm-addresses-map__popup-row">
+                  {addr.is_accessible === null && (
+                    <span className="prm-addresses-map__popup-badge prm-addresses-map__popup-badge--pending">
+                      Pendiente de revisión
+                    </span>
+                  )}
+                  {addr.is_accessible === true && (
+                    <span className="prm-addresses-map__popup-badge prm-addresses-map__popup-badge--accessible">
+                      ♿ Apta para el servicio
+                    </span>
+                  )}
+                  {addr.is_accessible === false && (
+                    <span className="prm-addresses-map__popup-badge prm-addresses-map__popup-badge--not-accessible">
+                      No apta para el servicio
+                    </span>
+                  )}
+                </div>
+                {addr.validation_notes && (
+                  <p className="prm-addresses-map__popup-notes">{addr.validation_notes}</p>
+                )}
               </div>
             </Popup>
           </Marker>

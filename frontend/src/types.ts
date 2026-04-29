@@ -5,12 +5,14 @@ export interface Address {
   lng?: number;
   validation_status: 'pending' | 'validated' | 'rejected';
   validation_notes?: string;
-  is_accessible: boolean;
+  is_accessible: boolean | null;
   alias?: string;
   prm_id?: string;
   floor?: string;
   door?: string;
   created_by?: string;
+  prm_name?: string;
+  owner_name?: string;
 }
 
 export interface EmergencyContact {

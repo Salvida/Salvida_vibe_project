@@ -10,7 +10,7 @@ class AddressBase(BaseModel):
     lng: Optional[float] = None
     validation_status: AddressValidationStatus = "pending"
     validation_notes: Optional[str] = None
-    is_accessible: bool = False
+    is_accessible: Optional[bool] = None
     alias: str = ""
     prm_id: Optional[str] = None
 
@@ -47,16 +47,14 @@ class AddressUpdate(BaseModel):
     full_address: Optional[str] = None
     lat: Optional[float] = None
     lng: Optional[float] = None
-    validation_status: Optional[AddressValidationStatus] = None
-    validation_notes: Optional[str] = None
     is_accessible: Optional[bool] = None
     alias: Optional[str] = None
 
 
 class AddressValidationUpdate(BaseModel):
-    """Used by coordinators to update only the validation status."""
-    validation_status: AddressValidationStatus
-    validation_notes: Optional[str] = None
+    """Used by admins to assess whether an address is apt for service.
+    is_accessible: True = apt, False = not apt, None = reset to pending review."""
+    is_accessible: Optional[bool] = None
 
 
 class PrmAddressCreate(BaseModel):
@@ -72,5 +70,7 @@ class Address(AddressBase):
     id: str
     user_id: Optional[str] = None
     created_by: Optional[str] = None
+    prm_name: Optional[str] = None
+    owner_name: Optional[str] = None
 
     model_config = {"from_attributes": True}

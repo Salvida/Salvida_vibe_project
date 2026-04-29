@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Check, X, RotateCcw } from 'lucide-react';
+import { Check, X, RotateCcw, MapPin, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Address } from '../../types';
 
@@ -13,15 +13,16 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const STATUS_ICON_URLS: Record<Address['validation_status'], string> = {
-  validated: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-  pending:   'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
-  rejected:  'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-};
+// Tri-state: null=pending(grey), true=accessible(green), false=not accessible(red)
+function accessibilityIcon(isAccessible: boolean | null) {
+  const url = isAccessible === true
+    ? 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png'
+    : isAccessible === false
+    ? 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png'
+    : 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png';
 
-function statusIcon(status: Address['validation_status']) {
   return new L.Icon({
-    iconUrl: STATUS_ICON_URLS[status],
+    iconUrl: url,
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
     iconSize: [25, 41],
     iconAnchor: [12, 41],
@@ -44,14 +45,13 @@ function FitBounds({ positions }: { positions: [number, number][] }) {
 
 interface AddressesMapViewProps {
   addresses: Address[];
-  onValidate: (address: Address, status: Address['validation_status']) => void;
+  onAssess: (address: Address, is_accessible: boolean | null) => void;
 }
 
-export default function AddressesMapView({ addresses, onValidate }: AddressesMapViewProps) {
+export default function AddressesMapView({ addresses, onAssess }: AddressesMapViewProps) {
   const { t } = useTranslation();
   const geocoded = addresses.filter((a) => a.lat != null && a.lng != null);
   const positions = geocoded.map((a) => [a.lat!, a.lng!] as [number, number]);
-
   const defaultCenter: [number, number] = positions.length > 0 ? positions[0] : [40.4168, -3.7038];
 
   if (geocoded.length === 0) {
@@ -79,46 +79,79 @@ export default function AddressesMapView({ addresses, onValidate }: AddressesMap
           <Marker
             key={address.id}
             position={[address.lat!, address.lng!]}
-            icon={statusIcon(address.validation_status)}
+            icon={accessibilityIcon(address.is_accessible)}
           >
-            <Popup minWidth={220}>
-              <div className="addresses__map-popup">
-                {address.alias && (
-                  <p className="addresses__map-popup__alias">{address.alias}</p>
-                )}
-                <p className="addresses__map-popup__addr">{address.full_address}</p>
-                <span className={`addresses__status-badge addresses__status-badge--${address.validation_status} addresses__map-popup__badge`}>
-                  {t(`addresses.status.${address.validation_status}`)}
-                </span>
-                <div className="addresses__map-popup__actions">
-                  {address.validation_status !== 'validated' && (
-                    <button
-                      className="addresses__action-btn addresses__action-btn--validate"
-                      onClick={() => onValidate(address, 'validated')}
-                    >
-                      <Check size={13} />
-                      {t('addresses.actions.validate')}
+            <Popup minWidth={230} maxWidth={280}>
+              <div className="addr-popup">
+
+                {/* Cabecera: PRM + responsable */}
+                <div className="addr-popup__header">
+                  {address.prm_name
+                    ? <span className="addr-popup__prm">{address.prm_name}</span>
+                    : <span className="addr-popup__prm addr-popup__prm--unknown">Sin PMR</span>
+                  }
+                  {address.owner_name && (
+                    <span className="addr-popup__owner">
+                      <User size={11} />
+                      {address.owner_name}
+                    </span>
+                  )}
+                </div>
+
+                <div className="addr-popup__divider" />
+
+                {/* Dirección */}
+                <div className="addr-popup__address">
+                  <MapPin size={11} className="addr-popup__pin" />
+                  <div>
+                    {address.alias && <span className="addr-popup__alias">{address.alias} · </span>}
+                    <span className="addr-popup__addr-text">{address.full_address}</span>
+                    {(address.floor || address.door) && (
+                      <span className="addr-popup__detail">
+                        {[address.floor && `Piso ${address.floor}`, address.door && `Pta. ${address.door}`].filter(Boolean).join(' · ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Badge de aptitud */}
+                <div className="addr-popup__badges">
+                  {address.is_accessible === null && (
+                    <span className="addresses__access-badge addresses__access-badge--pending">
+                      {t('addresses.access.pending')}
+                    </span>
+                  )}
+                  {address.is_accessible === true && (
+                    <span className="addresses__access-badge addresses__access-badge--yes">
+                      ♿ {t('addresses.access.yes')}
+                    </span>
+                  )}
+                  {address.is_accessible === false && (
+                    <span className="addresses__access-badge addresses__access-badge--no">
+                      {t('addresses.access.no')}
+                    </span>
+                  )}
+                </div>
+
+                {/* Acciones */}
+                <div className="addr-popup__actions">
+                  {address.is_accessible !== true && (
+                    <button className="addr-popup__btn addr-popup__btn--validate" onClick={() => onAssess(address, true)}>
+                      <Check size={12} /> {t('addresses.actions.markAccessible')}
                     </button>
                   )}
-                  {address.validation_status !== 'rejected' && (
-                    <button
-                      className="addresses__action-btn addresses__action-btn--reject"
-                      onClick={() => onValidate(address, 'rejected')}
-                    >
-                      <X size={13} />
-                      {t('addresses.actions.reject')}
+                  {address.is_accessible !== false && (
+                    <button className="addr-popup__btn addr-popup__btn--reject" onClick={() => onAssess(address, false)}>
+                      <X size={12} /> {t('addresses.actions.markNotAccessible')}
                     </button>
                   )}
-                  {address.validation_status !== 'pending' && (
-                    <button
-                      className="addresses__action-btn addresses__action-btn--reset"
-                      onClick={() => onValidate(address, 'pending')}
-                    >
-                      <RotateCcw size={13} />
-                      {t('addresses.actions.resetPending')}
+                  {address.is_accessible !== null && (
+                    <button className="addr-popup__btn addr-popup__btn--reset" onClick={() => onAssess(address, null)}>
+                      <RotateCcw size={12} /> {t('addresses.actions.resetPending')}
                     </button>
                   )}
                 </div>
+
               </div>
             </Popup>
           </Marker>
