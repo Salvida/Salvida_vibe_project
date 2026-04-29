@@ -367,7 +367,7 @@ export default function AddressSelector({
       )}
 
       {/* Interactive map */}
-      {selected && markerPos && (
+      {markerPos && (
         <div className="address-selector__map">
           <MapContainer
             center={markerPos}

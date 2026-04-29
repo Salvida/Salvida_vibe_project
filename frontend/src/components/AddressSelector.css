@@ -9,6 +9,7 @@
 /* Search wrapper */
 .address-selector__search {
   position: relative;
+  z-index: 2;
 }
 
 .address-selector__input-wrap {
