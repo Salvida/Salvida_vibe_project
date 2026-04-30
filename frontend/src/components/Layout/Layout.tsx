@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../Sidebar/Sidebar';
+import DemoModeBanner from '../DemoModeBanner/DemoModeBanner';
 import { motion } from 'motion/react';
 import { useUIStore } from '../../store/useUIStore';
 import './Layout.css';
@@ -10,6 +11,7 @@ export default function Layout() {
 
   return (
     <div className="layout">
+      <DemoModeBanner />
       <div
         className={`layout__backdrop${sidebarOpen ? ' layout__backdrop--visible' : ''}`}
         onClick={() => setSidebarOpen(false)}

@@ -1,4 +1,5 @@
 import { Bell, Calendar, Menu } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUIStore } from '../../store/useUIStore';
@@ -7,9 +8,10 @@ import './Header.css';
 interface HeaderProps {
   title: string;
   subtitle?: string;
+  actions?: ReactNode;
 }
 
-export default function Header({ title, subtitle }: HeaderProps) {
+export default function Header({ title, subtitle, actions }: HeaderProps) {
   const { t } = useTranslation();
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const now = new Date();
@@ -29,6 +31,7 @@ export default function Header({ title, subtitle }: HeaderProps) {
       </div>
 
       <div className="header__actions">
+        {actions && <div className="header__extra-actions">{actions}</div>}
         <Link to="/app/notifications" className="header__notif-btn">
           <Bell size={20} />
           <span className="header__notif-badge" />

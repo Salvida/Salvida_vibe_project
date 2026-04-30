@@ -31,7 +31,8 @@
   },
   "userRoles": {
     "user": "Usuario",
-    "admin": "Administrador"
+    "admin": "Administrador",
+    "superadmin": "Super Admin"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -40,6 +41,7 @@
     "users": "Usuarios",
     "addresses": "Direcciones",
     "settings": "Ajustes",
+    "superadmin": "Super Admin",
     "brand": "Salvida",
     "brandSubtitle": "Management Portal"
   },
@@ -64,7 +66,28 @@
       "deleteBooking": "Eliminar reserva"
     },
     "createdByAdmin": "Creado por admin",
-    "viewOnMaps": "Ver en Google Maps"
+    "viewOnMaps": "Ver en Google Maps",
+    "viewCalendar": "Calendario",
+    "viewList": "Lista",
+    "noBookings": "No hay reservas con los filtros aplicados",
+    "filters": {
+      "user": "Usuario",
+      "prm": "PMR",
+      "status": "Estado",
+      "dateFrom": "Desde",
+      "dateTo": "Hasta",
+      "allUsers": "Todos los usuarios",
+      "allPrms": "Todos los PMRs",
+      "allStatuses": "Todos los estados"
+    },
+    "sort": {
+      "label": "Ordenar por",
+      "date": "Fecha",
+      "time": "Hora",
+      "prm": "PMR",
+      "status": "Estado",
+      "responsible": "Responsable"
+    }
   },
   "prms": {
     "title": "Mis PMRs",
@@ -236,7 +259,8 @@
     "save": "Guardar cambios",
     "saving": "Guardando...",
     "prm": "PMR",
-    "prmSelect": "Seleccionar PMR…",
+    "prmSelect": "Selecciona un PRM…",
+    "prmWaitingOwner": "Selecciona primero un responsable…",
     "noPrms": "No tienes PMRs registrados.",
     "noPrmsForUser": "Este usuario no tiene PMRs asociados.",
     "changePrm": "Cambiar",
@@ -252,6 +276,9 @@
       "dateSelected": "Fecha",
       "timeSelected": "Hora de asistencia"
     },
+    "noValidatedAddresses": "Este PMR no tiene direcciones validadas.",
+    "addAddressFromProfile": "Añade una desde su perfil",
+    "missingFields": "Falta completar",
     "errorCreate": "Error al crear la reserva. Por favor, inténtalo de nuevo.",
     "menu": {
       "viewDetail": "Ver detalle",

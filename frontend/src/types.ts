@@ -58,6 +58,9 @@ export interface Booking {
   endTime: string;
   date: string;
   address: string;
+  addressId?: string;
+  lat?: number;
+  lng?: number;
   status: 'Approved' | 'Pending' | 'Completed' | 'Cancelled';
   service_reason?: ServiceReason;
   service_reason_notes?: string;
@@ -81,6 +84,8 @@ export interface NotificationPrefs {
   booking_reminder: boolean;
 }
 
+export type UserRole = 'user' | 'admin' | 'superadmin';
+
 export interface UserProfile {
   id: string;
   firstName: string;
@@ -89,8 +94,22 @@ export interface UserProfile {
   phone: string;
   organization: string;
   dni?: string;
-  role: string;
+  role: UserRole;
   avatar?: string;
   notification_prefs?: NotificationPrefs;
   isActive?: boolean;
+  demoModeActive?: boolean;
+  isDemo?: boolean;
+}
+
+export interface CreateUserRequest {
+  email: string;
+  method: 'invite' | 'direct';
+  password?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  organization?: string;
+  role: UserRole;
+  is_demo?: boolean;
 }

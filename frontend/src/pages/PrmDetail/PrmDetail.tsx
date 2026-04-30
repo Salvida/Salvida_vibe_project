@@ -30,6 +30,7 @@ import {
   useUpdatePrmAddress,
 } from '../../hooks/usePrmAddresses';
 import AddressSelector from '../../components/AddressSelector';
+import DateInput from '../../components/DateInput/DateInput';
 import type { Address } from '../../types';
 import PrmRecentHistory from './PrmRecentHistory';
 import './PrmDetail.css';
@@ -50,7 +51,7 @@ export default function PrmDetail() {
   const { data: prm, isLoading, isError } = usePrm(id!);
   const updatePrm = useUpdatePrm();
   const currentUser = useAuthStore((s) => s.user);
-  const isAdmin = currentUser?.role === 'admin';
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'superadmin';
   const { data: addresses, isLoading: addrLoading } = usePrmAddresses(id!);
   const addPrmAddress = useAddPrmAddress();
   const deletePrmAddress = useDeletePrmAddress();
@@ -437,13 +438,10 @@ export default function PrmDetail() {
                   </span>
                 </div>
                 {editing ? (
-                  <input
-                    className="prm-edit-input"
-                    type="date"
+                  <DateInput
                     value={draft.birthDate}
-                    onChange={(e) =>
-                      setDraft({ ...draft, birthDate: e.target.value })
-                    }
+                    onChange={(v) => setDraft({ ...draft, birthDate: v })}
+                    placeholder={t('prmDetail.birthdate')}
                   />
                 ) : (
                   <span className="prm-info__row-value">

@@ -46,6 +46,7 @@ export function useValidateAddress() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ADDRESSES_KEY });
+      qc.invalidateQueries({ queryKey: ['prms'] });
       toast.success('Dirección validada correctamente');
     },
     onError: (error) => toast.error(parseApiError(error, 'Error al validar la dirección')),

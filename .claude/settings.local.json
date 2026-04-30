@@ -38,7 +38,24 @@
       "Bash(pip install *)",
       "Bash(python generate_proposal.py)",
       "Bash(python -c \"from svglib.svglib import svg2rlg; from reportlab.graphics import renderPDF; rlg = svg2rlg\\(r'C:\\\\Users\\\\admin\\\\Projects\\\\Salvida_vibe_project\\\\frontend\\\\public\\\\icons\\\\icon-192.svg'\\); print\\('OK', rlg\\)\")",
-      "Bash(.venv/Scripts/pip install *)"
+      "Bash(.venv/Scripts/pip install *)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d['scripts'].get\\('dev',''\\)\\)\")",
+      "mcp__plugin_engram_engram__mem_session_summary",
+      "Bash(xargs grep *)",
+      "Bash(find /c/Users/admin/Projects/Salvida_vibe_project -type f \\\\\\( -name \"*.sql\" -o -name \"*.ts\" -o -name \"*.tsx\" -o -name \"*.py\" \\\\\\) ! -path \"*/node_modules/*\" ! -path \"*/.vite/*\" -exec grep -l \"avatars\\\\|storage.*bucket\" {} \\\\;)",
+      "Bash(find /c/Users/admin/Projects/Salvida_vibe_project/backend/db -name \"*.sql\" -exec grep -l \"storage\\\\|RLS\\\\|policy\" {} \\\\;)",
+      "Bash(find \"C:\\\\Users\\\\luthe\\\\Desktop\\\\DEV\\\\Salvida_vibe_project\\\\frontend\\\\src\\\\pages\" -name \"*.tsx\" -exec grep -l \"booking\\\\|reservation\\\\|Booking\\\\|Reservation\" {} \\\\;)",
+      "Bash(gh auth *)",
+      "Bash(gh repo *)",
+      "Bash(gh pr *)",
+      "mcp__supabase__list_migrations",
+      "mcp__supabase__execute_sql",
+      "Bash(cp \"supabase/migrations/20260425_bookings_add_address_coords.sql\" \"backend/db/migrations/014_bookings_add_address_coords.sql\")",
+      "Bash(rm \"supabase/migrations/20260425_bookings_add_address_coords.sql\")",
+      "mcp__supabase__apply_migration",
+      "Bash(npx vite *)",
+      "Bash(npm audit *)",
+      "Bash(npm list *)"
     ]
   },
   "hooks": {

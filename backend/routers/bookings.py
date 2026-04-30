@@ -1,5 +1,5 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status, Depends, Query
-from typing import Optional
+from typing import Optional, List
 from db.supabase_client import get_supabase
 from models.booking import (
     Booking, BookingCreate, BookingUpdate,
@@ -36,10 +36,13 @@ def _row_to_booking(row: dict, prm_name: str = "", prm_avatar: Optional[str] = N
         prmId=row["prm_id"],
         prmName=prm_name,
         prmAvatar=prm_avatar,
-        startTime=row.get("start_time", ""),
-        endTime=row.get("end_time", ""),
+        startTime=str(row.get("start_time", ""))[:5],
+        endTime=str(row.get("end_time", ""))[:5],
         date=str(row["date"]),
         address=row.get("address", ""),
+        addressId=row.get("address_id"),
+        lat=row.get("lat"),
+        lng=row.get("lng"),
         status=row.get("status", "Pending"),
         service_reason=row.get("service_reason"),
         service_reason_notes=row.get("service_reason_notes"),
@@ -81,29 +84,41 @@ def _fetch_full_booking(booking_id: str, supabase) -> Booking:
 # ---------------------------------------------------------------------------
 @router.get("", response_model=list[Booking])
 async def list_bookings(
-    date: Optional[str] = Query(None, description="Filter by date (YYYY-MM-DD)"),
-    booking_status: Optional[str] = Query(None, alias="status"),
-    prm_id: Optional[str] = Query(None),
+    date: Optional[str] = Query(None, description="Filter by exact date (YYYY-MM-DD)"),
+    date_from: Optional[str] = Query(None, description="Filter from date inclusive (YYYY-MM-DD)"),
+    date_to: Optional[str] = Query(None, description="Filter to date inclusive (YYYY-MM-DD)"),
+    booking_status: Optional[List[str]] = Query(None, alias="status"),
+    prm_id: Optional[List[str]] = Query(None),
+    owner_id: Optional[List[str]] = Query(None, description="Admin only: filter by booking owner (created_by)"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     user: dict = Depends(get_current_user),
 ):
     supabase = get_supabase()
+    demo_filter = user.get("demo_mode_active", False)
     query = (
         supabase.table("bookings")
         .select("*, prms(name, avatar)")
+        .order("date")
         .order("start_time")
+        .eq("is_demo", demo_filter)
     )
 
     if not is_admin(user):
         query = query.eq("created_by", user["sub"])
+    elif owner_id:
+        query = query.in_("created_by", owner_id)
 
     if date:
         query = query.eq("date", date)
+    if date_from:
+        query = query.gte("date", date_from)
+    if date_to:
+        query = query.lte("date", date_to)
     if booking_status:
-        query = query.eq("status", booking_status)
+        query = query.in_("status", booking_status)
     if prm_id:
-        query = query.eq("prm_id", prm_id)
+        query = query.in_("prm_id", prm_id)
 
     query = query.range(offset, offset + limit - 1)
     result = query.execute()
@@ -164,17 +179,45 @@ async def create_booking(body: BookingCreate, background_tasks: BackgroundTasks,
     owner_id = prm_data.get("created_by") or user["sub"]
     booking_owner = owner_id if caller_is_admin else user["sub"]
 
+    # Validate address belongs to the PRM and is validated
+    addr_lat: Optional[float] = body.lat
+    addr_lng: Optional[float] = body.lng
+    if body.addressId:
+        try:
+            addr_res = supabase.table("addresses").select("id, prm_id, validation_status, lat, lng").eq("id", body.addressId).single().execute()
+            if not addr_res.data:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Address not found")
+            addr_data = addr_res.data
+            if str(addr_data.get("prm_id")) != str(body.prmId):
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Address does not belong to this PRM")
+            if addr_data.get("validation_status") != "validated":
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Address is not validated")
+            addr_lat = addr_data.get("lat")
+            addr_lng = addr_data.get("lng")
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not verify address")
+
+    # Inherit is_demo from the booking owner's profile
+    owner_profile = supabase.table("profiles").select("is_demo").eq("id", booking_owner).single().execute()
+    inherited_is_demo = owner_profile.data.get("is_demo", False) if owner_profile.data else False
+
     payload = {
         "prm_id": body.prmId,
         "start_time": body.startTime,
         "end_time": body.endTime,
         "date": body.date,
         "address": body.address,
+        "address_id": body.addressId,
+        "lat": addr_lat,
+        "lng": addr_lng,
         "service_reason": body.service_reason,
         "service_reason_notes": body.service_reason_notes,
         "user_id": booking_owner,
         "created_by": booking_owner,
         "created_by_admin": caller_is_admin,
+        "is_demo": inherited_is_demo,
     }
 
     result = supabase.table("bookings").insert(payload).execute()
@@ -207,6 +250,9 @@ async def update_booking(
         "endTime": "end_time",
         "date": "date",
         "address": "address",
+        "addressId": "address_id",
+        "lat": "lat",
+        "lng": "lng",
         "status": "status",
         "service_reason": "service_reason",
         "service_reason_notes": "service_reason_notes",

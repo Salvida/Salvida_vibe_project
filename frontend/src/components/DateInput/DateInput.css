@@ -1,0 +1,39 @@
+.date-input.ant-picker {
+  height: 3rem;
+  padding: 0 1rem;
+  border-radius: 0.75rem;
+  border: none;
+  background-color: var(--color-slate-50);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-slate-900);
+  box-shadow: none;
+  transition: box-shadow 0.15s;
+}
+
+.date-input.ant-picker:hover {
+  border-color: transparent;
+  background-color: var(--color-slate-100);
+}
+
+.date-input.ant-picker-focused {
+  box-shadow: 0 0 0 2px #6b4691;
+  border-color: transparent;
+  background-color: var(--color-slate-50);
+}
+
+.date-input .ant-picker-input > input {
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--color-slate-900);
+}
+
+.date-input .ant-picker-input > input::placeholder {
+  color: var(--color-slate-400);
+  font-weight: 400;
+}
+
+.date-input .ant-picker-suffix {
+  color: var(--color-slate-400);
+}

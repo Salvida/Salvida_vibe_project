@@ -21,6 +21,7 @@ const NewBooking   = lazy(() => import('./pages/NewBooking/NewBooking'));
 const EditBooking  = lazy(() => import('./pages/EditBooking/EditBooking'));
 const Addresses    = lazy(() => import('./pages/Addresses/Addresses'));
 const Users        = lazy(() => import('./pages/Users/Users'));
+const SuperAdmin   = lazy(() => import('./pages/SuperAdmin/SuperAdmin'));
 
 export default function App() {
   return (
@@ -52,6 +53,13 @@ export default function App() {
             <Route path="/app" element={<Layout />}>
               <Route path="addresses" element={<Addresses />} />
               <Route path="users" element={<Users />} />
+            </Route>
+          </Route>
+
+          {/* Superadmin-only routes */}
+          <Route element={<ProtectedRoute requireSuperAdmin />}>
+            <Route path="/app" element={<Layout />}>
+              <Route path="superadmin" element={<SuperAdmin />} />
             </Route>
           </Route>
         </Routes>
