@@ -263,10 +263,11 @@ export default function Dashboard() {
 
   // ── Status options for MultiSelect ─────────────────────────────────────────
   const statusOptions = useMemo<MultiSelectOption[]>(() => [
-    { id: 'Pending',   label: t('bookingStatuses.Pending') },
-    { id: 'Approved',  label: t('bookingStatuses.Approved') },
-    { id: 'Completed', label: t('bookingStatuses.Completed') },
-    { id: 'Cancelled', label: t('bookingStatuses.Cancelled') },
+    { id: 'SignPending', label: t('bookingStatuses.SignPending') },
+    { id: 'Pending',     label: t('bookingStatuses.Pending') },
+    { id: 'Approved',    label: t('bookingStatuses.Approved') },
+    { id: 'Completed',   label: t('bookingStatuses.Completed') },
+    { id: 'Cancelled',   label: t('bookingStatuses.Cancelled') },
   ], [t]);
 
   // ── Shared filter bar (showDateRange = list view only) ─────────────────────
