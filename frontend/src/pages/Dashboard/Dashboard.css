@@ -297,6 +297,30 @@
   color: #ef4444;
 }
 
+.booking-status--sign-pending {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.booking-sign-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  background: #7c3aed;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.booking-sign-btn:hover {
+  opacity: 0.88;
+}
+
 .new-booking-btn {
   display: flex;
   align-items: center;

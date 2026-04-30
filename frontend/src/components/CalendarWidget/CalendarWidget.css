@@ -111,10 +111,11 @@
   flex-shrink: 0;
 }
 
-.calendar__dot--pending   { background-color: #f59e0b; }
-.calendar__dot--approved  { background-color: #16a34a; }
-.calendar__dot--completed { background-color: #64748b; }
-.calendar__dot--cancelled { background-color: #ef4444; }
+.calendar__dot--pending      { background-color: #f59e0b; }
+.calendar__dot--approved     { background-color: #16a34a; }
+.calendar__dot--completed    { background-color: #64748b; }
+.calendar__dot--cancelled    { background-color: #ef4444; }
+.calendar__dot--sign-pending { background-color: #3b82f6; }
 
 
 /* Tooltip content */
@@ -160,7 +161,8 @@
   letter-spacing: 0.04em;
 }
 
-.calendar__tooltip-status--pending   { background-color: rgba(245,158,11,0.25); color: #fcd34d; }
-.calendar__tooltip-status--approved  { background-color: rgba(22,163,74,0.25);  color: #6ee7b7; }
-.calendar__tooltip-status--completed { background-color: rgba(100,116,139,0.25); color: #cbd5e1; }
-.calendar__tooltip-status--cancelled { background-color: rgba(239,68,68,0.25);  color: #fca5a5; }
+.calendar__tooltip-status--pending      { background-color: rgba(245,158,11,0.25);  color: #fcd34d; }
+.calendar__tooltip-status--approved     { background-color: rgba(22,163,74,0.25);   color: #6ee7b7; }
+.calendar__tooltip-status--completed    { background-color: rgba(100,116,139,0.25); color: #cbd5e1; }
+.calendar__tooltip-status--cancelled    { background-color: rgba(239,68,68,0.25);   color: #fca5a5; }
+.calendar__tooltip-status--sign-pending { background-color: rgba(59,130,246,0.25);  color: #93c5fd; }

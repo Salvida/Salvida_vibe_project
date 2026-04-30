@@ -7,9 +7,10 @@ import type { MultiSelectOption } from '../../components/MultiSelect/MultiSelect
 import PrmMultiSelect from '../../components/PrmMultiSelect/PrmMultiSelect';
 import UserMultiSelect from '../../components/UserMultiSelect/UserMultiSelect';
 import DateInput from '../../components/DateInput/DateInput';
+import ContractModal from '../../components/ContractModal/ContractModal';
 import {
   PlusCircle, Clock, MapPin, Pencil, Trash2, CheckCircle, X,
-  User, CalendarDays, List, ArrowUp, ArrowDown,
+  User, CalendarDays, List, ArrowUp, ArrowDown, FileSignature,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -28,6 +29,7 @@ const STATUS_CLASS: Record<Booking['status'], string> = {
   Pending: 'booking-status--pending',
   Completed: 'booking-status--completed',
   Cancelled: 'booking-status--cancelled',
+  SignPending: 'booking-status--sign-pending',
 };
 
 // ─── BookingCard ─────────────────────────────────────────────────────────────
@@ -37,6 +39,7 @@ function BookingCard({
   onEdit,
   onDelete,
   onStatusChange,
+  onSign,
   isAdmin,
   showDate,
 }: {
@@ -44,6 +47,7 @@ function BookingCard({
   onEdit: () => void;
   onDelete: () => void;
   onStatusChange: (status: Booking['status']) => void;
+  onSign: () => void;
   isAdmin: boolean;
   showDate?: boolean;
 }) {
@@ -72,10 +76,20 @@ function BookingCard({
               <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
                 {t(`bookingStatuses.${booking.status}`)}
               </span>
+              {booking.status === 'SignPending' && (
+                <button
+                  type="button"
+                  className="booking-sign-btn"
+                  onClick={(e) => { e.stopPropagation(); onSign(); }}
+                >
+                  <FileSignature size={14} />
+                  {t('contract.signButton')}
+                </button>
+              )}
             </div>
             <DropdownMenu
               items={[
-                ...(isAdmin && booking.status === 'Pending' ? [
+                ...(isAdmin && (booking.status === 'Pending' || booking.status === 'SignPending') ? [
                   { label: t('dashboard.actions.approve'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Approved') },
                 ] : []),
                 ...(isAdmin && (booking.status === 'Pending' || booking.status === 'Approved') ? [
@@ -140,6 +154,9 @@ export default function Dashboard() {
   const updateStatus = useUpdateBookingStatus();
   const user = useAuthStore((s) => s.user);
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+
+  // ── Contract signing ───────────────────────────────────────────────────────
+  const [signingBooking, setSigningBooking] = useState<Booking | null>(null);
 
   // ── View toggle ────────────────────────────────────────────────────────────
   const [view, setView] = useState<'calendar' | 'list'>('calendar');
@@ -246,10 +263,11 @@ export default function Dashboard() {
 
   // ── Status options for MultiSelect ─────────────────────────────────────────
   const statusOptions = useMemo<MultiSelectOption[]>(() => [
-    { id: 'Pending',   label: t('bookingStatuses.Pending') },
-    { id: 'Approved',  label: t('bookingStatuses.Approved') },
-    { id: 'Completed', label: t('bookingStatuses.Completed') },
-    { id: 'Cancelled', label: t('bookingStatuses.Cancelled') },
+    { id: 'SignPending', label: t('bookingStatuses.SignPending') },
+    { id: 'Pending',     label: t('bookingStatuses.Pending') },
+    { id: 'Approved',    label: t('bookingStatuses.Approved') },
+    { id: 'Completed',   label: t('bookingStatuses.Completed') },
+    { id: 'Cancelled',   label: t('bookingStatuses.Cancelled') },
   ], [t]);
 
   // ── Shared filter bar (showDateRange = list view only) ─────────────────────
@@ -395,6 +413,7 @@ export default function Dashboard() {
                       onEdit={() => navigate(`/app/bookings/${b.id}/edit`)}
                       onDelete={() => deleteBooking.mutate(b.id)}
                       onStatusChange={(status) => updateStatus.mutate({ id: b.id, status })}
+                      onSign={() => setSigningBooking(b)}
                       isAdmin={isAdmin}
                     />
                   ))}
@@ -457,6 +476,7 @@ export default function Dashboard() {
                     onEdit={() => navigate(`/app/bookings/${b.id}/edit`)}
                     onDelete={() => deleteBooking.mutate(b.id)}
                     onStatusChange={(status) => updateStatus.mutate({ id: b.id, status })}
+                    onSign={() => setSigningBooking(b)}
                     isAdmin={isAdmin}
                     showDate
                   />
@@ -472,6 +492,14 @@ export default function Dashboard() {
         )}
 
       </div>
+
+      {signingBooking && (
+        <ContractModal
+          booking={signingBooking}
+          onClose={() => setSigningBooking(null)}
+          onSigned={() => setSigningBooking(null)}
+        />
+      )}
     </div>
   );
 }

@@ -106,3 +106,15 @@ export function useUpdateBookingStatus() {
     onError: (error) => toast.error(parseApiError(error, 'Error al actualizar el estado')),
   });
 }
+
+export function useSignBooking() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, signatureImage }: { id: string; signatureImage: string }) =>
+      apiClient.post<Booking>(`/api/bookings/${id}/sign`, { signature_image: signatureImage }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: BOOKINGS_KEY });
+    },
+    onError: (error) => toast.error(parseApiError(error, 'Error al firmar el contrato')),
+  });
+}

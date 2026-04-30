@@ -18,10 +18,19 @@ function dayKey(year: number, month: number, day: number) {
 }
 
 const STATUS_DOT: Record<Booking['status'], string> = {
-  Pending: 'calendar__dot--pending',
-  Approved: 'calendar__dot--approved',
-  Completed: 'calendar__dot--completed',
-  Cancelled: 'calendar__dot--cancelled',
+  Pending:     'calendar__dot--pending',
+  Approved:    'calendar__dot--approved',
+  Completed:   'calendar__dot--completed',
+  Cancelled:   'calendar__dot--cancelled',
+  SignPending: 'calendar__dot--sign-pending',
+};
+
+const STATUS_TOOLTIP: Record<Booking['status'], string> = {
+  Pending:     'calendar__tooltip-status--pending',
+  Approved:    'calendar__tooltip-status--approved',
+  Completed:   'calendar__tooltip-status--completed',
+  Cancelled:   'calendar__tooltip-status--cancelled',
+  SignPending: 'calendar__tooltip-status--sign-pending',
 };
 
 interface CalendarWidgetProps {
@@ -109,7 +118,7 @@ export default function CalendarWidget({
           <div key={b.id} className="calendar__tooltip-row">
             <span className="calendar__tooltip-time">{b.startTime}</span>
             <span className="calendar__tooltip-name">{b.prmName}</span>
-            <span className={`calendar__tooltip-status calendar__tooltip-status--${b.status.toLowerCase()}`}>
+            <span className={`calendar__tooltip-status ${STATUS_TOOLTIP[b.status]}`}>
               {t(`bookingStatuses.${b.status}`)}
             </span>
           </div>
