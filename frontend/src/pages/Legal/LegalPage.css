@@ -1,0 +1,133 @@
+/* frontend/src/pages/Legal/LegalPage.css */
+.legal {
+  min-height: 100vh;
+  background-color: var(--lp-surface-bright);
+  font-family: var(--lp-font);
+  color: var(--lp-on-surface);
+  -webkit-font-smoothing: antialiased;
+}
+
+.legal__nav {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--lp-outline-variant);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.legal__back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--lp-primary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  transition: background 0.15s;
+}
+
+.legal__back-btn:hover {
+  background: var(--lp-primary-fixed);
+}
+
+.legal__back-btn:focus-visible {
+  outline: 2px solid var(--lp-primary);
+  outline-offset: 2px;
+}
+
+.legal__brand {
+  font-weight: 900;
+  font-size: 1rem;
+  color: var(--lp-primary);
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  margin-left: auto;
+}
+
+.legal__content {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 5rem;
+}
+
+.legal__title {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--lp-primary);
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+}
+
+.legal__updated {
+  font-size: 0.75rem;
+  color: var(--lp-on-surface-variant);
+  margin-bottom: 2.5rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.legal__section {
+  margin-bottom: 2.5rem;
+}
+
+.legal__section h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--lp-on-surface);
+  margin-bottom: 0.75rem;
+}
+
+.legal__section p,
+.legal__section li {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--lp-on-surface-variant);
+}
+
+.legal__section ul {
+  padding-left: 1.25rem;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.legal__contact-link {
+  color: var(--lp-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.legal__contact-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.legal__contact-link:focus-visible {
+  outline: 2px solid var(--lp-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .legal__nav {
+    padding: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .legal__content {
+    padding: 2rem 1rem 3rem;
+  }
+
+  .legal__title {
+    font-size: 1.5rem;
+  }
+
+  .legal__section h2 {
+    font-size: 1rem;
+  }
+}

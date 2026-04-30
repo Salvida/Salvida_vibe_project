@@ -34,7 +34,7 @@ createRoot(document.getElementById("root")!).render(
         closeOnClick
         pauseOnHover
       />
-      <ReactQueryDevtools initialIsOpen={false} />
+      <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
     </QueryClientProvider>
   </StrictMode>,
 );

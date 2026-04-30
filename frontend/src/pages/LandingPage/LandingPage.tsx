@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, A11y } from "swiper/modules";
@@ -9,6 +9,8 @@ import "swiper/swiper.css";
 import PLATFORM_ICONS from "../../lib/platformIcons";
 import { SalvidaLogo } from "../../assets/icons/SalvidaLogo";
 import "./LandingPage.css";
+import videoSrc from "../../assets/video/Y0S8F6SYMHLHC1WP.mp4";
+import WhatsAppFAB from "../../components/WhatsAppFAB/WhatsAppFAB";
 
 // ---------------------------------------------------------------------------
 // Social link type from API
@@ -257,6 +259,7 @@ export default function LandingPage() {
   const [reviews, setReviews] = useState<ApiReview[] | null>(null);
   const [popup, setPopup] = useState<PopupState | null>(null);
   const swiperRef = useRef<SwiperType | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const isScrollingRef = useRef(false);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -455,20 +458,21 @@ export default function LandingPage() {
         {/* ── Video ── */}
         <section className="lp-video" id="nosotros">
           <div className="lp-video__frame">
-            <img
-              className="lp-video__img"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc3UX1FguYT2duV0Oc7SWw8_OcNtgzZCPS1aZAmzIro3OZr3HzZMd9qXc_HQTpFDCul_1nHC_pm4rkteqWNQASwgmKM5r0uG8JLttFzElcTnQblsdJj07q7awgW08YdQgu2O4rEMsjd1h-02YwhCeUvmlT97qSX0tGTSd8FPFft6t6LHYSXDCcZLI450wCDkZR4b3w_SwMRhY5ESr2aV2Zbjq-Fc49zcBLyOOC64BNPa8OKLHq56cMqj5XuuCPF9fkPWdX-yPtiw"
-              alt={t("landing.video.imgAlt")}
+            <video
+              ref={videoRef}
+              className="lp-video__video"
+              src={videoSrc}
+              controls
+              onTimeUpdate={() => {
+                const v = videoRef.current;
+                if (v && v.currentTime >= 71) {
+                  v.pause();
+                  v.currentTime = 71;
+                }
+              }}
             />
-            <div className="lp-video__overlay" aria-hidden="true" />
-            <div
-              className="lp-video__play"
-              role="button"
-              aria-label={t("landing.video.playLabel")}
-            >
-              <span className="lp-material-icon lp-video__play-icon">
-                play_arrow
-              </span>
+            <div className="lp-video__watermark-cover" aria-hidden="true">
+              <SalvidaLogo width={undefined} height={undefined} className="" />
             </div>
             <div className="lp-video__caption">
               <div className="lp-video__caption-title">
@@ -641,6 +645,7 @@ export default function LandingPage() {
       </main>
 
       {popup && <QuotePopup popup={popup} />}
+      <WhatsAppFAB variant="landing" />
 
       {/* ── Footer ── */}
       <footer className="lp-footer">
@@ -648,17 +653,37 @@ export default function LandingPage() {
           <span className="lp-footer__brand">Salvida</span>
 
           <div className="lp-footer__links">
-            <a href="#" className="lp-footer__link">
+            <Link to="/privacidad" className="lp-footer__link">
               {t("landing.footer.privacy")}
-            </a>
-            <a href="#" className="lp-footer__link">
+            </Link>
+            <Link to="/terminos" className="lp-footer__link">
               {t("landing.footer.terms")}
-            </a>
-            <a href="#" className="lp-footer__link">
+            </Link>
+            <Link to="/contacto" className="lp-footer__link">
               {t("landing.footer.contact")}
-            </a>
-            <a href="#" className="lp-footer__link">
+            </Link>
+            <Link to="/accesibilidad" className="lp-footer__link">
               {t("landing.footer.accessibility")}
+            </Link>
+          </div>
+
+          {/* Contact info */}
+          <div className="lp-footer__contact">
+            <a
+              href="mailto:hola@salvida.es"
+              className="lp-footer__contact-item"
+              aria-label="Correo electrónico"
+            >
+              <span className="lp-material-icon lp-footer__contact-icon">mail</span>
+              {t("landing.footer.email")}
+            </a>
+            <a
+              href="tel:+34644572604"
+              className="lp-footer__contact-item"
+              aria-label="Teléfono"
+            >
+              <span className="lp-material-icon lp-footer__contact-icon">phone</span>
+              {t("landing.footer.phone")}
             </a>
           </div>
 

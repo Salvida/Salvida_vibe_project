@@ -1,0 +1,43 @@
+/* frontend/src/components/WhatsAppFAB/WhatsAppFAB.css */
+.wa-fab {
+  position: fixed;
+  z-index: 200;
+  bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 9999px;
+  background: #25d366;
+  color: #ffffff;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.45);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.wa-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(37, 211, 102, 0.55);
+}
+
+.wa-fab:focus-visible {
+  outline: 3px solid #25d366;
+  outline-offset: 3px;
+}
+
+/* Landing variant — bottom-right */
+.wa-fab--landing {
+  right: 1.5rem;
+}
+
+/* App variant — bottom-left, offset to clear sidebar (16rem) on desktop */
+.wa-fab--app {
+  left: calc(16rem + 1rem);
+}
+
+@media (max-width: 768px) {
+  .wa-fab--app {
+    left: 1rem;
+  }
+}

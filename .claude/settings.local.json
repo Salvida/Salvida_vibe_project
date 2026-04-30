@@ -55,7 +55,16 @@
       "mcp__supabase__apply_migration",
       "Bash(npx vite *)",
       "Bash(npm audit *)",
-      "Bash(npm list *)"
+      "Bash(npm list *)",
+      "Bash(gh issue *)",
+      "Bash(git log *)",
+      "Bash(git -C \"C:/Users/admin/Projects/Salvida_vibe_project\" add frontend/src/components/WhatsAppFAB/WhatsAppFAB.tsx frontend/src/components/WhatsAppFAB/WhatsAppFAB.css)",
+      "Bash(git -C \"C:/Users/admin/Projects/Salvida_vibe_project\" commit -m \"feat: add WhatsAppFAB component\")",
+      "Bash(cat)",
+      "Read(//tmp/**)",
+      "Bash(git -C \"C:/Users/admin/Projects/Salvida_vibe_project\" add frontend/src/pages/LandingPage/LandingPage.tsx)",
+      "Bash(git -C \"C:/Users/admin/Projects/Salvida_vibe_project\" commit -m \"fix: revert unauthorized video changes from task 9 subagent\")",
+      "Bash(git -C \"C:/Users/admin/Projects/Salvida_vibe_project\" commit -m \"fix: resize watermark cover logo to 200x55 matching design\")"
     ]
   },
   "hooks": {

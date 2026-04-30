@@ -23,6 +23,12 @@ const Addresses    = lazy(() => import('./pages/Addresses/Addresses'));
 const Users        = lazy(() => import('./pages/Users/Users'));
 const SuperAdmin   = lazy(() => import('./pages/SuperAdmin/SuperAdmin'));
 
+// Legal pages — lazy loaded
+const PrivacyPolicy  = lazy(() => import('./pages/Legal/PrivacyPolicy'));
+const Terms          = lazy(() => import('./pages/Legal/Terms'));
+const Contact        = lazy(() => import('./pages/Legal/Contact'));
+const Accessibility  = lazy(() => import('./pages/Legal/Accessibility'));
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -32,6 +38,10 @@ export default function App() {
           {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/privacidad"    element={<PrivacyPolicy />} />
+          <Route path="/terminos"      element={<Terms />} />
+          <Route path="/contacto"      element={<Contact />} />
+          <Route path="/accesibilidad" element={<Accessibility />} />
 
           {/* Protected app — all authenticated users */}
           <Route element={<ProtectedRoute />}>
