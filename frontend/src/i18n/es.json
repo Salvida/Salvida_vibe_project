@@ -25,7 +25,7 @@
   },
   "bookingStatuses": {
     "Approved": "Aprobada",
-    "Pending": "Pendiente",
+    "Pending": "Pendiente de confirmación",
     "Completed": "Completada",
     "Cancelled": "Cancelada",
     "SignPending": "Firma pendiente"
