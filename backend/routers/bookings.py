@@ -1,10 +1,12 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status, Depends, Query
 from typing import Optional, List
+from datetime import datetime, timezone
 from db.supabase_client import get_supabase
 from models.booking import (
     Booking, BookingCreate, BookingUpdate,
-    BookingStatusUpdate, BookingCancel,
+    BookingStatusUpdate, BookingCancel, BookingSign,
 )
+from services.contract_pdf import generate_contract_pdf
 from auth.dependencies import get_current_user
 from auth.roles import is_admin, require_admin
 from services.notifications import send_push_to_user
@@ -16,7 +18,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def _push_booking_update(user_id: str, title: str, body: str) -> None:
+def _push_booking_update(user_id: str, title: str, body: str, data: Optional[dict] = None) -> None:
     """
     Sends a push notification to *user_id* if their notification_prefs.push is true.
     Designed to run as a FastAPI BackgroundTask (fire-and-forget).
@@ -27,7 +29,7 @@ def _push_booking_update(user_id: str, title: str, body: str) -> None:
         return
     prefs = profile_res.data.get("notification_prefs") or {}
     if prefs.get("push", False):
-        send_push_to_user(user_id, title, body)
+        send_push_to_user(user_id, title, body, data)
 
 
 def _row_to_booking(row: dict, prm_name: str = "", prm_avatar: Optional[str] = None, owner_name: Optional[str] = None) -> Booking:
@@ -49,6 +51,8 @@ def _row_to_booking(row: dict, prm_name: str = "", prm_avatar: Optional[str] = N
         is_demo=row.get("is_demo", False),
         created_by_admin=row.get("created_by_admin", False),
         owner_name=owner_name,
+        signed_at=row.get("signed_at"),
+        signature_url=row.get("signature_url"),
     )
 
 
@@ -214,6 +218,7 @@ async def create_booking(body: BookingCreate, background_tasks: BackgroundTasks,
         "lng": addr_lng,
         "service_reason": body.service_reason,
         "service_reason_notes": body.service_reason_notes,
+        "status": "SignPending",
         "user_id": booking_owner,
         "created_by": booking_owner,
         "created_by_admin": caller_is_admin,
@@ -225,9 +230,10 @@ async def create_booking(body: BookingCreate, background_tasks: BackgroundTasks,
 
     background_tasks.add_task(
         _push_booking_update,
-        user["sub"],
-        "Nueva reserva creada",
-        f"Reserva para {prm_data['name']} el {body.date} a las {body.startTime}.",
+        booking_owner,
+        "Reserva creada — firma pendiente",
+        f"Reserva para {prm_data['name']} el {body.date}. Por favor firmá el contrato para confirmarla.",
+        {"bookingId": str(booking.id), "action": "sign"},
     )
     return booking
 
@@ -326,6 +332,78 @@ async def update_booking_status(
             logger.error("Could not send review request email for booking %s: %s", booking_id, exc)
 
     return booking
+
+
+# ---------------------------------------------------------------------------
+# POST /api/bookings/{id}/sign
+# ---------------------------------------------------------------------------
+@router.post("/{booking_id}/sign", response_model=Booking)
+async def sign_booking(
+    booking_id: str,
+    body: BookingSign,
+    user: dict = Depends(get_current_user),
+):
+    supabase = get_supabase()
+    _assert_booking_access(booking_id, user, supabase)
+
+    row_res = (
+        supabase.table("bookings")
+        .select("*, prms(name, dni, avatar)")
+        .eq("id", booking_id)
+        .single()
+        .execute()
+    )
+    if not row_res.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found")
+
+    row = row_res.data
+    if row.get("status") != "SignPending":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Booking is not awaiting signature",
+        )
+
+    prm = row.get("prms") or {}
+
+    try:
+        pdf_bytes = generate_contract_pdf(
+            prm_name=prm.get("name", ""),
+            prm_dni=prm.get("dni", ""),
+            booking_date=str(row["date"]),
+            signature_png_b64=body.signature_image,
+        )
+
+        storage_path = f"{booking_id}/contract.pdf"
+        supabase.storage.from_("booking-contracts").upload(
+            path=storage_path,
+            file=pdf_bytes,
+            file_options={"content-type": "application/pdf", "upsert": "true"},
+        )
+        url_res = supabase.storage.from_("booking-contracts").create_signed_url(
+            path=storage_path,
+            expires_in=315360000,
+        )
+        signed_url = url_res.get("signedURL", "")
+        if not signed_url:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="Could not generate signed URL for contract PDF",
+            )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Contract PDF generation/upload failed for booking %s: %s", booking_id, exc)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Could not generate or upload contract PDF",
+        )
+
+    now = datetime.now(timezone.utc).isoformat()
+    supabase.table("bookings").update(
+        {"status": "Approved", "signed_at": now, "signature_url": signed_url}
+    ).eq("id", booking_id).execute()
+
+    return _fetch_full_booking(booking_id, supabase)
 
 
 # ---------------------------------------------------------------------------
