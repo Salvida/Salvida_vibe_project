@@ -156,7 +156,7 @@ export default function Dashboard() {
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
 
   // ── Contract signing ───────────────────────────────────────────────────────
-  const [signingBooking, setSigingBooking] = useState<Booking | null>(null);
+  const [signingBooking, setSigningBooking] = useState<Booking | null>(null);
 
   // ── View toggle ────────────────────────────────────────────────────────────
   const [view, setView] = useState<'calendar' | 'list'>('calendar');
@@ -412,7 +412,7 @@ export default function Dashboard() {
                       onEdit={() => navigate(`/app/bookings/${b.id}/edit`)}
                       onDelete={() => deleteBooking.mutate(b.id)}
                       onStatusChange={(status) => updateStatus.mutate({ id: b.id, status })}
-                      onSign={() => setSigingBooking(b)}
+                      onSign={() => setSigningBooking(b)}
                       isAdmin={isAdmin}
                     />
                   ))}
@@ -475,7 +475,7 @@ export default function Dashboard() {
                     onEdit={() => navigate(`/app/bookings/${b.id}/edit`)}
                     onDelete={() => deleteBooking.mutate(b.id)}
                     onStatusChange={(status) => updateStatus.mutate({ id: b.id, status })}
-                    onSign={() => setSigingBooking(b)}
+                    onSign={() => setSigningBooking(b)}
                     isAdmin={isAdmin}
                     showDate
                   />
@@ -495,8 +495,8 @@ export default function Dashboard() {
       {signingBooking && (
         <ContractModal
           booking={signingBooking}
-          onClose={() => setSigingBooking(null)}
-          onSigned={() => setSigingBooking(null)}
+          onClose={() => setSigningBooking(null)}
+          onSigned={() => setSigningBooking(null)}
         />
       )}
     </div>
