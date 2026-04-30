@@ -61,12 +61,14 @@ export interface Booking {
   addressId?: string;
   lat?: number;
   lng?: number;
-  status: 'Approved' | 'Pending' | 'Completed' | 'Cancelled';
+  status: 'Approved' | 'Pending' | 'Completed' | 'Cancelled' | 'SignPending';
   service_reason?: ServiceReason;
   service_reason_notes?: string;
   is_demo?: boolean;
   created_by_admin?: boolean;
   owner_name?: string;
+  signed_at?: string;
+  signature_url?: string;
 }
 
 export interface Notification {

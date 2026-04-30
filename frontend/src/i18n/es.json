@@ -27,7 +27,23 @@
     "Approved": "Aprobada",
     "Pending": "Pendiente",
     "Completed": "Completada",
-    "Cancelled": "Cancelada"
+    "Cancelled": "Cancelada",
+    "SignPending": "Firma pendiente"
+  },
+  "contract": {
+    "title": "Contrato de actividad",
+    "signButton": "Firmar contrato",
+    "downloadButton": "Descargar contrato",
+    "modalTitle": "Firma el contrato",
+    "body1": "La empresa SALVIDA se compromete a ofrecerte el servicio de movilización en escaleras con silla especializada, en la fecha y hora acordadas.",
+    "body2": "Te comprometés a cumplir con el horario acordado, debiendo avisar de cualquier cambio o cancelación al menos 24 horas antes al teléfono: 644572604.",
+    "signatureLabel": "Dibujá tu firma aquí",
+    "clearSignature": "Limpiar",
+    "submitSignature": "Confirmar firma",
+    "submitting": "Enviando...",
+    "signedAt": "Firmado el",
+    "emptySignatureError": "Por favor dibujá tu firma antes de continuar",
+    "successMessage": "¡Contrato firmado! Tu reserva está confirmada."
   },
   "userRoles": {
     "user": "Usuario",
