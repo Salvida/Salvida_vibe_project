@@ -110,6 +110,7 @@ export default function PrmDetail() {
   const [newAddrIsAccessible, setNewAddrIsAccessible] = useState<boolean | null>(null);
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [editAddrDraft, setEditAddrDraft] = useState<{ value: Partial<Address>; alias: string }>({ value: {}, alias: '' });
+  const [confirmDeleteAddrId, setConfirmDeleteAddrId] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({
     name: '',
@@ -641,6 +642,49 @@ export default function PrmDetail() {
                         <div key={addr.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1rem', borderBottom: '1px solid var(--color-slate-50)' }}>
                           <AddressSelector value={editAddrDraft.value} onChange={(v) => setEditAddrDraft({ ...editAddrDraft, value: v })} showValidation={false} showMap={false} />
                           <input type="text" className="prm-edit-input" placeholder={t('prmDetail.addressAlias')} value={editAddrDraft.alias} onChange={(e) => setEditAddrDraft({ ...editAddrDraft, alias: e.target.value })} maxLength={40} style={{ maxWidth: '100%', width: '100%' }} />
+                          {isAdmin && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                              <span style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-primary)' }}>
+                                {t('addresses.columns.accessibility')}
+                              </span>
+                              <div style={{ display: 'flex', gap: '0.375rem' }}>
+                                {([
+                                  { value: null,  label: t('addresses.access.pendingShort') },
+                                  { value: true,  label: t('addresses.access.yesShort') },
+                                  { value: false, label: t('addresses.access.noShort') },
+                                ] as { value: boolean | null; label: string }[]).map(({ value, label }) => {
+                                  const current = editAddrDraft.value.is_accessible ?? null;
+                                  const active = current === value;
+                                  return (
+                                    <button
+                                      key={String(value)}
+                                      type="button"
+                                      onClick={() => setEditAddrDraft({ ...editAddrDraft, value: { ...editAddrDraft.value, is_accessible: value } })}
+                                      style={{
+                                        padding: '0.3rem 0.75rem',
+                                        borderRadius: '9999px',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        border: '1.5px solid',
+                                        transition: 'all 0.15s',
+                                        ...(active
+                                          ? value === true
+                                            ? { background: 'var(--color-emerald-50)', borderColor: 'var(--color-emerald-600)', color: 'var(--color-emerald-600)' }
+                                            : value === false
+                                            ? { background: '#fff5f5', borderColor: '#c53030', color: '#c53030' }
+                                            : { background: 'var(--color-slate-100)', borderColor: 'var(--color-slate-400)', color: 'var(--color-slate-600)' }
+                                          : { background: 'white', borderColor: 'var(--color-slate-200)', color: 'var(--color-slate-500)' }
+                                        ),
+                                      }}
+                                    >
+                                      {label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                           <div className="prm-edit-actions" style={{ justifyContent: 'flex-end' }}>
                             <button type="button" className="prm-edit-actions__cancel" onClick={() => setEditingAddressId(null)}><X size={14} /> {t('common.cancel')}</button>
                             <button type="button" className="prm-edit-actions__save" disabled={!editAddrDraft.value.full_address || updatePrmAddress.isPending}
@@ -662,8 +706,35 @@ export default function PrmDetail() {
                             </div>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <button type="button" onClick={() => { setEditingAddressId(addr.id); setEditAddrDraft({ value: { full_address: addr.full_address, lat: addr.lat, lng: addr.lng, is_accessible: addr.is_accessible }, alias: addr.alias || '' }); }} style={{ color: 'var(--color-slate-400)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.375rem', borderRadius: '0.375rem', display: 'flex' }} title={t('prmDetail.editAddress')}><Pencil size={15} /></button>
-                            <button type="button" onClick={() => deletePrmAddress.mutate({ prmId: id!, addressId: addr.id })} style={{ color: 'var(--color-slate-400)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.375rem', borderRadius: '0.375rem', display: 'flex' }} title={t('prmDetail.deleteAddress')}><Trash2 size={15} /></button>
+                            {confirmDeleteAddrId === addr.id ? (
+                              <>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--color-slate-500)', whiteSpace: 'nowrap' }}>
+                                  {t('common.confirmDelete')}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setConfirmDeleteAddrId(null)}
+                                  style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-slate-500)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: '0.375rem' }}
+                                >
+                                  {t('common.cancel')}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    deletePrmAddress.mutate({ prmId: id!, addressId: addr.id });
+                                    setConfirmDeleteAddrId(null);
+                                  }}
+                                  style={{ fontSize: '0.75rem', fontWeight: 600, color: '#c53030', background: '#fff5f5', border: '1px solid #fed7d7', cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: '0.375rem' }}
+                                >
+                                  {t('common.delete')}
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button type="button" onClick={() => { setEditingAddressId(addr.id); setEditAddrDraft({ value: { full_address: addr.full_address, lat: addr.lat, lng: addr.lng, is_accessible: addr.is_accessible }, alias: addr.alias || '' }); }} style={{ color: 'var(--color-slate-400)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.375rem', borderRadius: '0.375rem', display: 'flex' }} title={t('prmDetail.editAddress')}><Pencil size={15} /></button>
+                                <button type="button" onClick={() => setConfirmDeleteAddrId(addr.id)} style={{ color: 'var(--color-slate-400)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.375rem', borderRadius: '0.375rem', display: 'flex' }} title={t('prmDetail.deleteAddress')}><Trash2 size={15} /></button>
+                              </>
+                            )}
                           </div>
                         </div>
                       )

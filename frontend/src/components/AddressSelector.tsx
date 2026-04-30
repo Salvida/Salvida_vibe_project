@@ -153,7 +153,9 @@ export default function AddressSelector({
   const handleSelect = useCallback(
     (feature: GeoapifyFeature) => {
       const [lng, lat] = feature.geometry.coordinates;
-      const label = feature.properties.formatted;
+      const label = [feature.properties.address_line1, feature.properties.address_line2]
+        .filter(Boolean)
+        .join(', ');
       const pos: [number, number] = [lat, lng];
 
       setQuery(label);
@@ -205,7 +207,9 @@ export default function AddressSelector({
         const data = await res.json() as { features?: GeoapifyFeature[] };
         const feature = data.features?.[0];
         if (feature) {
-          const label = feature.properties.formatted;
+          const label = [feature.properties.address_line1, feature.properties.address_line2]
+            .filter(Boolean)
+            .join(', ');
           setQuery(label);
           setBaseAddress(label);
           setSelected(true);
