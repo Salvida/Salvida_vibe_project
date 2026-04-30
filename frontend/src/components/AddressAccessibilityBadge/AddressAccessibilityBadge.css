@@ -1,0 +1,27 @@
+.addr-access-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.addr-access-badge--pending {
+  background: var(--color-slate-100);
+  color: var(--color-slate-500);
+}
+
+.addr-access-badge--yes {
+  background: var(--color-emerald-50);
+  color: var(--color-emerald-600);
+}
+
+.addr-access-badge--no {
+  background: #fff5f5;
+  color: #c53030;
+}

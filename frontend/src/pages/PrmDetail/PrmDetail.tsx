@@ -31,6 +31,7 @@ import {
 } from '../../hooks/usePrmAddresses';
 import AddressSelector from '../../components/AddressSelector';
 import PrmAddressesMap from '../../components/PrmAddressesMap/PrmAddressesMap';
+import AddressAccessibilityBadge from '../../components/AddressAccessibilityBadge/AddressAccessibilityBadge';
 import DateInput from '../../components/DateInput/DateInput';
 import type { Address } from '../../types';
 import PrmRecentHistory from './PrmRecentHistory';
@@ -657,6 +658,7 @@ export default function PrmDetail() {
                             <div>
                               {addr.alias && <span className="prm-info__row-key">{addr.alias}</span>}
                               <p style={{ fontSize: '0.8rem', color: 'var(--color-slate-400)', marginTop: addr.alias ? '0.125rem' : 0 }}>{addr.full_address}</p>
+                              <AddressAccessibilityBadge value={addr.is_accessible} className="prm-info__addr-badge" />
                             </div>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

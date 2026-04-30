@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { Check, X, RotateCcw, MapPin, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Address } from '../../types';
+import AddressAccessibilityBadge from '../../components/AddressAccessibilityBadge/AddressAccessibilityBadge';
 
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -116,21 +117,7 @@ export default function AddressesMapView({ addresses, onAssess }: AddressesMapVi
 
                 {/* Badge de aptitud */}
                 <div className="addr-popup__badges">
-                  {address.is_accessible === null && (
-                    <span className="addresses__access-badge addresses__access-badge--pending">
-                      {t('addresses.access.pending')}
-                    </span>
-                  )}
-                  {address.is_accessible === true && (
-                    <span className="addresses__access-badge addresses__access-badge--yes">
-                      ♿ {t('addresses.access.yes')}
-                    </span>
-                  )}
-                  {address.is_accessible === false && (
-                    <span className="addresses__access-badge addresses__access-badge--no">
-                      {t('addresses.access.no')}
-                    </span>
-                  )}
+                  <AddressAccessibilityBadge value={address.is_accessible} />
                 </div>
 
                 {/* Acciones */}

@@ -10,28 +10,10 @@ import AddressMapPreview from './AddressMapPreview';
 import AddressesMapView from './AddressesMapView';
 import UserMultiSelect from '../../components/UserMultiSelect/UserMultiSelect';
 import PrmMultiSelect from '../../components/PrmMultiSelect/PrmMultiSelect';
+import AddressAccessibilityBadge from '../../components/AddressAccessibilityBadge/AddressAccessibilityBadge';
 import './Addresses.css';
 
 type ViewMode = 'list' | 'map';
-
-function AccessibilityBadge({ value }: { value: boolean | null }) {
-  const { t } = useTranslation();
-  if (value === null) return (
-    <span className="addresses__access-badge addresses__access-badge--pending">
-      {t('addresses.access.pending')}
-    </span>
-  );
-  if (value) return (
-    <span className="addresses__access-badge addresses__access-badge--yes">
-      ♿ {t('addresses.access.yes')}
-    </span>
-  );
-  return (
-    <span className="addresses__access-badge addresses__access-badge--no">
-      {t('addresses.access.no')}
-    </span>
-  );
-}
 
 export default function Addresses() {
   const { t } = useTranslation();
@@ -191,7 +173,7 @@ export default function Addresses() {
                             </div>
                           </td>
                           <td>
-                            <AccessibilityBadge value={address.is_accessible} />
+                            <AddressAccessibilityBadge value={address.is_accessible} />
                           </td>
                           <td>
                             <div className="addresses__action-group">
