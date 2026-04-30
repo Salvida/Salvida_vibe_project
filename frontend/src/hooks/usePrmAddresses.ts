@@ -17,7 +17,7 @@ export interface AddPrmAddressPayload {
   full_address: string;
   lat?: number;
   lng?: number;
-  is_accessible?: boolean;
+  is_accessible?: boolean | null;
   alias?: string;
 }
 

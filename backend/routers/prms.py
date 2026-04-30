@@ -339,22 +339,50 @@ async def add_prm_address(
     body: PrmAddressCreate,
     user: dict = Depends(get_current_user),
 ):
-    """Create a new address linked to this PRM."""
+    """Create a new address linked to this PRM.
+    - If is_accessible is None and lat/lng match a validated building → inherit True.
+    - If is_accessible is True and lat/lng present → propagate to pending siblings."""
     supabase = get_supabase()
     _assert_prm_access(prm_id, user, supabase)
+
+    is_accessible = body.is_accessible
+
+    if body.lat is not None and body.lng is not None:
+        if is_accessible is None:
+            # Inherit from an already-validated address at the same building
+            existing = (
+                supabase.table("addresses")
+                .select("is_accessible")
+                .eq("lat", body.lat)
+                .eq("lng", body.lng)
+                .eq("is_accessible", True)
+                .limit(1)
+                .execute()
+            )
+            if existing.data:
+                is_accessible = True
 
     addr_payload = {
         "full_address": body.full_address,
         "lat": body.lat,
         "lng": body.lng,
-        "is_accessible": body.is_accessible,
+        "is_accessible": is_accessible,
         "alias": body.alias,
         "prm_id": prm_id,
         "user_id": user["sub"],
-        "validation_status": "pending",
     }
     result = supabase.table("addresses").insert(addr_payload).execute()
-    return _row_to_address(result.data[0])
+    new_row = result.data[0]
+
+    # If admin explicitly marked as accessible, propagate to pending siblings
+    if is_accessible is True and body.lat is not None and body.lng is not None:
+        supabase.table("addresses").update({"is_accessible": True}).eq(
+            "lat", body.lat
+        ).eq("lng", body.lng).neq("id", new_row["id"]).is_(
+            "is_accessible", "null"
+        ).execute()
+
+    return _row_to_address(new_row)
 
 
 # ---------------------------------------------------------------------------

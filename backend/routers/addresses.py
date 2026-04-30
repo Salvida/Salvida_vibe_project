@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from typing import Optional, List
 from db.supabase_client import get_supabase
-from models.address import Address, AddressCreate, AddressUpdate, AddressValidationUpdate
+from models.address import Address, AddressCreate, AddressUpdate, AddressValidationUpdate, AddressValidationResponse
 from auth.dependencies import get_current_user
 from auth.roles import is_admin, require_admin
 
@@ -77,6 +77,20 @@ def _build_prm_map(supabase, rows: list[dict]) -> dict:
     }
 
 
+def _inherit_accessibility(supabase, lat: float, lng: float) -> bool | None:
+    """Returns True if any validated (accessible) address exists at this lat/lng, else None."""
+    result = (
+        supabase.table("addresses")
+        .select("is_accessible")
+        .eq("lat", lat)
+        .eq("lng", lng)
+        .eq("is_accessible", True)
+        .limit(1)
+        .execute()
+    )
+    return True if result.data else None
+
+
 @router.get("", response_model=list[Address])
 async def list_addresses(
     accessibility: Optional[str] = Query(None),  # "pending" | "accessible" | "not_accessible"
@@ -114,6 +128,13 @@ async def create_address(body: AddressCreate, user: dict = Depends(get_current_u
     supabase = get_supabase()
     payload = body.model_dump()
     payload["user_id"] = user["sub"]
+
+    # Inherit accessibility from an already-validated address at the same lat/lng
+    if payload.get("lat") is not None and payload.get("lng") is not None:
+        inherited = _inherit_accessibility(supabase, payload["lat"], payload["lng"])
+        if inherited is not None:
+            payload["is_accessible"] = inherited
+
     result = supabase.table("addresses").insert(payload).single().execute()
     return _row_to_address(result.data)
 
@@ -141,14 +162,15 @@ async def update_address(
     return _row_to_address(result.data[0])
 
 
-@router.patch("/{address_id}/validate", response_model=Address)
+@router.patch("/{address_id}/validate", response_model=AddressValidationResponse)
 async def validate_address(
     address_id: str,
     body: AddressValidationUpdate,
     user: dict = Depends(get_current_user),
 ):
     """Assess whether an address is apt for service.
-    is_accessible: True = apt, False = not apt, None = reset to pending."""
+    is_accessible: True = apt, False = not apt, None = reset to pending.
+    When set to True, pending siblings at the same lat/lng inherit the value."""
     supabase = get_supabase()
     require_admin(user)
     result = (
@@ -159,7 +181,29 @@ async def validate_address(
     )
     if not result.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Address not found")
-    return _row_to_address(result.data[0])
+
+    updated_row = result.data[0]
+    inherited_count = 0
+
+    # Propagate only when marking as accessible — never for false/null
+    if body.is_accessible is True:
+        lat, lng = updated_row.get("lat"), updated_row.get("lng")
+        if lat is not None and lng is not None:
+            siblings = (
+                supabase.table("addresses")
+                .update({"is_accessible": True})
+                .eq("lat", lat)
+                .eq("lng", lng)
+                .neq("id", address_id)
+                .is_("is_accessible", "null")  # only pending siblings
+                .execute()
+            )
+            inherited_count = len(siblings.data or [])
+
+    return AddressValidationResponse(
+        address=_row_to_address(updated_row),
+        inherited_count=inherited_count,
+    )
 
 
 @router.delete("/{address_id}", status_code=status.HTTP_204_NO_CONTENT)

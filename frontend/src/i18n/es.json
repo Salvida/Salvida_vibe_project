@@ -462,7 +462,10 @@
     "access": {
       "pending": "Pendiente de revisión",
       "yes": "Apta para el servicio",
-      "no": "No apta para el servicio"
+      "no": "No apta para el servicio",
+      "pendingShort": "Pendiente",
+      "yesShort": "Apta",
+      "noShort": "No apta"
     },
     "actions": {
       "markAccessible": "Apta",

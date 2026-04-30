@@ -62,7 +62,7 @@ class PrmAddressCreate(BaseModel):
     full_address: str
     lat: Optional[float] = None
     lng: Optional[float] = None
-    is_accessible: bool = False
+    is_accessible: Optional[bool] = None  # None = pending review
     alias: str = ""
 
 
@@ -74,3 +74,9 @@ class Address(AddressBase):
     owner_name: Optional[str] = None
 
     model_config = {"from_attributes": True}
+
+
+class AddressValidationResponse(BaseModel):
+    """Response model for the validate endpoint — includes inherited sibling count."""
+    address: Address
+    inherited_count: int = 0

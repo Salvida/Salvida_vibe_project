@@ -106,6 +106,7 @@ export default function PrmDetail() {
   const [showAddAddr, setShowAddAddr] = useState(false);
   const [newAddrValue, setNewAddrValue] = useState<Partial<Address>>({});
   const [newAddrAlias, setNewAddrAlias] = useState('');
+  const [newAddrIsAccessible, setNewAddrIsAccessible] = useState<boolean | null>(null);
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
   const [editAddrDraft, setEditAddrDraft] = useState<{ value: Partial<Address>; alias: string }>({ value: {}, alias: '' });
   const [editing, setEditing] = useState(false);
@@ -722,6 +723,45 @@ export default function PrmDetail() {
                       maxLength={40}
                       style={{ maxWidth: '100%', width: '100%' }}
                     />
+                    {isAdmin && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                        <span style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-primary)' }}>
+                          {t('addresses.columns.accessibility')}
+                        </span>
+                        <div style={{ display: 'flex', gap: '0.375rem' }}>
+                          {([
+                            { value: null,  label: t('addresses.access.pendingShort') },
+                            { value: true,  label: t('addresses.access.yesShort') },
+                            { value: false, label: t('addresses.access.noShort') },
+                          ] as { value: boolean | null; label: string }[]).map(({ value, label }) => (
+                            <button
+                              key={String(value)}
+                              type="button"
+                              onClick={() => setNewAddrIsAccessible(value)}
+                              style={{
+                                padding: '0.3rem 0.75rem',
+                                borderRadius: '9999px',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                border: '1.5px solid',
+                                transition: 'all 0.15s',
+                                ...(newAddrIsAccessible === value
+                                  ? value === true
+                                    ? { background: 'var(--color-emerald-50)', borderColor: 'var(--color-emerald-600)', color: 'var(--color-emerald-600)' }
+                                    : value === false
+                                    ? { background: '#fff5f5', borderColor: '#c53030', color: '#c53030' }
+                                    : { background: 'var(--color-slate-100)', borderColor: 'var(--color-slate-400)', color: 'var(--color-slate-600)' }
+                                  : { background: 'white', borderColor: 'var(--color-slate-200)', color: 'var(--color-slate-500)' }
+                                ),
+                              }}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div
                       className="prm-edit-actions"
                       style={{ justifyContent: 'flex-end' }}
@@ -733,6 +773,7 @@ export default function PrmDetail() {
                           setShowAddAddr(false);
                           setNewAddrValue({});
                           setNewAddrAlias('');
+                          setNewAddrIsAccessible(null);
                         }}
                       >
                         <X size={14} /> {t('common.cancel')}
@@ -750,12 +791,13 @@ export default function PrmDetail() {
                             full_address: newAddrValue.full_address,
                             lat: newAddrValue.lat,
                             lng: newAddrValue.lng,
-                            is_accessible: newAddrValue.is_accessible ?? false,
+                            is_accessible: newAddrIsAccessible,
                             alias: newAddrAlias,
                           });
                           setShowAddAddr(false);
                           setNewAddrValue({});
                           setNewAddrAlias('');
+                          setNewAddrIsAccessible(null);
                         }}
                       >
                         <Check size={14} /> {t('common.save')}

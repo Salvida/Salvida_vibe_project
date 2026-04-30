@@ -39,15 +39,25 @@ export function useCreateAddress() {
   });
 }
 
+interface ValidateAddressResponse {
+  address: Address;
+  inherited_count: number;
+}
+
 export function useValidateAddress() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, is_accessible }: { id: string; is_accessible: boolean | null }) =>
-      apiClient.patch<Address>(`/api/addresses/${id}/validate`, { is_accessible }),
-    onSuccess: () => {
+      apiClient.patch<ValidateAddressResponse>(`/api/addresses/${id}/validate`, { is_accessible }),
+    onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ADDRESSES_KEY });
       qc.invalidateQueries({ queryKey: ['prms'] });
-      toast.success('Dirección actualizada');
+      if (data.inherited_count > 0) {
+        const noun = data.inherited_count === 1 ? 'dirección' : 'direcciones';
+        toast.success(`Apta. ${data.inherited_count} ${noun} del mismo edificio actualizadas automáticamente.`);
+      } else {
+        toast.success('Dirección actualizada');
+      }
     },
     onError: (error) => toast.error(parseApiError(error, 'Error al actualizar la dirección')),
   });
