@@ -5,12 +5,14 @@ export interface Address {
   lng?: number;
   validation_status: 'pending' | 'validated' | 'rejected';
   validation_notes?: string;
-  is_accessible: boolean;
+  is_accessible: boolean | null;
   alias?: string;
   prm_id?: string;
   floor?: string;
   door?: string;
   created_by?: string;
+  prm_name?: string;
+  owner_name?: string;
 }
 
 export interface EmergencyContact {
@@ -37,6 +39,8 @@ export interface Prm {
   is_demo?: boolean;
   created_by?: string;
   owner_name?: string;
+  owner_default_lat?: number;
+  owner_default_lng?: number;
   booking_count?: number;
   last_booking_date?: string;
 }
@@ -100,6 +104,9 @@ export interface UserProfile {
   isActive?: boolean;
   demoModeActive?: boolean;
   isDemo?: boolean;
+  municipality?: string;
+  default_lat?: number;
+  default_lng?: number;
 }
 
 export interface CreateUserRequest {

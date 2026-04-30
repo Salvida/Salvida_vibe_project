@@ -40,6 +40,9 @@ def _row_to_profile(row: dict) -> UserProfile:
         isActive=row.get("is_active", True),
         demoModeActive=row.get("demo_mode_active", False),
         isDemo=row.get("is_demo", False),
+        municipality=row.get("municipality"),
+        default_lat=row.get("default_lat"),
+        default_lng=row.get("default_lng"),
     )
 
 
@@ -241,6 +244,12 @@ async def update_user_profile(user_id: str, body: ProfileUpdate, user: dict = De
         updates["avatar"] = body.avatar
     if body.notification_prefs is not None:
         updates["notification_prefs"] = body.notification_prefs.model_dump()
+    if body.municipality is not None:
+        updates["municipality"] = body.municipality
+    if body.default_lat is not None:
+        updates["default_lat"] = body.default_lat
+    if body.default_lng is not None:
+        updates["default_lng"] = body.default_lng
 
     if not updates:
         result = supabase.table("profiles").select("*").eq("id", user_id).single().execute()
@@ -303,6 +312,12 @@ async def update_profile(body: ProfileUpdate, user: dict = Depends(get_current_u
         updates["dni"] = body.dni
     if body.avatar is not None:
         updates["avatar"] = body.avatar
+    if body.municipality is not None:
+        updates["municipality"] = body.municipality
+    if body.default_lat is not None:
+        updates["default_lat"] = body.default_lat
+    if body.default_lng is not None:
+        updates["default_lng"] = body.default_lng
     # Note: role is intentionally not included in user updates
     # Role can only be changed by database administrators
 

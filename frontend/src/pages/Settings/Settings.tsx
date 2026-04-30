@@ -8,8 +8,9 @@ import {
   Camera,
   Save,
   Share2,
+  MapPin,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { LucideIcon } from "lucide-react";
@@ -28,7 +29,10 @@ import SettingsRRSS from "./SettingsRRSS";
 import { usePushNotifications } from "../../hooks/usePushNotifications";
 import { supabase } from "../../lib/supabaseClient";
 import { toast } from "react-toastify";
+import { useDebounce } from "../../hooks/useDebounce";
 import "./Settings.css";
+
+const GEOAPIFY_KEY = import.meta.env.VITE_GEOAPIFY_API_KEY as string;
 
 interface Section {
   id: string;
@@ -141,6 +145,15 @@ export default function Settings() {
     booking_reminder: true,
   });
 
+  const [municipalityQuery, setMunicipalityQuery] = useState("");
+  const [municipalitySuggestions, setMunicipalitySuggestions] = useState<{ label: string; lat: number; lng: number }[]>([]);
+  const [municipalityOpen, setMunicipalityOpen] = useState(false);
+  const [municipalityLoading, setMunicipalityLoading] = useState(false);
+  const [municipalitySelected, setMunicipalitySelected] = useState(false);
+  const [municipalityCoords, setMunicipalityCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const debouncedMunicipality = useDebounce(municipalityQuery, 300);
+  const municipalityRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (notifTargetUser?.notification_prefs) {
       setNotifPrefs(notifTargetUser.notification_prefs);
@@ -162,8 +175,64 @@ export default function Settings() {
       if (profile.notification_prefs) {
         setNotifPrefs(profile.notification_prefs);
       }
+      if (profile.municipality) {
+        setMunicipalityQuery(profile.municipality);
+        setMunicipalitySelected(true);
+        if (profile.default_lat != null && profile.default_lng != null) {
+          setMunicipalityCoords({ lat: profile.default_lat, lng: profile.default_lng });
+        }
+      }
     }
   }, [profile, selectedUserId]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (municipalityRef.current && !municipalityRef.current.contains(e.target as Node)) {
+        setMunicipalityOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  useEffect(() => {
+    if (municipalitySelected || !debouncedMunicipality || debouncedMunicipality.length < 2) {
+      setMunicipalitySuggestions([]);
+      if (!municipalitySelected) setMunicipalityOpen(false);
+      return;
+    }
+    const controller = new AbortController();
+    setMunicipalityLoading(true);
+    fetch(
+      `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(debouncedMunicipality)}&lang=es&filter=countrycode:es&type=city&limit=6&apiKey=${GEOAPIFY_KEY}`,
+      { signal: controller.signal },
+    )
+      .then((r) => r.json())
+      .then((data: { features?: Array<{ properties: { formatted: string }; geometry: { coordinates: [number, number] } }> }) => {
+        const items = (data.features ?? []).map((f) => ({
+          label: f.properties.formatted,
+          lat: f.geometry.coordinates[1],
+          lng: f.geometry.coordinates[0],
+        }));
+        setMunicipalitySuggestions(items);
+        setMunicipalityOpen(items.length > 0);
+      })
+      .catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setMunicipalitySuggestions([]);
+      })
+      .finally(() => setMunicipalityLoading(false));
+    return () => controller.abort();
+  }, [debouncedMunicipality, municipalitySelected]);
+
+  const handleMunicipalitySelect = useCallback((item: { label: string; lat: number; lng: number }) => {
+    setMunicipalityQuery(item.label);
+    setMunicipalityCoords({ lat: item.lat, lng: item.lng });
+    setMunicipalitySelected(true);
+    setMunicipalityOpen(false);
+    setMunicipalitySuggestions([]);
+  }, []);
+
 
   const activeItem = sections.find((s) => s.id === activeSection);
 
@@ -178,7 +247,10 @@ export default function Settings() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    updateProfile({ ...form, targetUserId: selectedUserId || undefined });
+    const extra = (municipalitySelected && municipalityCoords)
+      ? { municipality: municipalityQuery, default_lat: municipalityCoords.lat, default_lng: municipalityCoords.lng }
+      : {};
+    updateProfile({ ...form, ...extra, targetUserId: selectedUserId || undefined });
   }
 
   return (
@@ -361,6 +433,13 @@ export default function Settings() {
                         organization: u.organization ?? "",
                         avatar: u.avatar ?? "",
                       });
+                      setMunicipalityQuery(u.municipality ?? "");
+                      setMunicipalitySelected(!!u.municipality);
+                      setMunicipalityCoords(
+                        u.default_lat != null && u.default_lng != null
+                          ? { lat: u.default_lat, lng: u.default_lng }
+                          : null,
+                      );
                     }}
                   />
                 )}
@@ -571,6 +650,45 @@ export default function Settings() {
                           )}
                         />
                       </div>
+
+                      <div className="settings-form__field settings-form__field--full" ref={municipalityRef} style={{ position: "relative", zIndex: 2 }}>
+                          <label className="settings-form__label">
+                            Municipio
+                          </label>
+                          <input
+                            type="text"
+                            value={municipalityQuery}
+                            onChange={(e) => {
+                              setMunicipalityQuery(e.target.value);
+                              if (municipalitySelected) {
+                                setMunicipalitySelected(false);
+                                setMunicipalityCoords(null);
+                              }
+                            }}
+                            onFocus={() => {
+                              if (!municipalitySelected && municipalitySuggestions.length > 0) setMunicipalityOpen(true);
+                            }}
+                            placeholder="Busca tu municipio..."
+                            className={`settings-form__input${municipalitySelected ? " settings-form__input--selected" : ""}`}
+                          />
+                          {municipalityLoading && <span className="settings-zone__spinner" />}
+                          {municipalityOpen && municipalitySuggestions.length > 0 && (
+                            <ul className="settings-zone__dropdown">
+                              {municipalitySuggestions.map((item) => (
+                                <li key={item.label + item.lat}>
+                                  <button
+                                    type="button"
+                                    className="settings-zone__dropdown-item"
+                                    onClick={() => handleMunicipalitySelect(item)}
+                                  >
+                                    <MapPin size={13} />
+                                    {item.label}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
 
                       <div className="settings-profile__footer">
                         <button

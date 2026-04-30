@@ -8,9 +8,19 @@ import {
   AlertTriangle,
   X,
 } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import type { Address } from '../types';
 import { useDebounce } from '../hooks/useDebounce';
 import './AddressSelector.css';
+
+delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
 
 const GEOAPIFY_KEY = import.meta.env.VITE_GEOAPIFY_API_KEY as string;
 
@@ -33,6 +43,8 @@ interface AddressSelectorProps {
   onChange: (address: Partial<Address>) => void;
   onValidationChange?: (status: Address['validation_status']) => void;
   showValidation?: boolean;
+  showMap?: boolean;
+  defaultCenter?: [number, number];
 }
 
 const VALIDATION_LABELS: Record<Address['validation_status'], string> = {
@@ -52,11 +64,30 @@ function composeFullAddress(base: string, floor: string, door: string): string {
   return extras ? `${base} — ${extras}` : base;
 }
 
+function Recenter({ lat, lng }: { lat: number; lng: number }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView([lat, lng], map.getZoom());
+  }, [lat, lng, map]);
+  return null;
+}
+
+function MapClickHandler({ onMapClick }: { onMapClick: (lat: number, lng: number) => void }) {
+  useMapEvents({
+    click(e) {
+      onMapClick(e.latlng.lat, e.latlng.lng);
+    },
+  });
+  return null;
+}
+
 export default function AddressSelector({
   value,
   onChange,
   onValidationChange,
   showValidation = false,
+  showMap = true,
+  defaultCenter,
 }: AddressSelectorProps) {
   const [query, setQuery] = useState(value?.full_address ?? '');
   const [baseAddress, setBaseAddress] = useState(value?.full_address ?? '');
@@ -67,6 +98,13 @@ export default function AddressSelector({
   const [selected, setSelected] = useState(!!value?.full_address);
   const [floor, setFloor] = useState(value?.floor ?? '');
   const [door, setDoor] = useState(value?.door ?? '');
+  const [markerPos, setMarkerPos] = useState<[number, number] | null>(
+    value?.lat != null && value?.lng != null ? [value.lat, value.lng] : null,
+  );
+  const [mapCenter, setMapCenter] = useState<[number, number] | null>(
+    value?.lat != null && value?.lng != null ? [value.lat, value.lng] : null,
+  );
+  const [reverseLoading, setReverseLoading] = useState(false);
   const debouncedQuery = useDebounce(query, 300);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -115,7 +153,10 @@ export default function AddressSelector({
   const handleSelect = useCallback(
     (feature: GeoapifyFeature) => {
       const [lng, lat] = feature.geometry.coordinates;
-      const label = feature.properties.formatted;
+      const label = [feature.properties.address_line1, feature.properties.address_line2]
+        .filter(Boolean)
+        .join(', ');
+      const pos: [number, number] = [lat, lng];
 
       setQuery(label);
       setBaseAddress(label);
@@ -123,6 +164,8 @@ export default function AddressSelector({
       setNoResults(false);
       setSelected(true);
       setOpen(false);
+      setMarkerPos(pos);
+      setMapCenter(pos);
 
       onChange({
         ...value,
@@ -146,10 +189,50 @@ export default function AddressSelector({
     setSuggestions([]);
     setNoResults(false);
     setOpen(false);
+    setMarkerPos(null);
+    setMapCenter(null);
     onChange({
       validation_status: value?.validation_status ?? 'pending',
     });
   }, [value, onChange]);
+
+  const handleMapClick = useCallback(
+    async (lat: number, lng: number) => {
+      setMarkerPos([lat, lng]);
+      setReverseLoading(true);
+      try {
+        const res = await fetch(
+          `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lng}&lang=es&apiKey=${GEOAPIFY_KEY}`,
+        );
+        const data = await res.json() as { features?: GeoapifyFeature[] };
+        const feature = data.features?.[0];
+        if (feature) {
+          const label = [feature.properties.address_line1, feature.properties.address_line2]
+            .filter(Boolean)
+            .join(', ');
+          setQuery(label);
+          setBaseAddress(label);
+          setSelected(true);
+          onChange({
+            ...value,
+            full_address: composeFullAddress(label, floor, door),
+            lat,
+            lng,
+            validation_status: value?.validation_status ?? 'pending',
+            floor: floor || undefined,
+            door: door || undefined,
+          });
+        } else {
+          onChange({ ...value, lat, lng });
+        }
+      } catch {
+        // silent — marker position is already updated
+      } finally {
+        setReverseLoading(false);
+      }
+    },
+    [value, onChange, floor, door],
+  );
 
   const handleFloorChange = (newFloor: string) => {
     setFloor(newFloor);
@@ -185,7 +268,6 @@ export default function AddressSelector({
           <input
             type="text"
             value={query}
-            readOnly={selected}
             onChange={(e) => {
               setQuery(e.target.value);
               if (selected) {
@@ -289,6 +371,30 @@ export default function AddressSelector({
             placeholder="Puerta (ej: A)"
             className="address-selector__extra-input"
           />
+        </div>
+      )}
+
+      {/* Interactive map */}
+      {showMap && (markerPos ?? defaultCenter) && (
+        <div className="address-selector__map">
+          <MapContainer
+            center={markerPos ?? defaultCenter!}
+            zoom={markerPos ? 16 : 12}
+            style={{ height: '200px', width: '100%' }}
+            scrollWheelZoom={false}
+            attributionControl={false}
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            {markerPos && <Marker position={markerPos} />}
+            {mapCenter && <Recenter lat={mapCenter[0]} lng={mapCenter[1]} />}
+            <MapClickHandler onMapClick={handleMapClick} />
+          </MapContainer>
+          {reverseLoading && (
+            <div className="address-selector__map-status">
+              <Loader2 size={13} className="address-selector__map-status-spinner" />
+              <span>Buscando dirección...</span>
+            </div>
+          )}
         </div>
       )}
 

@@ -1,36 +1,59 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Check, X, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { MapPin, Check, X, RotateCcw, ChevronDown, ChevronUp, List, Map, ExternalLink } from 'lucide-react';
 import Header from '../../components/Header/Header';
 import { useAddresses, useValidateAddress } from '../../hooks/useAddresses';
+import type { AccessibilityFilter } from '../../hooks/useAddresses';
 import type { Address } from '../../types';
 import AddressMapPreview from './AddressMapPreview';
+import AddressesMapView from './AddressesMapView';
+import UserMultiSelect from '../../components/UserMultiSelect/UserMultiSelect';
+import PrmMultiSelect from '../../components/PrmMultiSelect/PrmMultiSelect';
+import AddressAccessibilityBadge from '../../components/AddressAccessibilityBadge/AddressAccessibilityBadge';
 import './Addresses.css';
 
-type Filter = 'all' | 'pending' | 'validated' | 'rejected';
+type ViewMode = 'list' | 'map';
 
 export default function Addresses() {
   const { t } = useTranslation();
-  const [filter, setFilter] = useState<Filter>('all');
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [filter, setFilter]           = useState<AccessibilityFilter | 'all'>('all');
+  const [viewMode, setViewMode]       = useState<ViewMode>('list');
+  const [expandedId, setExpandedId]   = useState<string | null>(null);
+  const [ownerIds, setOwnerIds]       = useState<string[]>([]);
+  const [prmIds, setPrmIds]           = useState<string[]>([]);
 
-  const validationStatus = filter === 'all' ? undefined : filter;
-  const { data: addresses = [], isLoading } = useAddresses(validationStatus);
+  // When user selection changes, reset PRM filter
+  function handleOwnerChange(ids: string[]) {
+    setOwnerIds(ids);
+    setPrmIds([]);
+  }
+
+  // Hint: only narrow PRM list when exactly 1 user is selected
+  const singleOwnerId = ownerIds.length === 1 ? ownerIds[0] : undefined;
+
+  const accessibility = filter === 'all' ? undefined : filter;
+  const { data: addresses = [], isLoading } = useAddresses({
+    accessibility,
+    ownerIds,
+    prmIds,
+  });
   const validateAddress = useValidateAddress();
 
   function toggleExpand(id: string) {
     setExpandedId(expandedId === id ? null : id);
   }
 
-  function handleValidate(address: Address, status: Address['validation_status']) {
-    validateAddress.mutate({ id: address.id, validation_status: status });
+  function handleAssess(address: Address, is_accessible: boolean | null) {
+    validateAddress.mutate({ id: address.id, is_accessible });
   }
 
-  const filters: { key: Filter; label: string }[] = [
-    { key: 'all',       label: t('addresses.filterAll') },
-    { key: 'pending',   label: t('addresses.filterPending') },
-    { key: 'validated', label: t('addresses.filterValidated') },
-    { key: 'rejected',  label: t('addresses.filterRejected') },
+  const accessFilters: { key: AccessibilityFilter | 'all'; label: string }[] = [
+    { key: 'all',            label: t('addresses.filterAll') },
+    { key: 'pending',        label: t('addresses.filterPending') },
+    { key: 'accessible',     label: t('addresses.filterAccessible') },
+    { key: 'not_accessible', label: t('addresses.filterNotAccessible') },
   ];
 
   return (
@@ -43,128 +66,189 @@ export default function Addresses() {
       <div className="addresses__body">
         <div className="addresses__inner">
 
-          {/* Filter bar */}
-          <div className="addresses__filter-bar">
-            {filters.map(({ key, label }) => (
+          {/* Toolbar: filters + view toggle */}
+          <div className="addresses__toolbar">
+            <div className="addresses__filter-bar">
+              {accessFilters.map(({ key, label }) => (
+                <button
+                  key={key}
+                  className={`addresses__filter-btn${filter === key ? ' addresses__filter-btn--active' : ''}`}
+                  onClick={() => setFilter(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="addresses__view-toggle">
               <button
-                key={key}
-                className={`addresses__filter-btn${filter === key ? ' addresses__filter-btn--active' : ''}`}
-                onClick={() => setFilter(key)}
+                className={`addresses__view-btn${viewMode === 'list' ? ' addresses__view-btn--active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title={t('addresses.viewList')}
               >
-                {label}
+                <List size={16} />
               </button>
-            ))}
+              <button
+                className={`addresses__view-btn${viewMode === 'map' ? ' addresses__view-btn--active' : ''}`}
+                onClick={() => setViewMode('map')}
+                title={t('addresses.viewMap')}
+              >
+                <Map size={16} />
+              </button>
+            </div>
           </div>
 
-          {/* Table */}
-          <div className="addresses__table-wrap">
-            {isLoading ? (
-              <div className="addresses__loading">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="addresses__skeleton-row">
-                    <div className="addresses__skeleton" style={{ width: '60%' }} />
-                    <div className="addresses__skeleton" style={{ width: '3rem' }} />
-                    <div className="addresses__skeleton" style={{ width: '5rem' }} />
-                    <div className="addresses__skeleton" style={{ width: '8rem' }} />
-                  </div>
-                ))}
-              </div>
-            ) : addresses.length === 0 ? (
-              <div className="addresses__empty">
-                <MapPin size={32} />
-                <p>{t('addresses.empty')}</p>
-              </div>
-            ) : (
-              <table className="addresses__table">
-                <thead>
-                  <tr>
-                    <th>{t('addresses.columns.address')}</th>
-                    <th>{t('addresses.columns.accessible')}</th>
-                    <th>{t('addresses.columns.status')}</th>
-                    <th>{t('addresses.columns.actions')}</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {addresses.map((address) => (
-                    <React.Fragment key={address.id}>
-                      <tr className="addresses__row">
-                        <td className="addresses__address-cell">
-                          <MapPin size={14} className="addresses__pin-icon" />
-                          {address.full_address}
-                        </td>
-                        <td>
-                          <span className={`addresses__accessible-badge${address.is_accessible ? ' addresses__accessible-badge--yes' : ' addresses__accessible-badge--no'}`}>
-                            {address.is_accessible ? t('addresses.accessible') : t('addresses.notAccessible')}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`addresses__status-badge addresses__status-badge--${address.validation_status}`}>
-                            {t(`addresses.status.${address.validation_status}`)}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="addresses__action-group">
-                            {address.validation_status !== 'validated' && (
-                              <button
-                                className="addresses__action-btn addresses__action-btn--validate"
-                                onClick={() => handleValidate(address, 'validated')}
-                                title={t('addresses.actions.validate')}
-                              >
-                                <Check size={14} />
-                                {t('addresses.actions.validate')}
-                              </button>
-                            )}
-                            {address.validation_status !== 'rejected' && (
-                              <button
-                                className="addresses__action-btn addresses__action-btn--reject"
-                                onClick={() => handleValidate(address, 'rejected')}
-                                title={t('addresses.actions.reject')}
-                              >
-                                <X size={14} />
-                                {t('addresses.actions.reject')}
-                              </button>
-                            )}
-                            {address.validation_status !== 'pending' && (
-                              <button
-                                className="addresses__action-btn addresses__action-btn--reset"
-                                onClick={() => handleValidate(address, 'pending')}
-                                title={t('addresses.actions.resetPending')}
-                              >
-                                <RotateCcw size={14} />
-                                {t('addresses.actions.resetPending')}
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                        <td>
-                          {address.lat && address.lng && (
-                            <button
-                              className="addresses__expand-btn"
-                              onClick={() => toggleExpand(address.id)}
-                            >
-                              {expandedId === address.id
-                                ? <ChevronUp size={16} />
-                                : <ChevronDown size={16} />}
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                      {expandedId === address.id && address.lat && address.lng && (
-                        <tr className="addresses__map-row">
-                          <td colSpan={5}>
-                            <div className="addresses__map-preview">
-                              <AddressMapPreview lat={address.lat} lng={address.lng} height="180px" />
+          {/* Entity filters: user + PRM */}
+          <div className="addresses__entity-filters">
+            <div className="addresses__entity-filter">
+              <label className="addresses__entity-filter__label">
+                {t('addresses.filters.user')}
+              </label>
+              <UserMultiSelect
+                values={ownerIds}
+                onChange={handleOwnerChange}
+                placeholder={t('addresses.filters.allUsers')}
+              />
+            </div>
+            <div className="addresses__entity-filter">
+              <label className="addresses__entity-filter__label">
+                {t('addresses.filters.prm')}
+              </label>
+              <PrmMultiSelect
+                values={prmIds}
+                onChange={setPrmIds}
+                ownerId={singleOwnerId}
+                placeholder={t('addresses.filters.allPrms')}
+              />
+            </div>
+          </div>
+
+          {/* Map view */}
+          {viewMode === 'map' && (
+            <AddressesMapView
+              addresses={addresses}
+              onAssess={handleAssess}
+            />
+          )}
+
+          {/* List view */}
+          {viewMode === 'list' && (
+            <div className="addresses__table-wrap">
+              {isLoading ? (
+                <div className="addresses__loading">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="addresses__skeleton-row">
+                      <div className="addresses__skeleton" style={{ width: '60%' }} />
+                      <div className="addresses__skeleton" style={{ width: '5rem' }} />
+                      <div className="addresses__skeleton" style={{ width: '8rem' }} />
+                    </div>
+                  ))}
+                </div>
+              ) : addresses.length === 0 ? (
+                <div className="addresses__empty">
+                  <MapPin size={32} />
+                  <p>{t('addresses.empty')}</p>
+                </div>
+              ) : (
+                <table className="addresses__table">
+                  <thead>
+                    <tr>
+                      <th>{t('addresses.columns.address')}</th>
+                      <th>{t('addresses.columns.accessibility')}</th>
+                      <th>{t('addresses.columns.actions')}</th>
+                      <th />
+                      <th />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {addresses.map((address) => (
+                      <React.Fragment key={address.id}>
+                        <tr className="addresses__row">
+                          <td className="addresses__address-cell">
+                            <MapPin size={14} className="addresses__pin-icon" />
+                            <div>
+                              {address.alias && (
+                                <span className="addresses__alias">{address.alias}</span>
+                              )}
+                              <span>{address.full_address}</span>
                             </div>
                           </td>
+                          <td>
+                            <AddressAccessibilityBadge value={address.is_accessible} />
+                          </td>
+                          <td>
+                            <div className="addresses__action-group">
+                              {address.is_accessible !== true && (
+                                <button
+                                  className="addresses__action-btn addresses__action-btn--validate"
+                                  onClick={() => handleAssess(address, true)}
+                                  title={t('addresses.actions.markAccessible')}
+                                >
+                                  <Check size={14} />
+                                  {t('addresses.actions.markAccessible')}
+                                </button>
+                              )}
+                              {address.is_accessible !== false && (
+                                <button
+                                  className="addresses__action-btn addresses__action-btn--reject"
+                                  onClick={() => handleAssess(address, false)}
+                                  title={t('addresses.actions.markNotAccessible')}
+                                >
+                                  <X size={14} />
+                                  {t('addresses.actions.markNotAccessible')}
+                                </button>
+                              )}
+                              {address.is_accessible !== null && (
+                                <button
+                                  className="addresses__action-btn addresses__action-btn--reset"
+                                  onClick={() => handleAssess(address, null)}
+                                  title={t('addresses.actions.resetPending')}
+                                >
+                                  <RotateCcw size={14} />
+                                  {t('addresses.actions.resetPending')}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            {address.lat && address.lng && (
+                              <button
+                                className="addresses__expand-btn"
+                                onClick={() => toggleExpand(address.id)}
+                              >
+                                {expandedId === address.id
+                                  ? <ChevronUp size={16} />
+                                  : <ChevronDown size={16} />}
+                              </button>
+                            )}
+                          </td>
+                          <td>
+                            {address.prm_id && (
+                              <button
+                                className="addresses__expand-btn addresses__prm-link"
+                                onClick={() => navigate(`/app/prms/${address.prm_id}`)}
+                                title={address.prm_name ? `Ver perfil de ${address.prm_name}` : 'Ver perfil del PMR'}
+                              >
+                                <ExternalLink size={15} />
+                              </button>
+                            )}
+                          </td>
                         </tr>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+                        {expandedId === address.id && address.lat && address.lng && (
+                          <tr className="addresses__map-row">
+                            <td colSpan={5}>
+                              <div className="addresses__map-preview">
+                                <AddressMapPreview lat={address.lat} lng={address.lng} height="180px" />
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
 
         </div>
       </div>

@@ -49,7 +49,9 @@ class PrmBase(BaseModel):
     @field_validator("birthDate")
     @classmethod
     def validate_birth_date(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+        if not v:
+            return None
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
             raise ValueError("birthDate must be in YYYY-MM-DD format")
         return v
 
@@ -92,6 +94,8 @@ class Prm(PrmBase):
     id: str
     created_by: Optional[str] = None
     owner_name: Optional[str] = None
+    owner_default_lat: Optional[float] = None
+    owner_default_lng: Optional[float] = None
     addresses: list[Address] = []
     emergency_contacts: list[EmergencyContact] = []
 
