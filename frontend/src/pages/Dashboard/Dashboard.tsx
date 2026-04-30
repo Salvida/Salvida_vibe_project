@@ -76,7 +76,7 @@ function BookingCard({
               <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
                 {t(`bookingStatuses.${booking.status}`)}
               </span>
-              {booking.status === 'SignPending' && !isAdmin && (
+              {booking.status === 'SignPending' && (
                 <button
                   type="button"
                   className="booking-sign-btn"
