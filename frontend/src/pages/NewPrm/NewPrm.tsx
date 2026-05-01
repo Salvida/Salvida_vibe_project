@@ -8,7 +8,7 @@ import AddressSelector from '../../components/AddressSelector';
 import UserSelector from '../../components/UserSelector/UserSelector';
 import { useAuthStore } from '../../store/useAuthStore';
 import DateInput from '../../components/DateInput/DateInput';
-import type { Address, EmergencyContact } from '../../types';
+import type { Address } from '../../types';
 import './NewPrm.css';
 
 interface ContactDraft {

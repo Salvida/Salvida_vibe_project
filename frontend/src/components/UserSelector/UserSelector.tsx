@@ -31,7 +31,8 @@ export default function UserSelector({
       );
       onChange(match.id, match);
     }
-  }, [value, users]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, users, onChange]);
 
   const filtered = users?.filter((u) => {
     if (u.isActive === false) return false;

@@ -80,7 +80,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     setSidebarOpen(false);
-  }, [location.pathname]);
+  }, [location.pathname, setSidebarOpen]);
 
   async function handleLogout() {
     await logout();

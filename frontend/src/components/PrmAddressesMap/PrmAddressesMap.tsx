@@ -39,12 +39,6 @@ const previewIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-const VALIDATION_LABELS: Record<Address['validation_status'], string> = {
-  pending: 'Pendiente',
-  validated: 'Validada',
-  rejected: 'Rechazada',
-};
-
 function FitBounds({ positions }: { positions: [number, number][] }) {
   const map = useMap();
   useEffect(() => {

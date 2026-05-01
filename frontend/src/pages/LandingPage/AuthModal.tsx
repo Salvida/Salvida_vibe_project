@@ -34,7 +34,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
 
   const backdropRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { reset(); }, [open]);
+  useEffect(() => { reset(); }, [open, reset]);
 
   useEffect(() => {
     if (!open) return;

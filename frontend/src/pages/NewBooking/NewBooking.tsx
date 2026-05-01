@@ -54,7 +54,7 @@ export default function NewBooking() {
       setSelectedPrm(null);
       setAddress({});
     }
-  }, [prms]);
+  }, [prms, selectedPrm]);
 
   const missingFields = [
     isAdmin && !selectedOwnerId && t('booking.responsible'),

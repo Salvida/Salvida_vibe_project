@@ -44,7 +44,7 @@ export interface UpdatePrmAddressPayload {
 export function useUpdatePrmAddress() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ prmId, addressId, ...body }: UpdatePrmAddressPayload) =>
+    mutationFn: ({ prmId: _prmId, addressId, ...body }: UpdatePrmAddressPayload) =>
       apiClient.put<Address>(`/api/addresses/${addressId}`, body),
     onSuccess: (_data, vars) =>
       qc.invalidateQueries({ queryKey: prmAddressesKey(vars.prmId) }),
