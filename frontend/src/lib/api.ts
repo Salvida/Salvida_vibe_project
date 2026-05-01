@@ -33,11 +33,16 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+interface ApiErrorBody {
+  detail?: string;
+  message?: string;
+}
+
 export function parseApiError(error: unknown, fallback: string): string {
   if (error instanceof ApiError) {
     try {
-      const parsed = JSON.parse(error.message);
-      return parsed.detail ?? fallback;
+      const parsed = JSON.parse(error.message) as ApiErrorBody;
+      return parsed.detail ?? parsed.message ?? fallback;
     } catch {
       return error.message || fallback;
     }
