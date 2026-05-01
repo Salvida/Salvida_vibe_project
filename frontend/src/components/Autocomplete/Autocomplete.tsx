@@ -7,6 +7,43 @@ export interface AutocompleteOption {
   sublabel?: string;
 }
 
+interface AutocompleteOptionItemProps {
+  option: AutocompleteOption;
+  isSelected: boolean;
+  prefix: string;
+  renderOption?: (option: AutocompleteOption, selected: boolean) => ReactNode;
+  onSelect: (id: string) => void;
+}
+
+function AutocompleteOption({
+  option,
+  isSelected,
+  prefix,
+  renderOption,
+  onSelect,
+}: AutocompleteOptionItemProps) {
+  const p = prefix;
+  return (
+    <li
+      className={`${p}__option${isSelected ? ` ${p}__option--selected` : ''}`}
+      role="option"
+      aria-selected={isSelected}
+      onMouseDown={() => onSelect(option.id)}
+    >
+      {renderOption ? (
+        renderOption(option, isSelected)
+      ) : (
+        <>
+          <span className={`${p}__option-label`}>{option.label}</span>
+          {option.sublabel && (
+            <span className={`${p}__option-sublabel`}>{option.sublabel}</span>
+          )}
+        </>
+      )}
+    </li>
+  );
+}
+
 interface AutocompleteProps {
   options: AutocompleteOption[];
   value: string;
@@ -102,29 +139,16 @@ export default function Autocomplete({
 
       {open && (
         <ul className={`${p}__dropdown`} role="listbox">
-          {filtered.map((o) => {
-            const isSelected = value === o.id;
-            return (
-              <li
-                key={o.id}
-                className={`${p}__option${isSelected ? ` ${p}__option--selected` : ''}`}
-                role="option"
-                aria-selected={isSelected}
-                onMouseDown={() => handleSelect(o.id)}
-              >
-                {renderOption ? (
-                  renderOption(o, isSelected)
-                ) : (
-                  <>
-                    <span className={`${p}__option-label`}>{o.label}</span>
-                    {o.sublabel && (
-                      <span className={`${p}__option-sublabel`}>{o.sublabel}</span>
-                    )}
-                  </>
-                )}
-              </li>
-            );
-          })}
+          {filtered.map((o) => (
+            <AutocompleteOption
+              key={o.id}
+              option={o}
+              isSelected={value === o.id}
+              prefix={p}
+              renderOption={renderOption}
+              onSelect={handleSelect}
+            />
+          ))}
           {filtered.length === 0 && search && (
             <li className={`${p}__option ${p}__option--empty`}>
               {t('common.noResults')}

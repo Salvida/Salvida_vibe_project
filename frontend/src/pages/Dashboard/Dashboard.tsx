@@ -430,9 +430,9 @@ export default function Dashboard() {
             {/* Booking list */}
             {listLoading ? (
               <div className="booking-list">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="booking-card booking-card--skeleton" />
-                ))}
+                <div className="booking-card booking-card--skeleton" />
+                <div className="booking-card booking-card--skeleton" />
+                <div className="booking-card booking-card--skeleton" />
               </div>
             ) : sortedBookings.length === 0 ? (
               <div className="booking-list booking-list--empty">

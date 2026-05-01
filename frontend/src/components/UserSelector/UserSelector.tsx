@@ -11,6 +11,17 @@ interface UserSelectorProps {
   placeholder?: string;
 }
 
+function UserOption({ option }: { option: AutocompleteOption }) {
+  return (
+    <>
+      <span className="settings-user-selector__option-name">{option.label}</span>
+      {option.sublabel && (
+        <span className="settings-user-selector__option-email">{option.sublabel}</span>
+      )}
+    </>
+  );
+}
+
 export default function UserSelector({
   value,
   onChange,
@@ -40,14 +51,7 @@ export default function UserSelector({
       onChange={handleChange}
       placeholder={placeholder}
       label={label}
-      renderOption={(o) => (
-        <>
-          <span className="settings-user-selector__option-name">{o.label}</span>
-          {o.sublabel && (
-            <span className="settings-user-selector__option-email">{o.sublabel}</span>
-          )}
-        </>
-      )}
+      renderOption={(o) => <UserOption option={o} />}
     />
   );
 }
