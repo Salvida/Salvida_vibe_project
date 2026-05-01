@@ -2,11 +2,8 @@ import { useState, useMemo } from 'react';
 import Header from '../../components/Header/Header';
 import CalendarWidget from '../../components/CalendarWidget/CalendarWidget';
 import DropdownMenu from '../../components/DropdownMenu';
-import MultiSelect from '../../components/MultiSelect/MultiSelect';
+import FilterBar from '../../components/FilterBar/FilterBar';
 import type { MultiSelectOption } from '../../components/MultiSelect/MultiSelect';
-import PrmMultiSelect from '../../components/PrmMultiSelect/PrmMultiSelect';
-import UserMultiSelect from '../../components/UserMultiSelect/UserMultiSelect';
-import DateInput from '../../components/DateInput/DateInput';
 import ContractModal from '../../components/ContractModal/ContractModal';
 import {
   PlusCircle, Clock, MapPin, Pencil, Trash2, CheckCircle, X,
@@ -16,7 +13,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useBookings, useDeleteBooking, useUpdateBookingStatus } from '../../hooks/useBookings';
 import { useAuthStore } from '../../store/useAuthStore';
-import { formatDateISO } from '../../utils';
+import { formatDateISO, formatDateShort } from '../../utils';
 import type { Booking } from '../../types';
 import './Dashboard.css';
 
@@ -106,10 +103,7 @@ function BookingCard({
           {showDate && booking.date && (
             <span className="booking-card__meta-item">
               <CalendarDays size={13} />
-              {(() => {
-                const [y, m, d] = booking.date.split('-').map(Number);
-                return new Date(y, m - 1, d).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-              })()}
+              {formatDateShort(booking.date)}
             </span>
           )}
           <span className="booking-card__meta-item">
@@ -270,59 +264,7 @@ export default function Dashboard() {
     { id: 'Cancelled',   label: t('bookingStatuses.Cancelled') },
   ], [t]);
 
-  // ── Shared filter bar (showDateRange = list view only) ─────────────────────
-  const filterBar = (showDateRange?: boolean) => (
-    <div className="booking-filters">
-      {isAdmin && (
-        <div className="booking-filters__field">
-          <label className="booking-filters__label">{t('dashboard.filters.user')}</label>
-          <UserMultiSelect
-            values={filterOwnerIds}
-            onChange={handleOwnerChange}
-            placeholder={t('dashboard.filters.allUsers')}
-          />
-        </div>
-      )}
-      <div className="booking-filters__field">
-        <label className="booking-filters__label">{t('dashboard.filters.prm')}</label>
-        <PrmMultiSelect
-          values={filterPrmIds}
-          onChange={setFilterPrmIds}
-          ownerId={singleOwnerId}
-          placeholder={t('dashboard.filters.allPrms')}
-        />
-      </div>
-      <div className="booking-filters__field">
-        <label className="booking-filters__label">{t('dashboard.filters.status')}</label>
-        <MultiSelect
-          values={filterStatuses}
-          onChange={setFilterStatuses}
-          options={statusOptions}
-          placeholder={t('dashboard.filters.allStatuses')}
-        />
-      </div>
-      {showDateRange && (
-        <>
-          <div className="booking-filters__field">
-            <label className="booking-filters__label">{t('dashboard.filters.dateFrom')}</label>
-            <DateInput
-              value={filterDateFrom}
-              onChange={setFilterDateFrom}
-              placeholder={t('dashboard.filters.dateFrom')}
-            />
-          </div>
-          <div className="booking-filters__field">
-            <label className="booking-filters__label">{t('dashboard.filters.dateTo')}</label>
-            <DateInput
-              value={filterDateTo}
-              onChange={setFilterDateTo}
-              placeholder={t('dashboard.filters.dateTo')}
-            />
-          </div>
-        </>
-      )}
-    </div>
-  );
+
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -388,7 +330,21 @@ export default function Dashboard() {
 
             <div className="dashboard__right">
               {/* Filter bar — calendar view (no date range) */}
-              {filterBar(false)}
+              <FilterBar
+                isAdmin={isAdmin}
+                filterOwnerIds={filterOwnerIds}
+                onOwnerChange={handleOwnerChange}
+                filterPrmIds={filterPrmIds}
+                onPrmChange={setFilterPrmIds}
+                singleOwnerId={singleOwnerId}
+                filterStatuses={filterStatuses}
+                onStatusChange={setFilterStatuses}
+                statusOptions={statusOptions}
+                filterDateFrom={filterDateFrom}
+                onDateFromChange={setFilterDateFrom}
+                filterDateTo={filterDateTo}
+                onDateToChange={setFilterDateTo}
+              />
 
               <div className="bookings-header">
                 <h3 className="bookings-header__title">{dateLabel}</h3>
@@ -433,7 +389,22 @@ export default function Dashboard() {
           <div className="dashboard__list-view">
 
             {/* Filter bar — list view (with date range) */}
-            {filterBar(true)}
+            <FilterBar
+              isAdmin={isAdmin}
+              showDateRange
+              filterOwnerIds={filterOwnerIds}
+              onOwnerChange={handleOwnerChange}
+              filterPrmIds={filterPrmIds}
+              onPrmChange={setFilterPrmIds}
+              singleOwnerId={singleOwnerId}
+              filterStatuses={filterStatuses}
+              onStatusChange={setFilterStatuses}
+              statusOptions={statusOptions}
+              filterDateFrom={filterDateFrom}
+              onDateFromChange={setFilterDateFrom}
+              filterDateTo={filterDateTo}
+              onDateToChange={setFilterDateTo}
+            />
 
             {/* Sort controls */}
             <div className="booking-sort">
