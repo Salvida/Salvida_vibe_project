@@ -11,3 +11,23 @@ export function formatDateISO(date: Date): string {
 export function todayIso(): string {
   return formatDateISO(new Date());
 }
+
+export function formatDateShort(dateStr: string): string {
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  const [ys, ms, ds] = parts as [string, string, string];
+  const y = Number(ys);
+  const m = Number(ms);
+  const d = Number(ds);
+  if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d)) return dateStr;
+  return new Date(y, m - 1, d).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+}
+
+export function cardState(
+  value: unknown,
+  submitAttempted: boolean,
+): 'bc-empty' | 'bc-filled' | 'bc-error' {
+  if (value) return 'bc-filled';
+  if (submitAttempted) return 'bc-error';
+  return 'bc-empty';
+}

@@ -1,7 +1,7 @@
 import { ArrowLeft, Send, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import PrmAddressPicker from '../../components/PrmAddressPicker';
 import UserSelector from '../../components/UserSelector/UserSelector';
@@ -10,18 +10,9 @@ import TimeInput from '../../components/TimeInput/TimeInput';
 import { useCreateBooking } from '../../hooks/useBookings';
 import { usePrms } from '../../hooks/usePrms';
 import { useAuthStore } from '../../store/useAuthStore';
-import { todayIso } from '../../utils';
+import { todayIso, cardState } from '../../utils';
 import type { Address, UserProfile } from '../../types';
 import './NewBooking.css';
-
-function cardState(
-  value: unknown,
-  submitAttempted: boolean,
-): 'bc-empty' | 'bc-filled' | 'bc-error' {
-  if (value) return 'bc-filled';
-  if (submitAttempted) return 'bc-error';
-  return 'bc-empty';
-}
 
 export default function NewBooking() {
   const navigate = useNavigate();
@@ -40,21 +31,17 @@ export default function NewBooking() {
 
   // PRM dropdown
   const { data: prms = [] } = usePrms(undefined, selectedOwnerId || undefined, 'Activo');
-  const [selectedPrm, setSelectedPrm] = useState<{ id: string; name: string; avatar?: string; dni?: string } | null>(null);
+  const [manualPrm, setManualPrm] = useState<{ id: string; name: string; avatar?: string; dni?: string } | null>(null);
   const [prmDropdownOpen, setPrmDropdownOpen] = useState(false);
 
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
-  // Auto-select when only one PRM
-  useEffect(() => {
-    if (prms.length === 1 && !selectedPrm) {
-      setSelectedPrm(prms[0]);
-    }
-    if (prms.length !== 1) {
-      setSelectedPrm(null);
-      setAddress({});
-    }
-  }, [prms, selectedPrm]);
+  // Auto-select when only one PRM; invalidate manual selection if it no longer exists
+  const selectedPrm = useMemo(() => {
+    if (manualPrm && prms.some((p) => p.id === manualPrm.id)) return manualPrm;
+    if (prms.length === 1) return prms[0];
+    return null;
+  }, [manualPrm, prms]);
 
   const missingFields = [
     isAdmin && !selectedOwnerId && t('booking.responsible'),
@@ -126,7 +113,7 @@ export default function NewBooking() {
                     <button
                       type="button"
                       className="prm-selected-card__change"
-                      onClick={() => { setSelectedOwnerId(''); setSelectedOwner(null); setSelectedPrm(null); setAddress({}); }}
+                      onClick={() => { setSelectedOwnerId(''); setSelectedOwner(null); setManualPrm(null); setAddress({}); }}
                     >
                       {t('booking.changePrm')}
                     </button>
@@ -139,7 +126,7 @@ export default function NewBooking() {
                     onChange={(id, user) => {
                       setSelectedOwnerId(id);
                       setSelectedOwner(user);
-                      setSelectedPrm(null);
+                      setManualPrm(null);
                       setAddress({});
                     }}
                   />
@@ -184,7 +171,7 @@ export default function NewBooking() {
                         <button
                           type="button"
                           className="prm-selected-card__change"
-                          onClick={() => { setSelectedPrm(null); setAddress({}); }}
+                           onClick={() => { setManualPrm(null); setAddress({}); }}
                         >
                           {t('booking.changePrm')}
                         </button>
@@ -208,7 +195,7 @@ export default function NewBooking() {
                                 type="button"
                                 className="prm-dropdown-option"
                                 onMouseDown={() => {
-                                  setSelectedPrm(p);
+                                  setManualPrm(p);
                                   setPrmDropdownOpen(false);
                                   setAddress({});
                                 }}

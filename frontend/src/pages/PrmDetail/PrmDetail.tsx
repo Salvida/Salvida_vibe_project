@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -112,31 +112,32 @@ export default function PrmDetail() {
   const [editAddrDraft, setEditAddrDraft] = useState<{ value: Partial<Address>; alias: string }>({ value: {}, alias: '' });
   const [confirmDeleteAddrId, setConfirmDeleteAddrId] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    birthDate: '',
-    dni: '',
-    bloodType: '',
-    height: '' as string | number,
-    weight: '' as string | number,
-  });
 
-  useEffect(() => {
-    if (prm) {
-      setDraft({
-        name: prm.name,
-        email: prm.email,
-        phone: prm.phone,
-        birthDate: prm.birthDate,
-        dni: prm.dni || '',
-        bloodType: prm.bloodType,
-        height: prm.height ?? '',
-        weight: prm.weight ?? '',
-      });
-    }
-  }, [prm]);
+  // Initialize draft from PRM data. If PRM changes after mount (rare in detail view),
+  // startEditing() can be called again to re-sync.
+  const [draft, setDraft] = useState(() =>
+    prm
+      ? {
+          name: prm.name,
+          email: prm.email,
+          phone: prm.phone,
+          birthDate: prm.birthDate,
+          dni: prm.dni || '',
+          bloodType: prm.bloodType,
+          height: prm.height ?? '',
+          weight: prm.weight ?? '',
+        }
+      : {
+          name: '',
+          email: '',
+          phone: '',
+          birthDate: '',
+          dni: '',
+          bloodType: '',
+          height: '' as string | number,
+          weight: '' as string | number,
+        },
+  );
 
   function startEditing() {
     if (prm) {

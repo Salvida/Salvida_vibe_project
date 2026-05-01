@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -20,10 +20,11 @@ export default function AuthCard({ showRegister = false }: AuthCardProps) {
 
   const [tab, setTab] = useState<Tab>(showRegister ? 'register' : 'login');
 
-  // Sync tab when the prop changes (e.g. navigating /login → /login?register=true)
-  useEffect(() => {
-    setTab(showRegister ? 'register' : 'login');
-  }, [showRegister]);
+  // When prop changes, reset tab to match (controlled from URL query param)
+  const initialTab = showRegister ? 'register' : 'login';
+  if (tab !== initialTab && showRegister) {
+    setTab(initialTab);
+  }
 
   // ── Login state ──────────────────────────────────────────────────────────
   const [loginEmail, setLoginEmail] = useState('');

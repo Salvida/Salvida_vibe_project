@@ -129,21 +129,19 @@ export default function Settings() {
   }
   const { data: users } = useUsers(isAdminUser && activeSection === "profile");
 
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    dni: "",
-    email: "",
-    phone: "",
-    organization: "",
-    avatar: "",
-  });
+  const [form, setForm] = useState(() => ({
+    firstName: profile?.firstName ?? "",
+    lastName: profile?.lastName ?? "",
+    dni: profile?.dni ?? "",
+    email: profile?.email ?? "",
+    phone: profile?.phone ?? "",
+    organization: profile?.organization ?? "",
+    avatar: profile?.avatar ?? "",
+  }));
 
-  const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>({
-    email: false,
-    push: true,
-    booking_reminder: true,
-  });
+  const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>(() =>
+    notifTargetUser?.notification_prefs ?? profile?.notification_prefs ?? { email: false, push: true, booking_reminder: true },
+  );
 
   const [municipalityQuery, setMunicipalityQuery] = useState("");
   const [municipalitySuggestions, setMunicipalitySuggestions] = useState<{ label: string; lat: number; lng: number }[]>([]);
@@ -154,36 +152,7 @@ export default function Settings() {
   const debouncedMunicipality = useDebounce(municipalityQuery, 300);
   const municipalityRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (notifTargetUser?.notification_prefs) {
-      setNotifPrefs(notifTargetUser.notification_prefs);
-    }
-  }, [notifTargetUser]);
 
-  useEffect(() => {
-    if (selectedUserId) return;
-    if (profile) {
-      setForm({
-        firstName: profile.firstName ?? "",
-        lastName: profile.lastName ?? "",
-        dni: profile.dni ?? "",
-        email: profile.email ?? "",
-        phone: profile.phone ?? "",
-        organization: profile.organization ?? "",
-        avatar: profile.avatar ?? "",
-      });
-      if (profile.notification_prefs) {
-        setNotifPrefs(profile.notification_prefs);
-      }
-      if (profile.municipality) {
-        setMunicipalityQuery(profile.municipality);
-        setMunicipalitySelected(true);
-        if (profile.default_lat != null && profile.default_lng != null) {
-          setMunicipalityCoords({ lat: profile.default_lat, lng: profile.default_lng });
-        }
-      }
-    }
-  }, [profile, selectedUserId]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
