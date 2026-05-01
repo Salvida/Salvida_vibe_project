@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AppLoader from './components/AppLoader';
 import ProtectedRoute from './components/ProtectedRoute';
+import RoleGuard from './components/RoleGuard';
 import InstallPrompt from './components/InstallPrompt/InstallPrompt';
 
 // Public pages — loaded eagerly (small, needed immediately)
@@ -55,21 +56,17 @@ export default function App() {
               <Route path="prms/:id" element={<PrmDetail />} />
               <Route path="settings" element={<Settings />} />
               <Route path="notifications" element={<Notifications />} />
-            </Route>
-          </Route>
 
-          {/* Admin-only routes */}
-          <Route element={<ProtectedRoute requireAdmin />}>
-            <Route path="/app" element={<Layout />}>
-              <Route path="addresses" element={<Addresses />} />
-              <Route path="users" element={<Users />} />
-            </Route>
-          </Route>
+              {/* Admin-only routes */}
+              <Route element={<RoleGuard allowed={['admin', 'superadmin']} />}>
+                <Route path="addresses" element={<Addresses />} />
+                <Route path="users" element={<Users />} />
+              </Route>
 
-          {/* Superadmin-only routes */}
-          <Route element={<ProtectedRoute requireSuperAdmin />}>
-            <Route path="/app" element={<Layout />}>
-              <Route path="superadmin" element={<SuperAdmin />} />
+              {/* Superadmin-only routes */}
+              <Route element={<RoleGuard allowed={['superadmin']} />}>
+                <Route path="superadmin" element={<SuperAdmin />} />
+              </Route>
             </Route>
           </Route>
         </Routes>

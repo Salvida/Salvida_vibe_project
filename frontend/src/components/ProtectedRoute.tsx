@@ -15,18 +15,9 @@ function ProfileSync() {
   return null;
 }
 
-interface ProtectedRouteProps {
-  requireAdmin?: boolean;
-  requireSuperAdmin?: boolean;
-}
-
-export default function ProtectedRoute({
-  requireAdmin = false,
-  requireSuperAdmin = false,
-}: ProtectedRouteProps) {
+export default function ProtectedRoute() {
   const session = useAuthStore((s) => s.session);
   const isInitialized = useAuthStore((s) => s.isInitialized);
-  const user = useAuthStore((s) => s.user);
 
   // Wait for getSession() to resolve before deciding whether to redirect.
   // Without this, Zustand starts with session=null and ProtectedRoute would
@@ -37,29 +28,6 @@ export default function ProtectedRoute({
 
   if (!session) {
     return <Navigate to="/login" replace />;
-  }
-
-  const needsRoleCheck = requireAdmin || requireSuperAdmin;
-
-  // ProfileSync must render whenever there's a session so useProfile() runs
-  // and populates the store. Without this, admin routes opened in a new tab
-  // deadlock: role check waits for user, but ProfileSync never renders to fetch it.
-  if (needsRoleCheck && user === null) {
-    return (
-      <>
-        <ProfileSync />
-        <AppLoader />
-      </>
-    );
-  }
-
-  if (requireSuperAdmin && user?.role !== 'superadmin') {
-    return <Navigate to="/app/bookings" replace />;
-  }
-
-  // superadmin inherits admin access
-  if (requireAdmin && user?.role !== 'admin' && user?.role !== 'superadmin') {
-    return <Navigate to="/app/bookings" replace />;
   }
 
   return (
