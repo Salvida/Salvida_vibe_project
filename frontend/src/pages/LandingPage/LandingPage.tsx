@@ -311,7 +311,7 @@ export default function LandingPage() {
           .filter((e) => e.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
         if (visible.length > 0) {
-          setActiveSection(visible[0].target.id);
+          setActiveSection(visible[0]!.target.id);
         }
       },
       { threshold: 0.3, rootMargin: "-80px 0px 0px 0px" },

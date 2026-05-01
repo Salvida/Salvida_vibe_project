@@ -1,143 +1,24 @@
 import { useState, useMemo } from 'react';
 import Header from '../../components/Header/Header';
 import CalendarWidget from '../../components/CalendarWidget/CalendarWidget';
-import DropdownMenu from '../../components/DropdownMenu';
 import FilterBar from '../../components/FilterBar/FilterBar';
+import BookingCard from '../../components/BookingCard/BookingCard';
 import type { MultiSelectOption } from '../../components/MultiSelect/MultiSelect';
 import ContractModal from '../../components/ContractModal/ContractModal';
 import {
-  PlusCircle, Clock, MapPin, Pencil, Trash2, CheckCircle, X,
-  User, CalendarDays, List, ArrowUp, ArrowDown, FileSignature,
+  PlusCircle, CalendarDays, List, ArrowUp, ArrowDown,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useBookings, useDeleteBooking, useUpdateBookingStatus } from '../../hooks/useBookings';
 import { useAuthStore } from '../../store/useAuthStore';
-import { formatDateISO, formatDateShort } from '../../utils';
+import { formatDateISO } from '../../utils';
 import type { Booking } from '../../types';
 import './Dashboard.css';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type SortKey = 'date' | 'startTime' | 'prmName' | 'status' | 'owner_name';
-
-const STATUS_CLASS: Record<Booking['status'], string> = {
-  Approved: 'booking-status--approved',
-  Pending: 'booking-status--pending',
-  Completed: 'booking-status--completed',
-  Cancelled: 'booking-status--cancelled',
-  SignPending: 'booking-status--sign-pending',
-};
-
-// ─── BookingCard ─────────────────────────────────────────────────────────────
-
-function BookingCard({
-  booking,
-  onEdit,
-  onDelete,
-  onStatusChange,
-  onSign,
-  isAdmin,
-  showDate,
-}: {
-  booking: Booking;
-  onEdit: () => void;
-  onDelete: () => void;
-  onStatusChange: (status: Booking['status']) => void;
-  onSign: () => void;
-  isAdmin: boolean;
-  showDate?: boolean;
-}) {
-  const { t } = useTranslation();
-  const mapsUrl = booking.address
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.address)}`
-    : null;
-
-  return (
-    <div className="booking-card">
-      {booking.prmAvatar ? (
-        <img className="booking-card__avatar" src={booking.prmAvatar} alt={booking.prmName} />
-      ) : (
-        <div className="booking-card__avatar booking-card__avatar--placeholder">
-          {booking.prmName?.[0] ?? '?'}
-        </div>
-      )}
-      <div className="booking-card__info">
-        <div className="booking-card__top">
-          <div className="booking-card__name">{booking.prmName}</div>
-          <div className="booking-card__right">
-            <div className="booking-card__badges">
-              {booking.created_by_admin && (
-                <span className="booking-admin-badge">{t('dashboard.createdByAdmin')}</span>
-              )}
-              <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
-                {t(`bookingStatuses.${booking.status}`)}
-              </span>
-              {booking.status === 'SignPending' && (
-                <button
-                  type="button"
-                  className="booking-sign-btn"
-                  onClick={(e) => { e.stopPropagation(); onSign(); }}
-                >
-                  <FileSignature size={14} />
-                  {t('contract.signButton')}
-                </button>
-              )}
-            </div>
-            <DropdownMenu
-              items={[
-                ...(isAdmin && (booking.status === 'Pending' || booking.status === 'SignPending') ? [
-                  { label: t('dashboard.actions.approve'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Approved') },
-                ] : []),
-                ...(isAdmin && (booking.status === 'Pending' || booking.status === 'Approved') ? [
-                  { label: t('dashboard.actions.complete'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Completed') },
-                  { label: t('dashboard.actions.cancelBooking'), icon: <X size={14} />, onClick: () => onStatusChange('Cancelled'), variant: 'danger' as const },
-                ] : []),
-                { label: t('dashboard.actions.editBooking'), icon: <Pencil size={14} />, onClick: onEdit },
-                { label: t('dashboard.actions.deleteBooking'), icon: <Trash2 size={14} />, onClick: onDelete, variant: 'danger' as const },
-              ]}
-            />
-          </div>
-        </div>
-        <div className="booking-card__meta">
-          {showDate && booking.date && (
-            <span className="booking-card__meta-item">
-              <CalendarDays size={13} />
-              {formatDateShort(booking.date)}
-            </span>
-          )}
-          <span className="booking-card__meta-item">
-            <Clock size={13} />
-            {booking.startTime}
-          </span>
-          <span className="booking-card__meta-item booking-card__meta-location">
-            {mapsUrl ? (
-              <a
-                href={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="booking-card__map-icon"
-                title={t('dashboard.viewOnMaps')}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MapPin size={13} />
-              </a>
-            ) : (
-              <MapPin size={13} />
-            )}
-            {booking.address}
-          </span>
-          {isAdmin && booking.owner_name && (
-            <span className="booking-card__meta-item">
-              <User size={13} />
-              {booking.owner_name}
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 
@@ -146,7 +27,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const deleteBooking = useDeleteBooking();
   const updateStatus = useUpdateBookingStatus();
-  const user = useAuthStore((s) => s.user);
+  const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
 
   // ── Contract signing ───────────────────────────────────────────────────────
@@ -201,15 +82,15 @@ export default function Dashboard() {
   );
 
   const bookingsByDate = useMemo<Record<string, Booking[]>>(() => {
-    return monthBookings.reduce<Record<string, Booking[]>>((acc, b) => {
-      (acc[b.date] ??= []).push(b);
-      return acc;
+    return monthBookings.reduce<Record<string, Booking[]>>((accumulator, booking) => {
+      (accumulator[booking.date] ??= []).push(booking);
+      return accumulator;
     }, {});
   }, [monthBookings]);
 
   const total = bookings.length;
-  const pending = bookings.filter((b) => b.status === 'Pending').length;
-  const completed = bookings.filter((b) => b.status === 'Completed').length;
+  const pending = bookings.filter((booking) => booking.status === 'Pending').length;
+  const completed = bookings.filter((booking) => booking.status === 'Completed').length;
 
   const todayStr = formatDateISO(new Date());
   const isToday = dateStr === todayStr;
@@ -231,16 +112,16 @@ export default function Dashboard() {
   );
 
   const sortedBookings = useMemo(() =>
-    [...listBookings].sort((a, b) => {
-      const va = String(a[sortKey] ?? '');
-      const vb = String(b[sortKey] ?? '');
-      return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    [...listBookings].sort((bookingA, bookingB) => {
+      const valueA = String(bookingA[sortKey] ?? '');
+      const valueB = String(bookingB[sortKey] ?? '');
+      return sortDir === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
     }),
   [listBookings, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+      setSortDir((direction) => (direction === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortKey(key);
       setSortDir('asc');
@@ -362,14 +243,14 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="booking-list">
-                  {bookings.map((b) => (
+                  {bookings.map((booking) => (
                     <BookingCard
-                      key={b.id}
-                      booking={b}
-                      onEdit={() => navigate(`/app/bookings/${b.id}/edit`)}
-                      onDelete={() => deleteBooking.mutate(b.id)}
-                      onStatusChange={(status) => updateStatus.mutate({ id: b.id, status })}
-                      onSign={() => setSigningBooking(b)}
+                      key={booking.id}
+                      booking={booking}
+                      onEdit={() => navigate(`/app/bookings/${booking.id}/edit`)}
+                      onDelete={() => deleteBooking.mutate(booking.id)}
+                      onStatusChange={(status) => updateStatus.mutate({ id: booking.id, status })}
+                      onSign={() => setSigningBooking(booking)}
                       isAdmin={isAdmin}
                     />
                   ))}
@@ -440,14 +321,14 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="booking-list">
-                {sortedBookings.map((b) => (
+                {sortedBookings.map((booking) => (
                   <BookingCard
-                    key={b.id}
-                    booking={b}
-                    onEdit={() => navigate(`/app/bookings/${b.id}/edit`)}
-                    onDelete={() => deleteBooking.mutate(b.id)}
-                    onStatusChange={(status) => updateStatus.mutate({ id: b.id, status })}
-                    onSign={() => setSigningBooking(b)}
+                    key={booking.id}
+                    booking={booking}
+                    onEdit={() => navigate(`/app/bookings/${booking.id}/edit`)}
+                    onDelete={() => deleteBooking.mutate(booking.id)}
+                    onStatusChange={(status) => updateStatus.mutate({ id: booking.id, status })}
+                    onSign={() => setSigningBooking(booking)}
                     isAdmin={isAdmin}
                     showDate
                   />

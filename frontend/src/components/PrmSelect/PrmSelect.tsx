@@ -24,10 +24,10 @@ export default function PrmSelect({
 
   const options: AutocompleteOption[] = [
     { id: '', label: t('dashboard.filters.allPrms') },
-    ...prms.map((p) => ({
-      id: p.id,
-      label: p.name,
-      sublabel: p.dni ?? undefined,
+    ...prms.map((prm) => ({
+      id: prm.id,
+      label: prm.name,
+      sublabel: prm.dni ?? undefined,
     })),
   ];
 

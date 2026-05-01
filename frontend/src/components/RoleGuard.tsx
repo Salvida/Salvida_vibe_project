@@ -8,7 +8,7 @@ interface RoleGuardProps {
 }
 
 export default function RoleGuard({ allowed }: RoleGuardProps) {
-  const user = useAuthStore((s) => s.user);
+  const user = useAuthStore((state) => state.user);
 
   // El perfil todavía no cargó (ProfileSync de ProtectedRoute está en progreso)
   if (user === null) {

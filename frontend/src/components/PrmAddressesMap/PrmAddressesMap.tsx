@@ -43,7 +43,7 @@ function FitBounds({ positions }: { positions: [number, number][] }) {
   const map = useMap();
   useEffect(() => {
     if (positions.length === 1) {
-      map.setView(positions[0], 15);
+      map.setView(positions[0]!, 15);
     } else if (positions.length > 1) {
       map.fitBounds(L.latLngBounds(positions), { padding: [32, 32] });
     }

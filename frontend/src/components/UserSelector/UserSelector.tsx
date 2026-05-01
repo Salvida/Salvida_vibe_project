@@ -31,16 +31,16 @@ export default function UserSelector({
   const { data: users = [] } = useUsers(true);
 
   const options: AutocompleteOption[] = users
-    .filter((u) => u.isActive !== false)
-    .map((u) => ({
-      id: u.id,
-      label: [u.firstName, u.lastName].filter(Boolean).join(' '),
-      sublabel: u.email ?? undefined,
+    .filter((user) => user.isActive !== false)
+    .map((user) => ({
+      id: user.id,
+      label: [user.firstName, user.lastName].filter(Boolean).join(' '),
+      sublabel: user.email ?? undefined,
     }));
 
   const handleChange = (id: string) => {
-    const user = users.find((u) => u.id === id);
-    if (user) onChange(id, user);
+    const matchedUser = users.find((user) => user.id === id);
+    if (matchedUser) onChange(id, matchedUser);
   };
 
   return (

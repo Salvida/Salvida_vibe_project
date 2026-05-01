@@ -31,11 +31,11 @@ export default function MultiSelect({
   // Derive trigger label from selection
   let triggerLabel = '';
   if (selectedOptions.length === 1) {
-    triggerLabel = selectedOptions[0].label;
+    triggerLabel = selectedOptions[0]?.label ?? '';
   } else if (selectedOptions.length === 2) {
-    triggerLabel = selectedOptions.map((o) => o.label).join(', ');
+    triggerLabel = selectedOptions.map((option) => option.label).join(', ');
   } else if (selectedOptions.length > 2) {
-    triggerLabel = `${selectedOptions[0].label}, +${selectedOptions.length - 1} más`;
+    triggerLabel = `${selectedOptions[0]?.label ?? ''}, +${selectedOptions.length - 1} más`;
   }
 
   const filtered = options.filter((o) => {

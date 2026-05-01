@@ -22,10 +22,10 @@ function AutocompleteOption({
   renderOption,
   onSelect,
 }: AutocompleteOptionItemProps) {
-  const p = prefix;
+  const prefixClass = prefix;
   return (
     <li
-      className={`${p}__option${isSelected ? ` ${p}__option--selected` : ''}`}
+      className={`${prefixClass}__option${isSelected ? ` ${prefixClass}__option--selected` : ''}`}
       role="option"
       aria-selected={isSelected}
       onMouseDown={() => onSelect(option.id)}
@@ -34,9 +34,9 @@ function AutocompleteOption({
         renderOption(option, isSelected)
       ) : (
         <>
-          <span className={`${p}__option-label`}>{option.label}</span>
+          <span className={`${prefixClass}__option-label`}>{option.label}</span>
           {option.sublabel && (
-            <span className={`${p}__option-sublabel`}>{option.sublabel}</span>
+            <span className={`${prefixClass}__option-sublabel`}>{option.sublabel}</span>
           )}
         </>
       )}
@@ -72,19 +72,19 @@ export default function Autocomplete({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const p = classNamePrefix;
+  const prefixClass = classNamePrefix;
 
-  const selectedOption = options.find((o) => o.id === value);
+  const selectedOption = options.find((option) => option.id === value);
   const selectedLabel = selectedOption
     ? `${selectedOption.label}${selectedOption.sublabel ? ` — ${selectedOption.sublabel}` : ''}`
     : '';
 
-  const filtered = options.filter((o) => {
+  const filtered = options.filter((option) => {
     if (!search) return true;
-    const q = search.toLowerCase();
+    const query = search.toLowerCase();
     return (
-      o.label.toLowerCase().includes(q) ||
-      (o.sublabel ?? '').toLowerCase().includes(q)
+      option.label.toLowerCase().includes(query) ||
+      (option.sublabel ?? '').toLowerCase().includes(query)
     );
   });
 
@@ -110,12 +110,12 @@ export default function Autocomplete({
   };
 
   return (
-    <div ref={containerRef} className={p}>
-      {label && <label className={`${p}__label`}>{label}</label>}
-      <div className={`${p}__combobox`}>
+    <div ref={containerRef} className={prefixClass}>
+      {label && <label className={`${prefixClass}__label`}>{label}</label>}
+      <div className={`${prefixClass}__combobox`}>
         <input
           type="text"
-          className={`${p}__input${value ? ` ${p}__input--selected` : ''}`}
+          className={`${prefixClass}__input${value ? ` ${prefixClass}__input--selected` : ''}`}
           placeholder={selectedLabel || placeholder}
           value={open ? search : ''}
           disabled={disabled}
@@ -127,7 +127,7 @@ export default function Autocomplete({
         {showClear && value && (
           <button
             type="button"
-            className={`${p}__clear`}
+            className={`${prefixClass}__clear`}
             onMouseDown={(e) => { e.preventDefault(); handleClear(); }}
             tabIndex={-1}
             aria-label={t('common.clearSelection')}
@@ -138,19 +138,19 @@ export default function Autocomplete({
       </div>
 
       {open && (
-        <ul className={`${p}__dropdown`} role="listbox">
-          {filtered.map((o) => (
+        <ul className={`${prefixClass}__dropdown`} role="listbox">
+          {filtered.map((option) => (
             <AutocompleteOption
-              key={o.id}
-              option={o}
-              isSelected={value === o.id}
-              prefix={p}
+              key={option.id}
+              option={option}
+              isSelected={value === option.id}
+              prefix={prefixClass}
               renderOption={renderOption}
               onSelect={handleSelect}
             />
           ))}
           {filtered.length === 0 && search && (
-            <li className={`${p}__option ${p}__option--empty`}>
+            <li className={`${prefixClass}__option ${prefixClass}__option--empty`}>
               {t('common.noResults')}
             </li>
           )}

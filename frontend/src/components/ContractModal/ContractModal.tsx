@@ -29,7 +29,7 @@ export default function ContractModal({ booking, onClose, onSigned }: ContractMo
 
     // Extract base64 PNG without the data-URI prefix
     const dataUrl = canvas.toDataURL('image/png');
-    const base64 = dataUrl.split(',')[1];
+    const base64 = dataUrl.split(',')[1] ?? '';
 
     try {
       await signBooking.mutateAsync({ id: booking.id, signatureImage: base64 });

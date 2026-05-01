@@ -17,9 +17,9 @@ export interface FilterBarProps {
   onStatusChange: (ids: string[]) => void;
   statusOptions: MultiSelectOption[];
   filterDateFrom: string;
-  onDateFromChange: (v: string) => void;
+  onDateFromChange: (value: string) => void;
   filterDateTo: string;
-  onDateToChange: (v: string) => void;
+  onDateToChange: (value: string) => void;
 }
 
 export default function FilterBar({
