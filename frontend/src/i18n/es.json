@@ -22,7 +22,9 @@
     "changePhoto": "Cambiar foto",
     "change": "Cambiar",
     "add": "Añadir",
-    "remove": "Eliminar"
+    "remove": "Eliminar",
+    "noResults": "Sin resultados",
+    "clearSelection": "Limpiar selección"
   },
   "bookingStatuses": {
     "Approved": "Aprobada",
