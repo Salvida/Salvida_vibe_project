@@ -89,8 +89,8 @@ export default function Autocomplete({
   });
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+    const handler = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setOpen(false);
       }
     };
@@ -119,7 +119,7 @@ export default function Autocomplete({
           placeholder={selectedLabel || placeholder}
           value={open ? search : ''}
           disabled={disabled}
-          onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
+          onChange={(event) => { setSearch(event.target.value); setOpen(true); }}
           onFocus={() => { setSearch(''); setOpen(true); }}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           autoComplete="off"
@@ -128,7 +128,7 @@ export default function Autocomplete({
           <button
             type="button"
             className={`${prefixClass}__clear`}
-            onMouseDown={(e) => { e.preventDefault(); handleClear(); }}
+            onMouseDown={(event) => { event.preventDefault(); handleClear(); }}
             tabIndex={-1}
             aria-label={t('common.clearSelection')}
           >

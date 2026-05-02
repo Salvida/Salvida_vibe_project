@@ -258,10 +258,10 @@ export default function PrmDetail() {
                 type="file"
                 accept="image/*"
                 style={{ display: 'none' }}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
                   if (file) handleAvatarFile(file);
-                  e.target.value = '';
+                  event.target.value = '';
                 }}
               />
               <img
@@ -287,7 +287,7 @@ export default function PrmDetail() {
                 <input
                   className="prm-edit-input prm-edit-input--name"
                   value={draft.name}
-                  onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+                  onChange={(event) => setDraft({ ...draft, name: event.target.value })}
                 />
               ) : (
                 <h1 className="prm-profile__name">{prm.name}</h1>
@@ -310,8 +310,8 @@ export default function PrmDetail() {
                   <select
                     className="prm-edit-input prm-edit-input--stat"
                     value={draft.bloodType}
-                    onChange={(e) =>
-                      setDraft({ ...draft, bloodType: e.target.value })
+                    onChange={(event) =>
+                      setDraft({ ...draft, bloodType: event.target.value })
                     }
                   >
                     <option value="">—</option>
@@ -331,8 +331,8 @@ export default function PrmDetail() {
                     type="text"
                     placeholder="cm"
                     value={draft.height}
-                    onChange={(e) =>
-                      setDraft({ ...draft, height: e.target.value })
+                    onChange={(event) =>
+                      setDraft({ ...draft, height: event.target.value })
                     }
                   />
                   <p className="prm-stat__label">{t('prmDetail.height')}</p>
@@ -343,8 +343,8 @@ export default function PrmDetail() {
                     type="text"
                     placeholder="kg"
                     value={draft.weight}
-                    onChange={(e) =>
-                      setDraft({ ...draft, weight: e.target.value })
+                    onChange={(event) =>
+                      setDraft({ ...draft, weight: event.target.value })
                     }
                   />
                   <p className="prm-stat__label">{t('prmDetail.weight')}</p>
@@ -407,8 +407,8 @@ export default function PrmDetail() {
                     className="prm-edit-input"
                     type="email"
                     value={draft.email}
-                    onChange={(e) =>
-                      setDraft({ ...draft, email: e.target.value })
+                    onChange={(event) =>
+                      setDraft({ ...draft, email: event.target.value })
                     }
                   />
                 ) : (
@@ -429,8 +429,8 @@ export default function PrmDetail() {
                     className="prm-edit-input"
                     type="tel"
                     value={draft.phone}
-                    onChange={(e) =>
-                      setDraft({ ...draft, phone: e.target.value })
+                    onChange={(event) =>
+                      setDraft({ ...draft, phone: event.target.value })
                     }
                   />
                 ) : (
@@ -474,8 +474,8 @@ export default function PrmDetail() {
                     className="prm-edit-input"
                     type="text"
                     value={draft.dni}
-                    onChange={(e) =>
-                      setDraft({ ...draft, dni: e.target.value })
+                    onChange={(event) =>
+                      setDraft({ ...draft, dni: event.target.value })
                     }
                   />
                 ) : (
@@ -518,9 +518,9 @@ export default function PrmDetail() {
                 {prm.emergency_contacts.map((contact) => (
                   editingContactId === contact.id ? (
                     <div key={contact.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1rem', borderBottom: '1px solid var(--color-slate-50)' }}>
-                      <input type="text" className="prm-edit-input" placeholder={t('prmDetail.contactName')} value={editContactDraft.name} onChange={(e) => setEditContactDraft({ ...editContactDraft, name: e.target.value })} style={{ maxWidth: '100%', width: '100%' }} />
-                      <input type="tel" className="prm-edit-input" placeholder={t('prmDetail.contactPhone')} value={editContactDraft.phone} onChange={(e) => setEditContactDraft({ ...editContactDraft, phone: e.target.value })} style={{ maxWidth: '100%', width: '100%' }} />
-                      <input type="text" className="prm-edit-input" placeholder={t('prmDetail.contactRelationshipPlaceholder')} value={editContactDraft.relationship} onChange={(e) => setEditContactDraft({ ...editContactDraft, relationship: e.target.value })} style={{ maxWidth: '100%', width: '100%' }} />
+                      <input type="text" className="prm-edit-input" placeholder={t('prmDetail.contactName')} value={editContactDraft.name} onChange={(event) => setEditContactDraft({ ...editContactDraft, name: event.target.value })} style={{ maxWidth: '100%', width: '100%' }} />
+                      <input type="tel" className="prm-edit-input" placeholder={t('prmDetail.contactPhone')} value={editContactDraft.phone} onChange={(event) => setEditContactDraft({ ...editContactDraft, phone: event.target.value })} style={{ maxWidth: '100%', width: '100%' }} />
+                      <input type="text" className="prm-edit-input" placeholder={t('prmDetail.contactRelationshipPlaceholder')} value={editContactDraft.relationship} onChange={(event) => setEditContactDraft({ ...editContactDraft, relationship: event.target.value })} style={{ maxWidth: '100%', width: '100%' }} />
                       <div className="prm-edit-actions" style={{ justifyContent: 'flex-end' }}>
                         <button type="button" className="prm-edit-actions__cancel" onClick={() => setEditingContactId(null)}><X size={14} /> {t('common.cancel')}</button>
                         <button type="button" className="prm-edit-actions__save" disabled={!editContactDraft.name.trim() || updateEmergencyContact.isPending}
@@ -564,7 +564,7 @@ export default function PrmDetail() {
                   className="prm-edit-input"
                   placeholder={t('prmDetail.contactName')}
                   value={newContact.name}
-                  onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
+                  onChange={(event) => setNewContact({ ...newContact, name: event.target.value })}
                   style={{ maxWidth: '100%', width: '100%' }}
                 />
                 <input
@@ -572,7 +572,7 @@ export default function PrmDetail() {
                   className="prm-edit-input"
                   placeholder={t('prmDetail.contactPhone')}
                   value={newContact.phone}
-                  onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })}
+                  onChange={(event) => setNewContact({ ...newContact, phone: event.target.value })}
                   style={{ maxWidth: '100%', width: '100%' }}
                 />
                 <input
@@ -580,7 +580,7 @@ export default function PrmDetail() {
                   className="prm-edit-input"
                   placeholder={t('prmDetail.contactRelationshipPlaceholder')}
                   value={newContact.relationship}
-                  onChange={(e) => setNewContact({ ...newContact, relationship: e.target.value })}
+                  onChange={(event) => setNewContact({ ...newContact, relationship: event.target.value })}
                   style={{ maxWidth: '100%', width: '100%' }}
                 />
                 <div className="prm-edit-actions" style={{ justifyContent: 'flex-end' }}>
@@ -642,7 +642,7 @@ export default function PrmDetail() {
                       editingAddressId === addr.id ? (
                         <div key={addr.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1rem', borderBottom: '1px solid var(--color-slate-50)' }}>
                           <AddressSelector value={editAddrDraft.value} onChange={(v) => setEditAddrDraft({ ...editAddrDraft, value: v })} showValidation={false} showMap={false} />
-                          <input type="text" className="prm-edit-input" placeholder={t('prmDetail.addressAlias')} value={editAddrDraft.alias} onChange={(e) => setEditAddrDraft({ ...editAddrDraft, alias: e.target.value })} maxLength={40} style={{ maxWidth: '100%', width: '100%' }} />
+                          <input type="text" className="prm-edit-input" placeholder={t('prmDetail.addressAlias')} value={editAddrDraft.alias} onChange={(event) => setEditAddrDraft({ ...editAddrDraft, alias: event.target.value })} maxLength={40} style={{ maxWidth: '100%', width: '100%' }} />
                           {isAdmin && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
                               <span style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-primary)' }}>

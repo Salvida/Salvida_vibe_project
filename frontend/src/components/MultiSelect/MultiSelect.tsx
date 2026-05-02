@@ -66,7 +66,7 @@ export default function MultiSelect({
           placeholder={triggerLabel || placeholder}
           value={open ? search : ''}
           disabled={disabled}
-          onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
+          onChange={(event) => { setSearch(event.target.value); setOpen(true); }}
           onFocus={() => { setSearch(''); setOpen(true); }}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           autoComplete="off"
@@ -74,7 +74,7 @@ export default function MultiSelect({
         {hasValue && (
           <button
             className="multi-select__clear"
-            onMouseDown={(e) => { e.preventDefault(); onChange([]); setSearch(''); }}
+            onMouseDown={(event) => { event.preventDefault(); onChange([]); setSearch(''); }}
             tabIndex={-1}
             aria-label="Limpiar selección"
           >

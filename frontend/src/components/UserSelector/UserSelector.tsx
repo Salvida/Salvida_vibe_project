@@ -51,7 +51,7 @@ export default function UserSelector({
       onChange={handleChange}
       placeholder={placeholder}
       label={label}
-      renderOption={(o) => <UserOption option={o} />}
+      renderOption={(option) => <UserOption option={option} />}
     />
   );
 }

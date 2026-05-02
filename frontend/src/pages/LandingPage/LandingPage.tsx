@@ -308,7 +308,7 @@ export default function LandingPage() {
       (entries) => {
         if (isScrollingRef.current) return;
         const visible = entries
-          .filter((e) => e.isIntersecting)
+          .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
         if (visible.length > 0) {
           setActiveSection(visible[0]!.target.id);
@@ -343,10 +343,10 @@ export default function LandingPage() {
   }, [popup]);
 
   function handleQuoteEnter(
-    e: React.MouseEvent<HTMLParagraphElement>,
+    event: React.MouseEvent<HTMLParagraphElement>,
     text: string,
   ) {
-    const el = e.currentTarget;
+    const el = event.currentTarget;
     if (el.scrollHeight <= el.clientHeight) return;
     const rect = el.getBoundingClientRect();
     const MARGIN = 16;

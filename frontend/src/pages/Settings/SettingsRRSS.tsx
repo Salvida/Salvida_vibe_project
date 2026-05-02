@@ -103,8 +103,8 @@ export default function SettingsRRSS() {
   const [form, setForm] = useState<SocialLinkPayload>(EMPTY_FORM);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  function handlePlatformChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const platform = e.target.value;
+  function handlePlatformChange(event: React.ChangeEvent<HTMLSelectElement>) {
+    const platform = event.target.value;
     const found = PLATFORMS.find((p) => p.value === platform);
     setForm((prev) => ({
       ...prev,
@@ -131,8 +131,8 @@ export default function SettingsRRSS() {
     setForm(EMPTY_FORM);
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     if (editingId) {
       updateLink.mutate({ id: editingId, body: form }, { onSuccess: handleCancel });
     } else {
@@ -208,7 +208,7 @@ export default function SettingsRRSS() {
               className="settings-form__input"
               type="text"
               value={form.label}
-              onChange={(e) => setForm((p) => ({ ...p, label: e.target.value }))}
+              onChange={(event) => setForm((p) => ({ ...p, label: event.target.value }))}
               required
             />
           </div>
@@ -219,7 +219,7 @@ export default function SettingsRRSS() {
               className="settings-form__input"
               type="url"
               value={form.url}
-              onChange={(e) => setForm((p) => ({ ...p, url: e.target.value }))}
+              onChange={(event) => setForm((p) => ({ ...p, url: event.target.value }))}
               placeholder="https://..."
               required
             />

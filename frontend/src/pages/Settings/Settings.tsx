@@ -210,12 +210,12 @@ export default function Settings() {
       ? `${form.firstName.charAt(0)}${form.lastName.charAt(0)}`.toUpperCase()
       : "?";
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setForm((prev) => ({ ...prev, [event.target.name]: event.target.value }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     const extra = (municipalitySelected && municipalityCoords)
       ? { municipality: municipalityQuery, default_lat: municipalityCoords.lat, default_lng: municipalityCoords.lng }
       : {};
@@ -480,10 +480,10 @@ export default function Settings() {
                         type="file"
                         accept="image/*"
                         style={{ display: "none" }}
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
                           if (file) handleAvatarFile(file);
-                          e.target.value = "";
+                          event.target.value = "";
                         }}
                       />
                       <div className="settings-avatar__wrap">

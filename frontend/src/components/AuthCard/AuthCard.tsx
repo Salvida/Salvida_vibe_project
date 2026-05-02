@@ -48,8 +48,8 @@ export default function AuthCard({ showRegister = false }: AuthCardProps) {
   const [regSuccess, setRegSuccess] = useState<string | null>(null);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
-  async function handleLogin(e: FormEvent) {
-    e.preventDefault();
+  async function handleLogin(event: FormEvent) {
+    event.preventDefault();
     setLoginError(null);
     setLoginLoading(true);
 
@@ -74,8 +74,8 @@ export default function AuthCard({ showRegister = false }: AuthCardProps) {
     }
   }
 
-  async function handleRegister(e: FormEvent) {
-    e.preventDefault();
+  async function handleRegister(event: FormEvent) {
+    event.preventDefault();
     setRegError(null);
 
     if (regPassword !== confirmPassword) {
