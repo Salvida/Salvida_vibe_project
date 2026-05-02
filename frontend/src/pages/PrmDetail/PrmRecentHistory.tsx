@@ -8,6 +8,28 @@ interface HistoryItem {
   doctor: string;
 }
 
+interface HistoryCardProps {
+  item: HistoryItem;
+}
+
+function HistoryCard({ item }: HistoryCardProps) {
+  return (
+    <div className="history-card">
+      <div className="history-card__date">
+        <span className="history-card__day">{item.date}</span>
+        <span className="history-card__month">{item.month}</span>
+      </div>
+      <div className="history-card__content">
+        <h4 className="history-card__title">{item.title}</h4>
+        <p className="history-card__desc">{item.description}</p>
+        <div className="history-card__doctor">
+          <span className="history-card__doctor-name">{item.doctor}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface PrmRecentHistoryProps {
   items?: HistoryItem[];
 }
@@ -25,19 +47,7 @@ export default function PrmRecentHistory({ items = [] }: PrmRecentHistoryProps) 
       </div>
       <div className="prm-history__list">
         {items.map((item, i) => (
-          <div key={i} className="history-card">
-            <div className="history-card__date">
-              <span className="history-card__day">{item.date}</span>
-              <span className="history-card__month">{item.month}</span>
-            </div>
-            <div className="history-card__content">
-              <h4 className="history-card__title">{item.title}</h4>
-              <p className="history-card__desc">{item.description}</p>
-              <div className="history-card__doctor">
-                <span className="history-card__doctor-name">{item.doctor}</span>
-              </div>
-            </div>
-          </div>
+          <HistoryCard key={i} item={item} />
         ))}
       </div>
     </div>

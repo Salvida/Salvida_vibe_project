@@ -43,9 +43,9 @@ export default function InstallPrompt() {
       return
     }
 
-    const handler = (e: Event) => {
-      e.preventDefault()
-      setDeferredPrompt(e as BeforeInstallPromptEvent)
+    const handler = (event: Event) => {
+      event.preventDefault()
+      setDeferredPrompt(event as BeforeInstallPromptEvent)
       setVisible(true)
     }
 

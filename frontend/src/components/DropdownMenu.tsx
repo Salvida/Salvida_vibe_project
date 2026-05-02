@@ -21,8 +21,8 @@ export default function DropdownMenu({ items, align = 'right' }: DropdownMenuPro
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
         setOpen(false);
       }
     };
@@ -30,8 +30,8 @@ export default function DropdownMenu({ items, align = 'right' }: DropdownMenuPro
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open]);
 
-  const handleToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleToggle = (event: React.MouseEvent) => {
+    event.stopPropagation();
     setOpen((prev) => {
       if (!prev && triggerRef.current) {
         const rect = triggerRef.current.getBoundingClientRect();
@@ -69,8 +69,8 @@ export default function DropdownMenu({ items, align = 'right' }: DropdownMenuPro
           {items.map((item, idx) => (
             <button
               key={idx}
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={(event) => {
+                event.stopPropagation();
                 item.onClick();
                 setOpen(false);
               }}

@@ -34,11 +34,11 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
 
   const backdropRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { reset(); }, [open]);
+  useEffect(() => { reset(); }, [open, reset]);
 
   useEffect(() => {
     if (!open) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const handler = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [open, onClose]);
@@ -50,8 +50,8 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
 
   if (!open) return null;
 
-  async function handleRegister(e: FormEvent) {
-    e.preventDefault();
+  async function handleRegister(event: FormEvent) {
+    event.preventDefault();
     setError(null);
 
     if (password !== confirmPassword) {
@@ -88,7 +88,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
     <div
       className="lp-modal-backdrop"
       ref={backdropRef}
-      onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
+      onClick={(event) => { if (event.target === backdropRef.current) onClose(); }}
     >
       <div className="lp-modal" role="dialog" aria-modal="true">
         <div className="lp-modal__header">

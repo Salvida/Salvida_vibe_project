@@ -1,16 +1,12 @@
 import { useState, useMemo } from 'react';
 import Header from '../../components/Header/Header';
 import CalendarWidget from '../../components/CalendarWidget/CalendarWidget';
-import DropdownMenu from '../../components/DropdownMenu';
-import MultiSelect from '../../components/MultiSelect/MultiSelect';
+import FilterBar from '../../components/FilterBar/FilterBar';
+import BookingCard from '../../components/BookingCard/BookingCard';
 import type { MultiSelectOption } from '../../components/MultiSelect/MultiSelect';
-import PrmMultiSelect from '../../components/PrmMultiSelect/PrmMultiSelect';
-import UserMultiSelect from '../../components/UserMultiSelect/UserMultiSelect';
-import DateInput from '../../components/DateInput/DateInput';
 import ContractModal from '../../components/ContractModal/ContractModal';
 import {
-  PlusCircle, Clock, MapPin, Pencil, Trash2, CheckCircle, X,
-  User, CalendarDays, List, ArrowUp, ArrowDown, FileSignature,
+  PlusCircle, CalendarDays, List, ArrowUp, ArrowDown,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -24,127 +20,6 @@ import './Dashboard.css';
 
 type SortKey = 'date' | 'startTime' | 'prmName' | 'status' | 'owner_name';
 
-const STATUS_CLASS: Record<Booking['status'], string> = {
-  Approved: 'booking-status--approved',
-  Pending: 'booking-status--pending',
-  Completed: 'booking-status--completed',
-  Cancelled: 'booking-status--cancelled',
-  SignPending: 'booking-status--sign-pending',
-};
-
-// ─── BookingCard ─────────────────────────────────────────────────────────────
-
-function BookingCard({
-  booking,
-  onEdit,
-  onDelete,
-  onStatusChange,
-  onSign,
-  isAdmin,
-  showDate,
-}: {
-  booking: Booking;
-  onEdit: () => void;
-  onDelete: () => void;
-  onStatusChange: (status: Booking['status']) => void;
-  onSign: () => void;
-  isAdmin: boolean;
-  showDate?: boolean;
-}) {
-  const { t } = useTranslation();
-  const mapsUrl = booking.address
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.address)}`
-    : null;
-
-  return (
-    <div className="booking-card">
-      {booking.prmAvatar ? (
-        <img className="booking-card__avatar" src={booking.prmAvatar} alt={booking.prmName} />
-      ) : (
-        <div className="booking-card__avatar booking-card__avatar--placeholder">
-          {booking.prmName?.[0] ?? '?'}
-        </div>
-      )}
-      <div className="booking-card__info">
-        <div className="booking-card__top">
-          <div className="booking-card__name">{booking.prmName}</div>
-          <div className="booking-card__right">
-            <div className="booking-card__badges">
-              {booking.created_by_admin && (
-                <span className="booking-admin-badge">{t('dashboard.createdByAdmin')}</span>
-              )}
-              <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
-                {t(`bookingStatuses.${booking.status}`)}
-              </span>
-              {booking.status === 'SignPending' && (
-                <button
-                  type="button"
-                  className="booking-sign-btn"
-                  onClick={(e) => { e.stopPropagation(); onSign(); }}
-                >
-                  <FileSignature size={14} />
-                  {t('contract.signButton')}
-                </button>
-              )}
-            </div>
-            <DropdownMenu
-              items={[
-                ...(isAdmin && (booking.status === 'Pending' || booking.status === 'SignPending') ? [
-                  { label: t('dashboard.actions.approve'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Approved') },
-                ] : []),
-                ...(isAdmin && (booking.status === 'Pending' || booking.status === 'Approved') ? [
-                  { label: t('dashboard.actions.complete'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Completed') },
-                  { label: t('dashboard.actions.cancelBooking'), icon: <X size={14} />, onClick: () => onStatusChange('Cancelled'), variant: 'danger' as const },
-                ] : []),
-                { label: t('dashboard.actions.editBooking'), icon: <Pencil size={14} />, onClick: onEdit },
-                { label: t('dashboard.actions.deleteBooking'), icon: <Trash2 size={14} />, onClick: onDelete, variant: 'danger' as const },
-              ]}
-            />
-          </div>
-        </div>
-        <div className="booking-card__meta">
-          {showDate && booking.date && (
-            <span className="booking-card__meta-item">
-              <CalendarDays size={13} />
-              {(() => {
-                const [y, m, d] = booking.date.split('-').map(Number);
-                return new Date(y, m - 1, d).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-              })()}
-            </span>
-          )}
-          <span className="booking-card__meta-item">
-            <Clock size={13} />
-            {booking.startTime}
-          </span>
-          <span className="booking-card__meta-item booking-card__meta-location">
-            {mapsUrl ? (
-              <a
-                href={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="booking-card__map-icon"
-                title={t('dashboard.viewOnMaps')}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MapPin size={13} />
-              </a>
-            ) : (
-              <MapPin size={13} />
-            )}
-            {booking.address}
-          </span>
-          {isAdmin && booking.owner_name && (
-            <span className="booking-card__meta-item">
-              <User size={13} />
-              {booking.owner_name}
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
@@ -152,7 +27,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const deleteBooking = useDeleteBooking();
   const updateStatus = useUpdateBookingStatus();
-  const user = useAuthStore((s) => s.user);
+  const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
 
   // ── Contract signing ───────────────────────────────────────────────────────
@@ -207,15 +82,15 @@ export default function Dashboard() {
   );
 
   const bookingsByDate = useMemo<Record<string, Booking[]>>(() => {
-    return monthBookings.reduce<Record<string, Booking[]>>((acc, b) => {
-      (acc[b.date] ??= []).push(b);
-      return acc;
+    return monthBookings.reduce<Record<string, Booking[]>>((accumulator, booking) => {
+      (accumulator[booking.date] ??= []).push(booking);
+      return accumulator;
     }, {});
   }, [monthBookings]);
 
   const total = bookings.length;
-  const pending = bookings.filter((b) => b.status === 'Pending').length;
-  const completed = bookings.filter((b) => b.status === 'Completed').length;
+  const pending = bookings.filter((booking) => booking.status === 'Pending').length;
+  const completed = bookings.filter((booking) => booking.status === 'Completed').length;
 
   const todayStr = formatDateISO(new Date());
   const isToday = dateStr === todayStr;
@@ -237,16 +112,16 @@ export default function Dashboard() {
   );
 
   const sortedBookings = useMemo(() =>
-    [...listBookings].sort((a, b) => {
-      const va = String(a[sortKey] ?? '');
-      const vb = String(b[sortKey] ?? '');
-      return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    [...listBookings].sort((bookingA, bookingB) => {
+      const valueA = String(bookingA[sortKey] ?? '');
+      const valueB = String(bookingB[sortKey] ?? '');
+      return sortDir === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
     }),
   [listBookings, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+      setSortDir((direction) => (direction === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortKey(key);
       setSortDir('asc');
@@ -270,59 +145,7 @@ export default function Dashboard() {
     { id: 'Cancelled',   label: t('bookingStatuses.Cancelled') },
   ], [t]);
 
-  // ── Shared filter bar (showDateRange = list view only) ─────────────────────
-  const filterBar = (showDateRange?: boolean) => (
-    <div className="booking-filters">
-      {isAdmin && (
-        <div className="booking-filters__field">
-          <label className="booking-filters__label">{t('dashboard.filters.user')}</label>
-          <UserMultiSelect
-            values={filterOwnerIds}
-            onChange={handleOwnerChange}
-            placeholder={t('dashboard.filters.allUsers')}
-          />
-        </div>
-      )}
-      <div className="booking-filters__field">
-        <label className="booking-filters__label">{t('dashboard.filters.prm')}</label>
-        <PrmMultiSelect
-          values={filterPrmIds}
-          onChange={setFilterPrmIds}
-          ownerId={singleOwnerId}
-          placeholder={t('dashboard.filters.allPrms')}
-        />
-      </div>
-      <div className="booking-filters__field">
-        <label className="booking-filters__label">{t('dashboard.filters.status')}</label>
-        <MultiSelect
-          values={filterStatuses}
-          onChange={setFilterStatuses}
-          options={statusOptions}
-          placeholder={t('dashboard.filters.allStatuses')}
-        />
-      </div>
-      {showDateRange && (
-        <>
-          <div className="booking-filters__field">
-            <label className="booking-filters__label">{t('dashboard.filters.dateFrom')}</label>
-            <DateInput
-              value={filterDateFrom}
-              onChange={setFilterDateFrom}
-              placeholder={t('dashboard.filters.dateFrom')}
-            />
-          </div>
-          <div className="booking-filters__field">
-            <label className="booking-filters__label">{t('dashboard.filters.dateTo')}</label>
-            <DateInput
-              value={filterDateTo}
-              onChange={setFilterDateTo}
-              placeholder={t('dashboard.filters.dateTo')}
-            />
-          </div>
-        </>
-      )}
-    </div>
-  );
+
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -388,7 +211,21 @@ export default function Dashboard() {
 
             <div className="dashboard__right">
               {/* Filter bar — calendar view (no date range) */}
-              {filterBar(false)}
+              <FilterBar
+                isAdmin={isAdmin}
+                filterOwnerIds={filterOwnerIds}
+                onOwnerChange={handleOwnerChange}
+                filterPrmIds={filterPrmIds}
+                onPrmChange={setFilterPrmIds}
+                singleOwnerId={singleOwnerId}
+                filterStatuses={filterStatuses}
+                onStatusChange={setFilterStatuses}
+                statusOptions={statusOptions}
+                filterDateFrom={filterDateFrom}
+                onDateFromChange={setFilterDateFrom}
+                filterDateTo={filterDateTo}
+                onDateToChange={setFilterDateTo}
+              />
 
               <div className="bookings-header">
                 <h3 className="bookings-header__title">{dateLabel}</h3>
@@ -406,14 +243,14 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="booking-list">
-                  {bookings.map((b) => (
+                  {bookings.map((booking) => (
                     <BookingCard
-                      key={b.id}
-                      booking={b}
-                      onEdit={() => navigate(`/app/bookings/${b.id}/edit`)}
-                      onDelete={() => deleteBooking.mutate(b.id)}
-                      onStatusChange={(status) => updateStatus.mutate({ id: b.id, status })}
-                      onSign={() => setSigningBooking(b)}
+                      key={booking.id}
+                      booking={booking}
+                      onEdit={() => navigate(`/app/bookings/${booking.id}/edit`)}
+                      onDelete={() => deleteBooking.mutate(booking.id)}
+                      onStatusChange={(status) => updateStatus.mutate({ id: booking.id, status })}
+                      onSign={() => setSigningBooking(booking)}
                       isAdmin={isAdmin}
                     />
                   ))}
@@ -433,7 +270,22 @@ export default function Dashboard() {
           <div className="dashboard__list-view">
 
             {/* Filter bar — list view (with date range) */}
-            {filterBar(true)}
+            <FilterBar
+              isAdmin={isAdmin}
+              showDateRange
+              filterOwnerIds={filterOwnerIds}
+              onOwnerChange={handleOwnerChange}
+              filterPrmIds={filterPrmIds}
+              onPrmChange={setFilterPrmIds}
+              singleOwnerId={singleOwnerId}
+              filterStatuses={filterStatuses}
+              onStatusChange={setFilterStatuses}
+              statusOptions={statusOptions}
+              filterDateFrom={filterDateFrom}
+              onDateFromChange={setFilterDateFrom}
+              filterDateTo={filterDateTo}
+              onDateToChange={setFilterDateTo}
+            />
 
             {/* Sort controls */}
             <div className="booking-sort">
@@ -459,9 +311,9 @@ export default function Dashboard() {
             {/* Booking list */}
             {listLoading ? (
               <div className="booking-list">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="booking-card booking-card--skeleton" />
-                ))}
+                <div className="booking-card booking-card--skeleton" />
+                <div className="booking-card booking-card--skeleton" />
+                <div className="booking-card booking-card--skeleton" />
               </div>
             ) : sortedBookings.length === 0 ? (
               <div className="booking-list booking-list--empty">
@@ -469,14 +321,14 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="booking-list">
-                {sortedBookings.map((b) => (
+                {sortedBookings.map((booking) => (
                   <BookingCard
-                    key={b.id}
-                    booking={b}
-                    onEdit={() => navigate(`/app/bookings/${b.id}/edit`)}
-                    onDelete={() => deleteBooking.mutate(b.id)}
-                    onStatusChange={(status) => updateStatus.mutate({ id: b.id, status })}
-                    onSign={() => setSigningBooking(b)}
+                    key={booking.id}
+                    booking={booking}
+                    onEdit={() => navigate(`/app/bookings/${booking.id}/edit`)}
+                    onDelete={() => deleteBooking.mutate(booking.id)}
+                    onStatusChange={(status) => updateStatus.mutate({ id: booking.id, status })}
+                    onSign={() => setSigningBooking(booking)}
                     isAdmin={isAdmin}
                     showDate
                   />

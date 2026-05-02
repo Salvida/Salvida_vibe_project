@@ -36,7 +36,7 @@ function FitBounds({ positions }: { positions: [number, number][] }) {
   const map = useMap();
   useEffect(() => {
     if (positions.length === 1) {
-      map.setView(positions[0], 15);
+      map.setView(positions[0]!, 15);
     } else if (positions.length > 1) {
       map.fitBounds(L.latLngBounds(positions), { padding: [40, 40] });
     }
@@ -53,7 +53,7 @@ export default function AddressesMapView({ addresses, onAssess }: AddressesMapVi
   const { t } = useTranslation();
   const geocoded = addresses.filter((a) => a.lat != null && a.lng != null);
   const positions = geocoded.map((a) => [a.lat!, a.lng!] as [number, number]);
-  const defaultCenter: [number, number] = positions.length > 0 ? positions[0] : [40.4168, -3.7038];
+  const defaultCenter: [number, number] = positions.length > 0 ? positions[0]! : [40.4168, -3.7038];
 
   if (geocoded.length === 0) {
     return (

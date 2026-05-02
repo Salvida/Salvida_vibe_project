@@ -31,11 +31,11 @@ export default function MultiSelect({
   // Derive trigger label from selection
   let triggerLabel = '';
   if (selectedOptions.length === 1) {
-    triggerLabel = selectedOptions[0].label;
+    triggerLabel = selectedOptions[0]?.label ?? '';
   } else if (selectedOptions.length === 2) {
-    triggerLabel = selectedOptions.map((o) => o.label).join(', ');
+    triggerLabel = selectedOptions.map((option) => option.label).join(', ');
   } else if (selectedOptions.length > 2) {
-    triggerLabel = `${selectedOptions[0].label}, +${selectedOptions.length - 1} más`;
+    triggerLabel = `${selectedOptions[0]?.label ?? ''}, +${selectedOptions.length - 1} más`;
   }
 
   const filtered = options.filter((o) => {
@@ -66,7 +66,7 @@ export default function MultiSelect({
           placeholder={triggerLabel || placeholder}
           value={open ? search : ''}
           disabled={disabled}
-          onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
+          onChange={(event) => { setSearch(event.target.value); setOpen(true); }}
           onFocus={() => { setSearch(''); setOpen(true); }}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           autoComplete="off"
@@ -74,7 +74,7 @@ export default function MultiSelect({
         {hasValue && (
           <button
             className="multi-select__clear"
-            onMouseDown={(e) => { e.preventDefault(); onChange([]); setSearch(''); }}
+            onMouseDown={(event) => { event.preventDefault(); onChange([]); setSearch(''); }}
             tabIndex={-1}
             aria-label="Limpiar selección"
           >

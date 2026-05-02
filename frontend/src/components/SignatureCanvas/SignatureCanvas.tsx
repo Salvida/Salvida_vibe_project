@@ -13,21 +13,23 @@ export default function SignatureCanvas({ canvasRef, onEmpty }: SignatureCanvasP
   const hasDrawn = useRef(false);
 
   const getPos = (
-    e: MouseEvent | TouchEvent,
+    event: MouseEvent | TouchEvent,
     canvas: HTMLCanvasElement,
   ): { x: number; y: number } => {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    if ('touches' in e) {
+    if ('touches' in event) {
+      const touch = event.touches[0];
+      if (!touch) return { x: 0, y: 0 };
       return {
-        x: (e.touches[0].clientX - rect.left) * scaleX,
-        y: (e.touches[0].clientY - rect.top) * scaleY,
+        x: (touch.clientX - rect.left) * scaleX,
+        y: (touch.clientY - rect.top) * scaleY,
       };
     }
     return {
-      x: ((e as MouseEvent).clientX - rect.left) * scaleX,
-      y: ((e as MouseEvent).clientY - rect.top) * scaleY,
+      x: ((event as MouseEvent).clientX - rect.left) * scaleX,
+      y: ((event as MouseEvent).clientY - rect.top) * scaleY,
     };
   };
 
@@ -40,18 +42,18 @@ export default function SignatureCanvas({ canvasRef, onEmpty }: SignatureCanvasP
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    const onStart = (e: MouseEvent | TouchEvent) => {
-      e.preventDefault();
+    const onStart = (event: MouseEvent | TouchEvent) => {
+      event.preventDefault();
       isDrawing.current = true;
-      const { x, y } = getPos(e, canvas);
+      const { x, y } = getPos(event, canvas);
       ctx.beginPath();
       ctx.moveTo(x, y);
     };
 
-    const onMove = (e: MouseEvent | TouchEvent) => {
-      e.preventDefault();
+    const onMove = (event: MouseEvent | TouchEvent) => {
+      event.preventDefault();
       if (!isDrawing.current) return;
-      const { x, y } = getPos(e, canvas);
+      const { x, y } = getPos(event, canvas);
       ctx.lineTo(x, y);
       ctx.stroke();
       if (!hasDrawn.current) {

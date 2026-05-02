@@ -2,19 +2,12 @@ import { useMemo } from 'react';
 import { DatePicker, ConfigProvider } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/es';
+import { ANTD_THEME } from '../../lib/antdTheme';
 import './DateInput.css';
 
 dayjs.locale('es');
 
 const FORMAT = 'YYYY-MM-DD';
-
-const THEME = {
-  token: {
-    colorPrimary: '#6b4691',
-    borderRadius: 12,
-    fontFamily: 'inherit',
-  },
-} as const;
 
 interface DateInputProps {
   value?: string;
@@ -41,7 +34,7 @@ export default function DateInput({
   );
 
   return (
-    <ConfigProvider theme={THEME}>
+    <ConfigProvider theme={ANTD_THEME}>
       <DatePicker
         value={dayjsValue}
         onChange={(d) => onChange?.(d ? d.format(FORMAT) : '')}

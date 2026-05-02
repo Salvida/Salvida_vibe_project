@@ -20,11 +20,9 @@ export default function PrmAddressPicker({
 }: PrmAddressPickerProps) {
   const { t } = useTranslation();
   const { data: addresses, isLoading } = usePrmAddresses(prmId);
-  const [selectedChipId, setSelectedChipId] = useState<string | null>(null);
-
-  useEffect(() => {
-    setSelectedChipId(null);
-  }, [prmId]);
+  const [selectedChipId, setSelectedChipId] = useState<string | null>(() =>
+    value?.id ?? null,
+  );
 
   const validatedAddresses = (addresses ?? []).filter(
     (a) => a.validation_status === 'validated',

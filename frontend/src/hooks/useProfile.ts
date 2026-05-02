@@ -52,8 +52,6 @@ export function useArchiveUser() {
 }
 
 export function useDemoMode() {
-  const qc = useQueryClient();
-
   return useMutation({
     mutationFn: (active: boolean) =>
       apiClient.post<UserProfile>('/api/profile/demo-mode', { active }),

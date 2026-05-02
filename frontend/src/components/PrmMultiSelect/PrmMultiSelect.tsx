@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePrms } from '../../hooks/usePrms';
 import MultiSelect from '../MultiSelect/MultiSelect';
@@ -22,12 +21,6 @@ export default function PrmMultiSelect({
 }: PrmMultiSelectProps) {
   const { t } = useTranslation();
   const { data: prms = [] } = usePrms(undefined, ownerId || undefined);
-
-  // Reset selection whenever the PRM list changes due to owner filter
-  useEffect(() => {
-    onChange([]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ownerId]);
 
   const options: MultiSelectOption[] = prms.map((p) => ({
     id: p.id,

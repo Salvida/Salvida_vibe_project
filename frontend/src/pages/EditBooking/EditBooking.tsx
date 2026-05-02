@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, Loader2, FileSignature } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -26,24 +26,20 @@ export default function EditBooking() {
   const { data: booking, isLoading } = useBooking(id!);
   const updateBooking = useUpdateBooking();
 
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [address, setAddress] = useState<Partial<Address>>({});
+  const [date, setDate] = useState(() => booking?.date ?? '');
+  const [time, setTime] = useState(() => booking?.startTime ?? '');
+  const [address, setAddress] = useState<Partial<Address>>(() =>
+    booking
+      ? {
+          full_address: booking.address,
+          id: booking.addressId,
+          lat: booking.lat,
+          lng: booking.lng,
+        }
+      : {},
+  );
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [showSignModal, setShowSignModal] = useState(false);
-
-  useEffect(() => {
-    if (booking) {
-      setDate(booking.date);
-      setTime(booking.startTime);
-      setAddress({
-        full_address: booking.address,
-        id: booking.addressId,
-        lat: booking.lat,
-        lng: booking.lng,
-      });
-    }
-  }, [booking]);
 
   const missingFields = [
     !address.full_address && t('booking.locationDetails'),

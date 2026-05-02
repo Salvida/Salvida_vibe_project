@@ -129,21 +129,19 @@ export default function Settings() {
   }
   const { data: users } = useUsers(isAdminUser && activeSection === "profile");
 
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    dni: "",
-    email: "",
-    phone: "",
-    organization: "",
-    avatar: "",
-  });
+  const [form, setForm] = useState(() => ({
+    firstName: profile?.firstName ?? "",
+    lastName: profile?.lastName ?? "",
+    dni: profile?.dni ?? "",
+    email: profile?.email ?? "",
+    phone: profile?.phone ?? "",
+    organization: profile?.organization ?? "",
+    avatar: profile?.avatar ?? "",
+  }));
 
-  const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>({
-    email: false,
-    push: true,
-    booking_reminder: true,
-  });
+  const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>(() =>
+    notifTargetUser?.notification_prefs ?? profile?.notification_prefs ?? { email: false, push: true, booking_reminder: true },
+  );
 
   const [municipalityQuery, setMunicipalityQuery] = useState("");
   const [municipalitySuggestions, setMunicipalitySuggestions] = useState<{ label: string; lat: number; lng: number }[]>([]);
@@ -154,36 +152,7 @@ export default function Settings() {
   const debouncedMunicipality = useDebounce(municipalityQuery, 300);
   const municipalityRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (notifTargetUser?.notification_prefs) {
-      setNotifPrefs(notifTargetUser.notification_prefs);
-    }
-  }, [notifTargetUser]);
 
-  useEffect(() => {
-    if (selectedUserId) return;
-    if (profile) {
-      setForm({
-        firstName: profile.firstName ?? "",
-        lastName: profile.lastName ?? "",
-        dni: profile.dni ?? "",
-        email: profile.email ?? "",
-        phone: profile.phone ?? "",
-        organization: profile.organization ?? "",
-        avatar: profile.avatar ?? "",
-      });
-      if (profile.notification_prefs) {
-        setNotifPrefs(profile.notification_prefs);
-      }
-      if (profile.municipality) {
-        setMunicipalityQuery(profile.municipality);
-        setMunicipalitySelected(true);
-        if (profile.default_lat != null && profile.default_lng != null) {
-          setMunicipalityCoords({ lat: profile.default_lat, lng: profile.default_lng });
-        }
-      }
-    }
-  }, [profile, selectedUserId]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -241,12 +210,12 @@ export default function Settings() {
       ? `${form.firstName.charAt(0)}${form.lastName.charAt(0)}`.toUpperCase()
       : "?";
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setForm((prev) => ({ ...prev, [event.target.name]: event.target.value }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     const extra = (municipalitySelected && municipalityCoords)
       ? { municipality: municipalityQuery, default_lat: municipalityCoords.lat, default_lng: municipalityCoords.lng }
       : {};
@@ -511,10 +480,10 @@ export default function Settings() {
                         type="file"
                         accept="image/*"
                         style={{ display: "none" }}
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
                           if (file) handleAvatarFile(file);
-                          e.target.value = "";
+                          event.target.value = "";
                         }}
                       />
                       <div className="settings-avatar__wrap">
