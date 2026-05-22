@@ -1,10 +1,14 @@
 /// <reference lib="webworker" />
-import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
+import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching'
+import { NavigationRoute, registerRoute } from 'workbox-routing'
 
 declare const self: ServiceWorkerGlobalScope
 
 cleanupOutdatedCaches()
 precacheAndRoute(self.__WB_MANIFEST)
+
+// SPA fallback: any navigation request gets index.html from precache
+registerRoute(new NavigationRoute(createHandlerBoundToURL('/index.html')))
 
 self.addEventListener('push', (event) => {
   let payload: { title: string; body: string } = { title: 'Salvida', body: '' }

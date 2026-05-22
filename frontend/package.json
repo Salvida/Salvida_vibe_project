@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "typecheck:config": "tsc --noEmit -p tsconfig.node.json"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.100.0",

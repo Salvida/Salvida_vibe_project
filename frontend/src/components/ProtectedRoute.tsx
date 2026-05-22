@@ -20,7 +20,10 @@ interface ProtectedRouteProps {
   requireSuperAdmin?: boolean;
 }
 
-export default function ProtectedRoute({ requireAdmin = false, requireSuperAdmin = false }: ProtectedRouteProps) {
+export default function ProtectedRoute({
+  requireAdmin = false,
+  requireSuperAdmin = false,
+}: ProtectedRouteProps) {
   const session = useAuthStore((s) => s.session);
   const isInitialized = useAuthStore((s) => s.isInitialized);
   const user = useAuthStore((s) => s.user);
@@ -38,9 +41,16 @@ export default function ProtectedRoute({ requireAdmin = false, requireSuperAdmin
 
   const needsRoleCheck = requireAdmin || requireSuperAdmin;
 
-  // Wait for profile to load before enforcing role checks
+  // ProfileSync must render whenever there's a session so useProfile() runs
+  // and populates the store. Without this, admin routes opened in a new tab
+  // deadlock: role check waits for user, but ProfileSync never renders to fetch it.
   if (needsRoleCheck && user === null) {
-    return <AppLoader />;
+    return (
+      <>
+        <ProfileSync />
+        <AppLoader />
+      </>
+    );
   }
 
   if (requireSuperAdmin && user?.role !== 'superadmin') {
