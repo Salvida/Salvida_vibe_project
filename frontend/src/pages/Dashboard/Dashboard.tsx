@@ -68,25 +68,7 @@ function BookingCard({
       <div className="booking-card__info">
         <div className="booking-card__top">
           <div className="booking-card__name">{booking.prmName}</div>
-          <div className="booking-card__right">
-            <div className="booking-card__badges">
-              {booking.created_by_admin && (
-                <span className="booking-admin-badge">{t('dashboard.createdByAdmin')}</span>
-              )}
-              <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
-                {t(`bookingStatuses.${booking.status}`)}
-              </span>
-              {booking.status === 'SignPending' && (
-                <button
-                  type="button"
-                  className="booking-sign-btn"
-                  onClick={(e) => { e.stopPropagation(); onSign(); }}
-                >
-                  <FileSignature size={14} />
-                  {t('contract.signButton')}
-                </button>
-              )}
-            </div>
+          <div className="booking-card__menu">
             <DropdownMenu
               items={[
                 ...(isAdmin && (booking.status === 'Pending' || booking.status === 'SignPending') ? [
@@ -100,6 +82,24 @@ function BookingCard({
                 { label: t('dashboard.actions.deleteBooking'), icon: <Trash2 size={14} />, onClick: onDelete, variant: 'danger' as const },
               ]}
             />
+          </div>
+          <div className="booking-card__badges">
+            {booking.created_by_admin && (
+              <span className="booking-admin-badge">{t('dashboard.createdByAdmin')}</span>
+            )}
+            <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
+              {t(`bookingStatuses.${booking.status}`)}
+            </span>
+            {booking.status === 'SignPending' && (
+              <button
+                type="button"
+                className="booking-sign-btn"
+                onClick={(e) => { e.stopPropagation(); onSign(); }}
+              >
+                <FileSignature size={14} />
+                {t('contract.signButton')}
+              </button>
+            )}
           </div>
         </div>
         <div className="booking-card__meta">
