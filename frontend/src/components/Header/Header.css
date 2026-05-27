@@ -112,8 +112,26 @@
     height: 4rem;
   }
 
+  .header__left {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .header__left > div {
+    min-width: 0;
+    overflow: hidden;
+  }
+
   .header__title {
     font-size: 1.125rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header__subtitle {
+    display: none;
   }
 
   .header__date {

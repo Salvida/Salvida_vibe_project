@@ -2,6 +2,33 @@ import { useAuthStore } from '../store/useAuthStore';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
+const RETRY_DELAYS = [1500, 3000, 5000];
+
+export async function fetchWithRetry(
+  url: string,
+  options?: RequestInit,
+  signal?: AbortSignal,
+): Promise<Response> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
+    try {
+      const res = await fetch(url, { ...options, signal });
+      if (res.ok || res.status < 500) return res;
+      lastError = new Error(`HTTP ${res.status}`);
+    } catch (err) {
+      if (signal?.aborted) throw err;
+      lastError = err;
+    }
+    if (attempt < RETRY_DELAYS.length) {
+      await new Promise<void>((resolve, reject) => {
+        const t = setTimeout(resolve, RETRY_DELAYS[attempt]);
+        signal?.addEventListener('abort', () => { clearTimeout(t); reject(signal.reason); });
+      });
+    }
+  }
+  throw lastError;
+}
+
 export class ApiError extends Error {
   constructor(
     public readonly status: number,
