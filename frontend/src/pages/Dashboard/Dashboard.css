@@ -342,6 +342,12 @@
   background-color: var(--color-primary-05);
 }
 
+/* ── Mobile toolbar ──────────────────────────────────────────────────────── */
+
+.dashboard__mobile-toolbar {
+  display: none;
+}
+
 /* ── View toggle ─────────────────────────────────────────────────────────── */
 
 .dashboard__view-toggle {
@@ -516,8 +522,18 @@
 }
 
 @media (max-width: 768px) {
+  .header__extra-actions {
+    display: none;
+  }
+
+  .dashboard__mobile-toolbar {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 0.25rem;
+  }
+
   .dashboard__body {
-    padding: 1rem;
+    padding: 0.5rem 1rem 1rem;
   }
 
   .dashboard__grid {
