@@ -100,6 +100,16 @@
   background-color: var(--color-slate-100);
 }
 
+@media (max-width: 1024px) {
+  .header__subtitle {
+    display: none;
+  }
+
+  .header__date {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .header__menu-btn {
     display: flex;
@@ -130,11 +140,7 @@
     text-overflow: ellipsis;
   }
 
-  .header__subtitle {
-    display: none;
-  }
-
-  .header__date {
+  .header__extra-actions {
     display: none;
   }
 }

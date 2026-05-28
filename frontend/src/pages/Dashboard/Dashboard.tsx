@@ -352,6 +352,26 @@ export default function Dashboard() {
 
       <div className="dashboard__body">
 
+        {/* ── Mobile-only view toggle ── */}
+        <div className="dashboard__mobile-toolbar">
+          <div className="dashboard__view-toggle">
+            <button
+              className={`dashboard__view-btn${view === 'calendar' ? ' dashboard__view-btn--active' : ''}`}
+              onClick={() => setView('calendar')}
+            >
+              <CalendarDays size={16} />
+              <span>{t('dashboard.viewCalendar')}</span>
+            </button>
+            <button
+              className={`dashboard__view-btn${view === 'list' ? ' dashboard__view-btn--active' : ''}`}
+              onClick={() => setView('list')}
+            >
+              <List size={16} />
+              <span>{t('dashboard.viewList')}</span>
+            </button>
+          </div>
+        </div>
+
         {/* ── Calendar view ── */}
         {view === 'calendar' && (
           <div className="dashboard__grid">

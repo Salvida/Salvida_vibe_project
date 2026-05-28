@@ -229,6 +229,26 @@
   color: var(--color-slate-700);
 }
 
+.sidebar__whatsapp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.75rem;
+  color: #16a34a;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.sidebar__whatsapp:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
 .sidebar__logout-btn {
   color: var(--color-slate-400);
   transition: color 0.15s;
