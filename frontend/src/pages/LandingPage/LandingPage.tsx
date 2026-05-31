@@ -8,6 +8,7 @@ import type { Swiper as SwiperType } from "swiper/types";
 import "swiper/swiper.css";
 import PLATFORM_ICONS from "../../lib/platformIcons";
 import { SalvidaLogo } from "../../assets/icons/SalvidaLogo";
+import { fetchWithRetry } from "../../lib/api";
 import "./LandingPage.css";
 import videoSrc from "../../assets/video/Y0S8F6SYMHLHC1WP.mp4";
 import WhatsAppFAB from "../../components/WhatsAppFAB/WhatsAppFAB";
@@ -266,30 +267,36 @@ export default function LandingPage() {
 
   // Fetch reviews on mount; null means "still loading / use mocks"
   useEffect(() => {
-    fetch(`${BASE_URL}/api/reviews`)
+    const ac = new AbortController();
+    fetchWithRetry(`${BASE_URL}/api/reviews`, {}, ac.signal)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((data: ApiReview[]) => setReviews(data.length > 0 ? data : null))
       .catch(() => setReviews(null));
+    return () => ac.abort();
   }, []);
 
   // Fetch social links on mount
   useEffect(() => {
-    fetch(`${BASE_URL}/api/social-links`)
+    const ac = new AbortController();
+    fetchWithRetry(`${BASE_URL}/api/social-links`, {}, ac.signal)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((data: ApiSocialLink[]) => setSocialLinks(data))
       .catch(() => {
-        /* silently ignore – no social links shown */
+        /* silently ignore – use defaults */
       });
+    return () => ac.abort();
   }, []);
 
   // Fetch global KPIs on mount
   useEffect(() => {
-    fetch(`${BASE_URL}/globalKpis`)
+    const ac = new AbortController();
+    fetchWithRetry(`${BASE_URL}/globalKpis`, {}, ac.signal)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((data: GlobalKpis) => setKpis(data))
       .catch(() => {
-        // fallback – keep zeros, silently ignore (public page must not break)
+        // fallback – keep zeros after all retries exhausted
       });
+    return () => ac.abort();
   }, []);
 
   function handleNavClick(id: string) {

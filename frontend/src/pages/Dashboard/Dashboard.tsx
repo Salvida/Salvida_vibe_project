@@ -20,6 +20,127 @@ import './Dashboard.css';
 
 type SortKey = 'date' | 'startTime' | 'prmName' | 'status' | 'owner_name';
 
+const STATUS_CLASS: Record<Booking['status'], string> = {
+  Approved: 'booking-status--approved',
+  Pending: 'booking-status--pending',
+  Completed: 'booking-status--completed',
+  Cancelled: 'booking-status--cancelled',
+  SignPending: 'booking-status--sign-pending',
+};
+
+// ─── BookingCard ─────────────────────────────────────────────────────────────
+
+function BookingCard({
+  booking,
+  onEdit,
+  onDelete,
+  onStatusChange,
+  onSign,
+  isAdmin,
+  showDate,
+}: {
+  booking: Booking;
+  onEdit: () => void;
+  onDelete: () => void;
+  onStatusChange: (status: Booking['status']) => void;
+  onSign: () => void;
+  isAdmin: boolean;
+  showDate?: boolean;
+}) {
+  const { t } = useTranslation();
+  const mapsUrl = booking.address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.address)}`
+    : null;
+
+  return (
+    <div className="booking-card">
+      {booking.prmAvatar ? (
+        <img className="booking-card__avatar" src={booking.prmAvatar} alt={booking.prmName} />
+      ) : (
+        <div className="booking-card__avatar booking-card__avatar--placeholder">
+          {booking.prmName?.[0] ?? '?'}
+        </div>
+      )}
+      <div className="booking-card__info">
+        <div className="booking-card__top">
+          <div className="booking-card__name">{booking.prmName}</div>
+          <div className="booking-card__menu">
+            <DropdownMenu
+              items={[
+                ...(isAdmin && (booking.status === 'Pending' || booking.status === 'SignPending') ? [
+                  { label: t('dashboard.actions.approve'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Approved') },
+                ] : []),
+                ...(isAdmin && (booking.status === 'Pending' || booking.status === 'Approved') ? [
+                  { label: t('dashboard.actions.complete'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Completed') },
+                  { label: t('dashboard.actions.cancelBooking'), icon: <X size={14} />, onClick: () => onStatusChange('Cancelled'), variant: 'danger' as const },
+                ] : []),
+                { label: t('dashboard.actions.editBooking'), icon: <Pencil size={14} />, onClick: onEdit },
+                { label: t('dashboard.actions.deleteBooking'), icon: <Trash2 size={14} />, onClick: onDelete, variant: 'danger' as const },
+              ]}
+            />
+          </div>
+          <div className="booking-card__badges">
+            {booking.created_by_admin && (
+              <span className="booking-admin-badge">{t('dashboard.createdByAdmin')}</span>
+            )}
+            <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
+              {t(`bookingStatuses.${booking.status}`)}
+            </span>
+            {booking.status === 'SignPending' && (
+              <button
+                type="button"
+                className="booking-sign-btn"
+                onClick={(e) => { e.stopPropagation(); onSign(); }}
+              >
+                <FileSignature size={14} />
+                {t('contract.signButton')}
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="booking-card__meta">
+          {showDate && booking.date && (
+            <span className="booking-card__meta-item">
+              <CalendarDays size={13} />
+              {(() => {
+                const [y, m, d] = booking.date.split('-').map(Number);
+                return new Date(y, m - 1, d).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+              })()}
+            </span>
+          )}
+          <span className="booking-card__meta-item">
+            <Clock size={13} />
+            {booking.startTime}
+          </span>
+          <span className="booking-card__meta-item booking-card__meta-location">
+            {mapsUrl ? (
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="booking-card__map-icon"
+                title={t('dashboard.viewOnMaps')}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MapPin size={13} />
+              </a>
+            ) : (
+              <MapPin size={13} />
+            )}
+            {booking.address}
+          </span>
+          {isAdmin && booking.owner_name && (
+            <span className="booking-card__meta-item">
+              <User size={13} />
+              {booking.owner_name}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
@@ -174,6 +295,26 @@ export default function Dashboard() {
       />
 
       <div className="dashboard__body">
+
+        {/* ── Mobile-only view toggle ── */}
+        <div className="dashboard__mobile-toolbar">
+          <div className="dashboard__view-toggle">
+            <button
+              className={`dashboard__view-btn${view === 'calendar' ? ' dashboard__view-btn--active' : ''}`}
+              onClick={() => setView('calendar')}
+            >
+              <CalendarDays size={16} />
+              <span>{t('dashboard.viewCalendar')}</span>
+            </button>
+            <button
+              className={`dashboard__view-btn${view === 'list' ? ' dashboard__view-btn--active' : ''}`}
+              onClick={() => setView('list')}
+            >
+              <List size={16} />
+              <span>{t('dashboard.viewList')}</span>
+            </button>
+          </div>
+        </div>
 
         {/* ── Calendar view ── */}
         {view === 'calendar' && (
