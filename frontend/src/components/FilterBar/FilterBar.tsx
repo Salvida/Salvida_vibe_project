@@ -5,38 +5,31 @@ import MultiSelect from '../MultiSelect/MultiSelect';
 import type { MultiSelectOption } from '../MultiSelect/MultiSelect';
 import DateInput from '../DateInput/DateInput';
 
+export interface BookingFilterValues {
+  ownerIds: string[];
+  prmIds: string[];
+  statuses: string[];
+  dateFrom: string;
+  dateTo: string;
+}
+
 export interface FilterBarProps {
   isAdmin: boolean;
   showDateRange?: boolean;
-  filterOwnerIds: string[];
-  onOwnerChange: (ids: string[]) => void;
-  filterPrmIds: string[];
-  onPrmChange: (ids: string[]) => void;
+  /** Owner id hint for the PRM list — only meaningful when a single user is selected. */
   singleOwnerId?: string;
-  filterStatuses: string[];
-  onStatusChange: (ids: string[]) => void;
   statusOptions: MultiSelectOption[];
-  filterDateFrom: string;
-  onDateFromChange: (value: string) => void;
-  filterDateTo: string;
-  onDateToChange: (value: string) => void;
+  values: BookingFilterValues;
+  onChange: (patch: Partial<BookingFilterValues>) => void;
 }
 
 export default function FilterBar({
   isAdmin,
   showDateRange,
-  filterOwnerIds,
-  onOwnerChange,
-  filterPrmIds,
-  onPrmChange,
   singleOwnerId,
-  filterStatuses,
-  onStatusChange,
   statusOptions,
-  filterDateFrom,
-  onDateFromChange,
-  filterDateTo,
-  onDateToChange,
+  values,
+  onChange,
 }: FilterBarProps) {
   const { t } = useTranslation();
 
@@ -46,8 +39,8 @@ export default function FilterBar({
         <div className="booking-filters__field">
           <label className="booking-filters__label">{t('dashboard.filters.user')}</label>
           <UserMultiSelect
-            values={filterOwnerIds}
-            onChange={onOwnerChange}
+            values={values.ownerIds}
+            onChange={(ownerIds) => onChange({ ownerIds })}
             placeholder={t('dashboard.filters.allUsers')}
           />
         </div>
@@ -56,8 +49,8 @@ export default function FilterBar({
         <label className="booking-filters__label">{t('dashboard.filters.prm')}</label>
         <PrmMultiSelect
           key={singleOwnerId ?? 'all'}
-          values={filterPrmIds}
-          onChange={onPrmChange}
+          values={values.prmIds}
+          onChange={(prmIds) => onChange({ prmIds })}
           ownerId={singleOwnerId}
           placeholder={t('dashboard.filters.allPrms')}
         />
@@ -65,8 +58,8 @@ export default function FilterBar({
       <div className="booking-filters__field">
         <label className="booking-filters__label">{t('dashboard.filters.status')}</label>
         <MultiSelect
-          values={filterStatuses}
-          onChange={onStatusChange}
+          values={values.statuses}
+          onChange={(statuses) => onChange({ statuses })}
           options={statusOptions}
           placeholder={t('dashboard.filters.allStatuses')}
         />
@@ -76,16 +69,16 @@ export default function FilterBar({
           <div className="booking-filters__field">
             <label className="booking-filters__label">{t('dashboard.filters.dateFrom')}</label>
             <DateInput
-              value={filterDateFrom}
-              onChange={onDateFromChange}
+              value={values.dateFrom}
+              onChange={(dateFrom) => onChange({ dateFrom })}
               placeholder={t('dashboard.filters.dateFrom')}
             />
           </div>
           <div className="booking-filters__field">
             <label className="booking-filters__label">{t('dashboard.filters.dateTo')}</label>
             <DateInput
-              value={filterDateTo}
-              onChange={onDateToChange}
+              value={values.dateTo}
+              onChange={(dateTo) => onChange({ dateTo })}
               placeholder={t('dashboard.filters.dateTo')}
             />
           </div>

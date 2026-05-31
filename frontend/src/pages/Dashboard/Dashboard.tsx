@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import Header from '../../components/Header/Header';
 import CalendarWidget from '../../components/CalendarWidget/CalendarWidget';
 import FilterBar from '../../components/FilterBar/FilterBar';
+import type { BookingFilterValues } from '../../components/FilterBar/FilterBar';
 import BookingCard from '../../components/BookingCard/BookingCard';
 import type { MultiSelectOption } from '../../components/MultiSelect/MultiSelect';
 import ContractModal from '../../components/ContractModal/ContractModal';
@@ -28,6 +29,38 @@ import './Dashboard.css';
 
 type SortKey = 'date' | 'startTime' | 'prmName' | 'status' | 'owner_name';
 
+type View = 'calendar' | 'list';
+
+// ─── View toggle ─────────────────────────────────────────────────────────────
+
+function ViewToggle({
+  view,
+  onChange,
+}: {
+  view: View;
+  onChange: (view: View) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="dashboard__view-toggle">
+      <button
+        className={`dashboard__view-btn${view === 'calendar' ? ' dashboard__view-btn--active' : ''}`}
+        onClick={() => onChange('calendar')}
+      >
+        <CalendarDays size={16} />
+        <span>{t('dashboard.viewCalendar')}</span>
+      </button>
+      <button
+        className={`dashboard__view-btn${view === 'list' ? ' dashboard__view-btn--active' : ''}`}
+        onClick={() => onChange('list')}
+      >
+        <List size={16} />
+        <span>{t('dashboard.viewList')}</span>
+      </button>
+    </div>
+  );
+}
+
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
@@ -42,33 +75,39 @@ export default function Dashboard() {
   const [signingBooking, setSigningBooking] = useState<Booking | null>(null);
 
   // ── View toggle ────────────────────────────────────────────────────────────
-  const [view, setView] = useState<'calendar' | 'list'>('calendar');
+  const [view, setView] = useState<View>('calendar');
 
   // ── Shared filter state ────────────────────────────────────────────────────
-  const [filterOwnerIds, setFilterOwnerIds] = useState<string[]>([]);
-  const [filterPrmIds, setFilterPrmIds] = useState<string[]>([]);
-  const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
-  // Date range — list view only
-  const [filterDateFrom, setFilterDateFrom] = useState('');
-  const [filterDateTo, setFilterDateTo] = useState('');
+  const [filters, setFilters] = useState<BookingFilterValues>({
+    ownerIds: [],
+    prmIds: [],
+    statuses: [],
+    dateFrom: '',
+    dateTo: '',
+  });
 
-  function handleOwnerChange(ids: string[]) {
-    setFilterOwnerIds(ids);
-    setFilterPrmIds([]); // reset PRMs when owner selection changes
+  function handleFilterChange(patch: Partial<BookingFilterValues>) {
+    setFilters((prev) => {
+      const next = { ...prev, ...patch };
+      // Reset PRMs whenever the owner selection changes — a PRM belongs to a
+      // single owner, so a stale prm filter would silently hide every booking.
+      if (patch.ownerIds) next.prmIds = [];
+      return next;
+    });
   }
 
   // Derive the ownerId hint for PrmMultiSelect: only meaningful when 1 user selected
   const singleOwnerId =
-    filterOwnerIds.length === 1 ? filterOwnerIds[0] : undefined;
+    filters.ownerIds.length === 1 ? filters.ownerIds[0] : undefined;
 
   // Common active filters (no date range — those are list-only)
   const baseFilters = useMemo(
     () => ({
-      status: filterStatuses.length ? filterStatuses : undefined,
-      prmId: filterPrmIds.length ? filterPrmIds : undefined,
-      ownerId: filterOwnerIds.length ? filterOwnerIds : undefined,
+      status: filters.statuses.length ? filters.statuses : undefined,
+      prmId: filters.prmIds.length ? filters.prmIds : undefined,
+      ownerId: filters.ownerIds.length ? filters.ownerIds : undefined,
     }),
-    [filterStatuses, filterPrmIds, filterOwnerIds],
+    [filters.statuses, filters.prmIds, filters.ownerIds],
   );
 
   // ── Calendar view state ───────────────────────────────────────────────────
@@ -135,8 +174,8 @@ export default function Dashboard() {
 
   const { data: listBookings = [], isLoading: listLoading } = useBookings(
     {
-      date_from: filterDateFrom || undefined,
-      date_to: filterDateTo || undefined,
+      date_from: filters.dateFrom || undefined,
+      date_to: filters.dateTo || undefined,
       ...baseFilters,
     },
     { enabled: view === 'list' },
@@ -196,45 +235,13 @@ export default function Dashboard() {
       <Header
         title={t('dashboard.title')}
         subtitle={t('dashboard.subtitle')}
-        actions={
-          <div className="dashboard__view-toggle">
-            <button
-              className={`dashboard__view-btn${view === 'calendar' ? ' dashboard__view-btn--active' : ''}`}
-              onClick={() => setView('calendar')}
-            >
-              <CalendarDays size={16} />
-              <span>{t('dashboard.viewCalendar')}</span>
-            </button>
-            <button
-              className={`dashboard__view-btn${view === 'list' ? ' dashboard__view-btn--active' : ''}`}
-              onClick={() => setView('list')}
-            >
-              <List size={16} />
-              <span>{t('dashboard.viewList')}</span>
-            </button>
-          </div>
-        }
+        actions={<ViewToggle view={view} onChange={setView} />}
       />
 
       <div className="dashboard__body">
         {/* ── Mobile-only view toggle ── */}
         <div className="dashboard__mobile-toolbar">
-          <div className="dashboard__view-toggle">
-            <button
-              className={`dashboard__view-btn${view === 'calendar' ? ' dashboard__view-btn--active' : ''}`}
-              onClick={() => setView('calendar')}
-            >
-              <CalendarDays size={16} />
-              <span>{t('dashboard.viewCalendar')}</span>
-            </button>
-            <button
-              className={`dashboard__view-btn${view === 'list' ? ' dashboard__view-btn--active' : ''}`}
-              onClick={() => setView('list')}
-            >
-              <List size={16} />
-              <span>{t('dashboard.viewList')}</span>
-            </button>
-          </div>
+          <ViewToggle view={view} onChange={setView} />
         </div>
 
         {/* ── Calendar view ── */}
@@ -283,18 +290,10 @@ export default function Dashboard() {
               {/* Filter bar — calendar view (no date range) */}
               <FilterBar
                 isAdmin={isAdmin}
-                filterOwnerIds={filterOwnerIds}
-                onOwnerChange={handleOwnerChange}
-                filterPrmIds={filterPrmIds}
-                onPrmChange={setFilterPrmIds}
                 singleOwnerId={singleOwnerId}
-                filterStatuses={filterStatuses}
-                onStatusChange={setFilterStatuses}
                 statusOptions={statusOptions}
-                filterDateFrom={filterDateFrom}
-                onDateFromChange={setFilterDateFrom}
-                filterDateTo={filterDateTo}
-                onDateToChange={setFilterDateTo}
+                values={filters}
+                onChange={handleFilterChange}
               />
 
               <div className="bookings-header">
@@ -355,18 +354,10 @@ export default function Dashboard() {
             <FilterBar
               isAdmin={isAdmin}
               showDateRange
-              filterOwnerIds={filterOwnerIds}
-              onOwnerChange={handleOwnerChange}
-              filterPrmIds={filterPrmIds}
-              onPrmChange={setFilterPrmIds}
               singleOwnerId={singleOwnerId}
-              filterStatuses={filterStatuses}
-              onStatusChange={setFilterStatuses}
               statusOptions={statusOptions}
-              filterDateFrom={filterDateFrom}
-              onDateFromChange={setFilterDateFrom}
-              filterDateTo={filterDateTo}
-              onDateToChange={setFilterDateTo}
+              values={filters}
+              onChange={handleFilterChange}
             />
 
             {/* Sort controls */}

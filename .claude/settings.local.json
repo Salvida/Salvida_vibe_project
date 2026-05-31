@@ -65,7 +65,9 @@
       "Bash(git -C \"C:/Users/admin/Projects/Salvida_vibe_project\" add frontend/src/pages/LandingPage/LandingPage.tsx)",
       "Bash(git -C \"C:/Users/admin/Projects/Salvida_vibe_project\" commit -m \"fix: revert unauthorized video changes from task 9 subagent\")",
       "Bash(git -C \"C:/Users/admin/Projects/Salvida_vibe_project\" commit -m \"fix: resize watermark cover logo to 200x55 matching design\")",
-      "Bash(gh run *)"
+      "Bash(gh run *)",
+      "Bash(echo \"===TSC EXIT: $?===\")",
+      "Bash(npx eslint *)"
     ]
   },
   "hooks": {

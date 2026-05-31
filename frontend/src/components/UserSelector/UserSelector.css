@@ -69,6 +69,10 @@
   background-color: var(--color-primary-50, #eff6ff);
 }
 
+.settings-user-selector__option--active {
+  background-color: var(--color-slate-50);
+}
+
 .settings-user-selector__option--empty {
   cursor: default;
   color: var(--color-slate-400);

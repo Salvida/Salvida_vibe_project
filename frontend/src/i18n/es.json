@@ -24,7 +24,9 @@
     "add": "Añadir",
     "remove": "Eliminar",
     "noResults": "Sin resultados",
-    "clearSelection": "Limpiar selección"
+    "clearSelection": "Limpiar selección",
+    "user": "Usuario",
+    "searchUser": "Buscar usuario…"
   },
   "bookingStatuses": {
     "Approved": "Aprobada",

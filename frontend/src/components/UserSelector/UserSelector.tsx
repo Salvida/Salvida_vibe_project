@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useUsers } from '../../hooks/useProfile';
 import type { UserProfile } from '../../types';
 import Autocomplete from '../Autocomplete/Autocomplete';
@@ -25,9 +26,10 @@ function UserOption({ option }: { option: AutocompleteOption }) {
 export default function UserSelector({
   value,
   onChange,
-  label = 'Usuario',
-  placeholder = 'Buscar usuario…',
+  label,
+  placeholder,
 }: UserSelectorProps) {
+  const { t } = useTranslation();
   const { data: users = [] } = useUsers(true);
 
   const options: AutocompleteOption[] = users
@@ -49,8 +51,8 @@ export default function UserSelector({
       options={options}
       value={value}
       onChange={handleChange}
-      placeholder={placeholder}
-      label={label}
+      placeholder={placeholder ?? t('common.searchUser')}
+      label={label ?? t('common.user')}
       renderOption={(option) => <UserOption option={option} />}
     />
   );
