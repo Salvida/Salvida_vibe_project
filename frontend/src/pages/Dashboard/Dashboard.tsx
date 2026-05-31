@@ -6,11 +6,19 @@ import BookingCard from '../../components/BookingCard/BookingCard';
 import type { MultiSelectOption } from '../../components/MultiSelect/MultiSelect';
 import ContractModal from '../../components/ContractModal/ContractModal';
 import {
-  PlusCircle, CalendarDays, List, ArrowUp, ArrowDown,
+  PlusCircle,
+  CalendarDays,
+  List,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useBookings, useDeleteBooking, useUpdateBookingStatus } from '../../hooks/useBookings';
+import {
+  useBookings,
+  useDeleteBooking,
+  useUpdateBookingStatus,
+} from '../../hooks/useBookings';
 import { useAuthStore } from '../../store/useAuthStore';
 import { formatDateISO } from '../../utils';
 import type { Booking } from '../../types';
@@ -19,127 +27,6 @@ import './Dashboard.css';
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type SortKey = 'date' | 'startTime' | 'prmName' | 'status' | 'owner_name';
-
-const STATUS_CLASS: Record<Booking['status'], string> = {
-  Approved: 'booking-status--approved',
-  Pending: 'booking-status--pending',
-  Completed: 'booking-status--completed',
-  Cancelled: 'booking-status--cancelled',
-  SignPending: 'booking-status--sign-pending',
-};
-
-// ─── BookingCard ─────────────────────────────────────────────────────────────
-
-function BookingCard({
-  booking,
-  onEdit,
-  onDelete,
-  onStatusChange,
-  onSign,
-  isAdmin,
-  showDate,
-}: {
-  booking: Booking;
-  onEdit: () => void;
-  onDelete: () => void;
-  onStatusChange: (status: Booking['status']) => void;
-  onSign: () => void;
-  isAdmin: boolean;
-  showDate?: boolean;
-}) {
-  const { t } = useTranslation();
-  const mapsUrl = booking.address
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.address)}`
-    : null;
-
-  return (
-    <div className="booking-card">
-      {booking.prmAvatar ? (
-        <img className="booking-card__avatar" src={booking.prmAvatar} alt={booking.prmName} />
-      ) : (
-        <div className="booking-card__avatar booking-card__avatar--placeholder">
-          {booking.prmName?.[0] ?? '?'}
-        </div>
-      )}
-      <div className="booking-card__info">
-        <div className="booking-card__top">
-          <div className="booking-card__name">{booking.prmName}</div>
-          <div className="booking-card__menu">
-            <DropdownMenu
-              items={[
-                ...(isAdmin && (booking.status === 'Pending' || booking.status === 'SignPending') ? [
-                  { label: t('dashboard.actions.approve'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Approved') },
-                ] : []),
-                ...(isAdmin && (booking.status === 'Pending' || booking.status === 'Approved') ? [
-                  { label: t('dashboard.actions.complete'), icon: <CheckCircle size={14} />, onClick: () => onStatusChange('Completed') },
-                  { label: t('dashboard.actions.cancelBooking'), icon: <X size={14} />, onClick: () => onStatusChange('Cancelled'), variant: 'danger' as const },
-                ] : []),
-                { label: t('dashboard.actions.editBooking'), icon: <Pencil size={14} />, onClick: onEdit },
-                { label: t('dashboard.actions.deleteBooking'), icon: <Trash2 size={14} />, onClick: onDelete, variant: 'danger' as const },
-              ]}
-            />
-          </div>
-          <div className="booking-card__badges">
-            {booking.created_by_admin && (
-              <span className="booking-admin-badge">{t('dashboard.createdByAdmin')}</span>
-            )}
-            <span className={`booking-status ${STATUS_CLASS[booking.status]}`}>
-              {t(`bookingStatuses.${booking.status}`)}
-            </span>
-            {booking.status === 'SignPending' && (
-              <button
-                type="button"
-                className="booking-sign-btn"
-                onClick={(e) => { e.stopPropagation(); onSign(); }}
-              >
-                <FileSignature size={14} />
-                {t('contract.signButton')}
-              </button>
-            )}
-          </div>
-        </div>
-        <div className="booking-card__meta">
-          {showDate && booking.date && (
-            <span className="booking-card__meta-item">
-              <CalendarDays size={13} />
-              {(() => {
-                const [y, m, d] = booking.date.split('-').map(Number);
-                return new Date(y, m - 1, d).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-              })()}
-            </span>
-          )}
-          <span className="booking-card__meta-item">
-            <Clock size={13} />
-            {booking.startTime}
-          </span>
-          <span className="booking-card__meta-item booking-card__meta-location">
-            {mapsUrl ? (
-              <a
-                href={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="booking-card__map-icon"
-                title={t('dashboard.viewOnMaps')}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MapPin size={13} />
-              </a>
-            ) : (
-              <MapPin size={13} />
-            )}
-            {booking.address}
-          </span>
-          {isAdmin && booking.owner_name && (
-            <span className="booking-card__meta-item">
-              <User size={13} />
-              {booking.owner_name}
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 
@@ -159,11 +46,11 @@ export default function Dashboard() {
 
   // ── Shared filter state ────────────────────────────────────────────────────
   const [filterOwnerIds, setFilterOwnerIds] = useState<string[]>([]);
-  const [filterPrmIds, setFilterPrmIds]     = useState<string[]>([]);
+  const [filterPrmIds, setFilterPrmIds] = useState<string[]>([]);
   const [filterStatuses, setFilterStatuses] = useState<string[]>([]);
   // Date range — list view only
   const [filterDateFrom, setFilterDateFrom] = useState('');
-  const [filterDateTo, setFilterDateTo]     = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
 
   function handleOwnerChange(ids: string[]) {
     setFilterOwnerIds(ids);
@@ -171,18 +58,25 @@ export default function Dashboard() {
   }
 
   // Derive the ownerId hint for PrmMultiSelect: only meaningful when 1 user selected
-  const singleOwnerId = filterOwnerIds.length === 1 ? filterOwnerIds[0] : undefined;
+  const singleOwnerId =
+    filterOwnerIds.length === 1 ? filterOwnerIds[0] : undefined;
 
   // Common active filters (no date range — those are list-only)
-  const baseFilters = useMemo(() => ({
-    status:  filterStatuses.length ? filterStatuses : undefined,
-    prmId:   filterPrmIds.length   ? filterPrmIds   : undefined,
-    ownerId: filterOwnerIds.length ? filterOwnerIds  : undefined,
-  }), [filterStatuses, filterPrmIds, filterOwnerIds]);
+  const baseFilters = useMemo(
+    () => ({
+      status: filterStatuses.length ? filterStatuses : undefined,
+      prmId: filterPrmIds.length ? filterPrmIds : undefined,
+      ownerId: filterOwnerIds.length ? filterOwnerIds : undefined,
+    }),
+    [filterStatuses, filterPrmIds, filterOwnerIds],
+  );
 
   // ── Calendar view state ───────────────────────────────────────────────────
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [calendarMonth, setCalendarMonth] = useState<{ year: number; month: number }>({
+  const [calendarMonth, setCalendarMonth] = useState<{
+    year: number;
+    month: number;
+  }>({
     year: new Date().getFullYear(),
     month: new Date().getMonth(),
   });
@@ -195,7 +89,11 @@ export default function Dashboard() {
   );
 
   const monthDateFrom = `${calendarMonth.year}-${String(calendarMonth.month + 1).padStart(2, '0')}-01`;
-  const lastDay = new Date(calendarMonth.year, calendarMonth.month + 1, 0).getDate();
+  const lastDay = new Date(
+    calendarMonth.year,
+    calendarMonth.month + 1,
+    0,
+  ).getDate();
   const monthDateTo = `${calendarMonth.year}-${String(calendarMonth.month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
   const { data: monthBookings = [] } = useBookings(
     { date_from: monthDateFrom, date_to: monthDateTo, ...baseFilters },
@@ -203,42 +101,58 @@ export default function Dashboard() {
   );
 
   const bookingsByDate = useMemo<Record<string, Booking[]>>(() => {
-    return monthBookings.reduce<Record<string, Booking[]>>((accumulator, booking) => {
-      (accumulator[booking.date] ??= []).push(booking);
-      return accumulator;
-    }, {});
+    return monthBookings.reduce<Record<string, Booking[]>>(
+      (accumulator, booking) => {
+        (accumulator[booking.date] ??= []).push(booking);
+        return accumulator;
+      },
+      {},
+    );
   }, [monthBookings]);
 
   const total = bookings.length;
-  const pending = bookings.filter((booking) => booking.status === 'Pending').length;
-  const completed = bookings.filter((booking) => booking.status === 'Completed').length;
+  const pending = bookings.filter(
+    (booking) => booking.status === 'Pending',
+  ).length;
+  const completed = bookings.filter(
+    (booking) => booking.status === 'Completed',
+  ).length;
 
   const todayStr = formatDateISO(new Date());
   const isToday = dateStr === todayStr;
   const dateLabel = isToday
     ? t('dashboard.todayBookings')
-    : t('dashboard.dateLabel', { date: selectedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' }) });
+    : t('dashboard.dateLabel', {
+        date: selectedDate.toLocaleDateString('es-ES', {
+          day: 'numeric',
+          month: 'long',
+        }),
+      });
 
   // ── List view state ────────────────────────────────────────────────────────
-  const [sortKey, setSortKey]   = useState<SortKey>('date');
-  const [sortDir, setSortDir]   = useState<'asc' | 'desc'>('asc');
+  const [sortKey, setSortKey] = useState<SortKey>('date');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   const { data: listBookings = [], isLoading: listLoading } = useBookings(
     {
       date_from: filterDateFrom || undefined,
-      date_to:   filterDateTo   || undefined,
+      date_to: filterDateTo || undefined,
       ...baseFilters,
     },
     { enabled: view === 'list' },
   );
 
-  const sortedBookings = useMemo(() =>
-    [...listBookings].sort((bookingA, bookingB) => {
-      const valueA = String(bookingA[sortKey] ?? '');
-      const valueB = String(bookingB[sortKey] ?? '');
-      return sortDir === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
-    }),
-  [listBookings, sortKey, sortDir]);
+  const sortedBookings = useMemo(
+    () =>
+      [...listBookings].sort((bookingA, bookingB) => {
+        const valueA = String(bookingA[sortKey] ?? '');
+        const valueB = String(bookingB[sortKey] ?? '');
+        return sortDir === 'asc'
+          ? valueA.localeCompare(valueB)
+          : valueB.localeCompare(valueA);
+      }),
+    [listBookings, sortKey, sortDir],
+  );
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -250,23 +164,31 @@ export default function Dashboard() {
   }
 
   const sortColumns: { key: SortKey; label: string }[] = [
-    { key: 'date',       label: t('dashboard.sort.date') },
-    { key: 'startTime',  label: t('dashboard.sort.time') },
-    { key: 'prmName',    label: t('dashboard.sort.prm') },
-    { key: 'status',     label: t('dashboard.sort.status') },
-    ...(isAdmin ? [{ key: 'owner_name' as SortKey, label: t('dashboard.sort.responsible') }] : []),
+    { key: 'date', label: t('dashboard.sort.date') },
+    { key: 'startTime', label: t('dashboard.sort.time') },
+    { key: 'prmName', label: t('dashboard.sort.prm') },
+    { key: 'status', label: t('dashboard.sort.status') },
+    ...(isAdmin
+      ? [
+          {
+            key: 'owner_name' as SortKey,
+            label: t('dashboard.sort.responsible'),
+          },
+        ]
+      : []),
   ];
 
   // ── Status options for MultiSelect ─────────────────────────────────────────
-  const statusOptions = useMemo<MultiSelectOption[]>(() => [
-    { id: 'SignPending', label: t('bookingStatuses.SignPending') },
-    { id: 'Pending',     label: t('bookingStatuses.Pending') },
-    { id: 'Approved',    label: t('bookingStatuses.Approved') },
-    { id: 'Completed',   label: t('bookingStatuses.Completed') },
-    { id: 'Cancelled',   label: t('bookingStatuses.Cancelled') },
-  ], [t]);
-
-
+  const statusOptions = useMemo<MultiSelectOption[]>(
+    () => [
+      { id: 'SignPending', label: t('bookingStatuses.SignPending') },
+      { id: 'Pending', label: t('bookingStatuses.Pending') },
+      { id: 'Approved', label: t('bookingStatuses.Approved') },
+      { id: 'Completed', label: t('bookingStatuses.Completed') },
+      { id: 'Cancelled', label: t('bookingStatuses.Cancelled') },
+    ],
+    [t],
+  );
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -295,7 +217,6 @@ export default function Dashboard() {
       />
 
       <div className="dashboard__body">
-
         {/* ── Mobile-only view toggle ── */}
         <div className="dashboard__mobile-toolbar">
           <div className="dashboard__view-toggle">
@@ -326,22 +247,30 @@ export default function Dashboard() {
                 bookingsByDate={bookingsByDate}
               />
               <div className="summary-card">
-                <h4 className="summary-card__title">{t('dashboard.summary')}</h4>
+                <h4 className="summary-card__title">
+                  {t('dashboard.summary')}
+                </h4>
                 <div className="summary-card__rows">
                   <div className="summary-card__row">
-                    <span className="summary-card__label">{t('dashboard.todayTotal')}</span>
+                    <span className="summary-card__label">
+                      {t('dashboard.todayTotal')}
+                    </span>
                     <span className="summary-card__value">
                       {isLoading ? '—' : `${total} ${t('dashboard.trips')}`}
                     </span>
                   </div>
                   <div className="summary-card__row">
-                    <span className="summary-card__label">{t('dashboard.pending')}</span>
+                    <span className="summary-card__label">
+                      {t('dashboard.pending')}
+                    </span>
                     <span className="summary-card__value summary-card__value--pending">
                       {isLoading ? '—' : pending}
                     </span>
                   </div>
                   <div className="summary-card__row">
-                    <span className="summary-card__label">{t('dashboard.completed')}</span>
+                    <span className="summary-card__label">
+                      {t('dashboard.completed')}
+                    </span>
                     <span className="summary-card__value summary-card__value--completed">
                       {isLoading ? '—' : completed}
                     </span>
@@ -375,12 +304,17 @@ export default function Dashboard() {
               {isLoading ? (
                 <div className="booking-list">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="booking-card booking-card--skeleton" />
+                    <div
+                      key={i}
+                      className="booking-card booking-card--skeleton"
+                    />
                   ))}
                 </div>
               ) : bookings.length === 0 ? (
                 <div className="booking-list booking-list--empty">
-                  <p className="booking-list__empty-text">{t('dashboard.noBookingsToday')}</p>
+                  <p className="booking-list__empty-text">
+                    {t('dashboard.noBookingsToday')}
+                  </p>
                 </div>
               ) : (
                 <div className="booking-list">
@@ -388,9 +322,13 @@ export default function Dashboard() {
                     <BookingCard
                       key={booking.id}
                       booking={booking}
-                      onEdit={() => navigate(`/app/bookings/${booking.id}/edit`)}
+                      onEdit={() =>
+                        navigate(`/app/bookings/${booking.id}/edit`)
+                      }
                       onDelete={() => deleteBooking.mutate(booking.id)}
-                      onStatusChange={(status) => updateStatus.mutate({ id: booking.id, status })}
+                      onStatusChange={(status) =>
+                        updateStatus.mutate({ id: booking.id, status })
+                      }
                       onSign={() => setSigningBooking(booking)}
                       isAdmin={isAdmin}
                     />
@@ -398,7 +336,11 @@ export default function Dashboard() {
                 </div>
               )}
 
-              <Link to="/app/bookings/new" state={{ date: dateStr }} className="new-booking-btn">
+              <Link
+                to="/app/bookings/new"
+                state={{ date: dateStr }}
+                className="new-booking-btn"
+              >
                 <PlusCircle size={20} />
                 <span>{t('dashboard.requestNewBooking')}</span>
               </Link>
@@ -409,7 +351,6 @@ export default function Dashboard() {
         {/* ── List view ── */}
         {view === 'list' && (
           <div className="dashboard__list-view">
-
             {/* Filter bar — list view (with date range) */}
             <FilterBar
               isAdmin={isAdmin}
@@ -430,7 +371,9 @@ export default function Dashboard() {
 
             {/* Sort controls */}
             <div className="booking-sort">
-              <span className="booking-sort__label">{t('dashboard.sort.label')}:</span>
+              <span className="booking-sort__label">
+                {t('dashboard.sort.label')}:
+              </span>
               <div className="booking-sort__chips">
                 {sortColumns.map((col) => (
                   <button
@@ -439,11 +382,12 @@ export default function Dashboard() {
                     onClick={() => toggleSort(col.key)}
                   >
                     {col.label}
-                    {sortKey === col.key && (
-                      sortDir === 'asc'
-                        ? <ArrowUp size={12} />
-                        : <ArrowDown size={12} />
-                    )}
+                    {sortKey === col.key &&
+                      (sortDir === 'asc' ? (
+                        <ArrowUp size={12} />
+                      ) : (
+                        <ArrowDown size={12} />
+                      ))}
                   </button>
                 ))}
               </div>
@@ -458,7 +402,9 @@ export default function Dashboard() {
               </div>
             ) : sortedBookings.length === 0 ? (
               <div className="booking-list booking-list--empty">
-                <p className="booking-list__empty-text">{t('dashboard.noBookings')}</p>
+                <p className="booking-list__empty-text">
+                  {t('dashboard.noBookings')}
+                </p>
               </div>
             ) : (
               <div className="booking-list">
@@ -468,7 +414,9 @@ export default function Dashboard() {
                     booking={booking}
                     onEdit={() => navigate(`/app/bookings/${booking.id}/edit`)}
                     onDelete={() => deleteBooking.mutate(booking.id)}
-                    onStatusChange={(status) => updateStatus.mutate({ id: booking.id, status })}
+                    onStatusChange={(status) =>
+                      updateStatus.mutate({ id: booking.id, status })
+                    }
                     onSign={() => setSigningBooking(booking)}
                     isAdmin={isAdmin}
                     showDate
@@ -483,7 +431,6 @@ export default function Dashboard() {
             </Link>
           </div>
         )}
-
       </div>
 
       {signingBooking && (
