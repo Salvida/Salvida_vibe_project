@@ -2,7 +2,7 @@ import { useAuthStore } from '../store/useAuthStore';
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
-const RETRY_DELAYS = [1500, 3000, 5000];
+const RETRY_DELAYS = [500, 1200, 2000];
 
 export async function fetchWithRetry(
   url: string,

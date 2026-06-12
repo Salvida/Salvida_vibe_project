@@ -68,6 +68,7 @@
       "Bash(gh run *)",
       "Bash(echo \"===TSC EXIT: $?===\")",
       "Bash(npx eslint *)"
+      "mcp__supabase__get_advisors"
     ]
   },
   "hooks": {

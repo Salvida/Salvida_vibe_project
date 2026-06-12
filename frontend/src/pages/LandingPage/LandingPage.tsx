@@ -9,6 +9,7 @@ import "swiper/swiper.css";
 import PLATFORM_ICONS from "../../lib/platformIcons";
 import { SalvidaLogo } from "../../assets/icons/SalvidaLogo";
 import { fetchWithRetry } from "../../lib/api";
+import AppLoader from "../../components/AppLoader";
 import "./LandingPage.css";
 import videoSrc from "../../assets/video/Y0S8F6SYMHLHC1WP.mp4";
 import WhatsAppFAB from "../../components/WhatsAppFAB/WhatsAppFAB";
@@ -74,7 +75,7 @@ interface ApiReview {
 const testimonials = [
   {
     quote:
-      "Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite.",
+      "Gracias a Salvida puedo salir de casa sin depender de nadie. Antes las escaleras eran una barrera, ahora son solo un trámite. El equipo es increíble, siempre atentos y profesionales.",
     initials: "ME",
     name: "María Elena",
     role: "Usuaria desde 2023",
@@ -255,6 +256,7 @@ export default function LandingPage() {
   const { t } = useTranslation();
   const [activeSection, setActiveSection] = useState<string>("home");
   const [kpis, setKpis] = useState<GlobalKpis>(DEFAULT_KPIS);
+  const [kpisLoading, setKpisLoading] = useState(true);
   const [socialLinks, setSocialLinks] =
     useState<ApiSocialLink[]>(DEFAULT_SOCIAL_LINKS);
   const [reviews, setReviews] = useState<ApiReview[] | null>(null);
@@ -287,15 +289,16 @@ export default function LandingPage() {
     return () => ac.abort();
   }, []);
 
-  // Fetch global KPIs on mount
+  // Fetch global KPIs on mount — blocks page render until data arrives or retries exhausted
   useEffect(() => {
     const ac = new AbortController();
     fetchWithRetry(`${BASE_URL}/globalKpis`, {}, ac.signal)
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((data: GlobalKpis) => setKpis(data))
       .catch(() => {
-        // fallback – keep zeros after all retries exhausted
-      });
+        // fallback – keep zeros, but still unblock the page
+      })
+      .finally(() => setKpisLoading(false));
     return () => ac.abort();
   }, []);
 
@@ -378,6 +381,8 @@ export default function LandingPage() {
       });
     }
   }
+
+  if (kpisLoading) return <AppLoader />;
 
   return (
     <div className="lp">
@@ -681,7 +686,9 @@ export default function LandingPage() {
               className="lp-footer__contact-item"
               aria-label="Correo electrónico"
             >
-              <span className="lp-material-icon lp-footer__contact-icon">mail</span>
+              <span className="lp-material-icon lp-footer__contact-icon">
+                mail
+              </span>
               {t("landing.footer.email")}
             </a>
             <a
@@ -689,7 +696,9 @@ export default function LandingPage() {
               className="lp-footer__contact-item"
               aria-label="Teléfono"
             >
-              <span className="lp-material-icon lp-footer__contact-icon">phone</span>
+              <span className="lp-material-icon lp-footer__contact-icon">
+                phone
+              </span>
               {t("landing.footer.phone")}
             </a>
           </div>
