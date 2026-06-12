@@ -61,7 +61,7 @@ export default function CalendarWidget({
 
   useEffect(() => {
     onMonthChange?.({ year, month });
-  }, [year, month]);
+  }, [year, month, onMonthChange]);
 
   function prevMonth() {
     if (month === 0) { setYear(y => y - 1); setMonth(11); }

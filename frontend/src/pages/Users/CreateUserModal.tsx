@@ -38,8 +38,8 @@ export default function CreateUserModal({ onClose }: Props) {
     return Object.keys(next).length === 0;
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     if (!validate()) return;
 
     createUser.mutate(
@@ -59,7 +59,7 @@ export default function CreateUserModal({ onClose }: Props) {
   }
 
   return (
-    <div className="cum-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div className="cum-overlay"       onClick={(event) => event.target === event.currentTarget && onClose()}>
       <div className="cum-modal" role="dialog" aria-modal="true">
         <div className="cum-header">
           <h2 className="cum-title">Nuevo usuario</h2>
