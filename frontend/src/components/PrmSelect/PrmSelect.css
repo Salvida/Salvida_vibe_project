@@ -74,6 +74,10 @@
   color: var(--color-primary);
 }
 
+.prm-select__option--active {
+  background-color: var(--color-slate-50);
+}
+
 .prm-select__option--empty {
   color: var(--color-slate-400);
   font-size: 0.8rem;

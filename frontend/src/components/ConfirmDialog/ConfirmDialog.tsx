@@ -24,8 +24,8 @@ export default function ConfirmDialog({
 }: ConfirmDialogProps) {
   useEffect(() => {
     if (!open) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onCancel();
     };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
@@ -40,7 +40,7 @@ export default function ConfirmDialog({
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-title"
-        onMouseDown={(e) => e.stopPropagation()}
+        onMouseDown={(event) => event.stopPropagation()}
       >
         <h3 className="confirm-dialog__title" id="confirm-title">{title}</h3>
         {description && (

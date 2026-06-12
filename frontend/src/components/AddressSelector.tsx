@@ -74,8 +74,8 @@ function Recenter({ lat, lng }: { lat: number; lng: number }) {
 
 function MapClickHandler({ onMapClick }: { onMapClick: (lat: number, lng: number) => void }) {
   useMapEvents({
-    click(e) {
-      onMapClick(e.latlng.lat, e.latlng.lng);
+    click(event) {
+      onMapClick(event.latlng.lat, event.latlng.lng);
     },
   });
   return null;

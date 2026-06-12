@@ -22,7 +22,11 @@
     "changePhoto": "Cambiar foto",
     "change": "Cambiar",
     "add": "Añadir",
-    "remove": "Eliminar"
+    "remove": "Eliminar",
+    "noResults": "Sin resultados",
+    "clearSelection": "Limpiar selección",
+    "user": "Usuario",
+    "searchUser": "Buscar usuario…"
   },
   "bookingStatuses": {
     "Approved": "Aprobada",

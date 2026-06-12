@@ -1,17 +1,10 @@
 import { useMemo } from 'react';
 import { TimePicker, ConfigProvider } from 'antd';
 import dayjs from 'dayjs';
+import { ANTD_THEME } from '../../lib/antdTheme';
 import './TimeInput.css';
 
 const FORMAT = 'HH:mm';
-
-const THEME = {
-  token: {
-    colorPrimary: '#6b4691',
-    borderRadius: 12,
-    fontFamily: 'inherit',
-  },
-} as const;
 
 interface TimeInputProps {
   value?: string;
@@ -32,7 +25,7 @@ export default function TimeInput({
   const dayjsValue = useMemo(() => (value ? dayjs(value, FORMAT) : null), [value]);
 
   return (
-    <ConfigProvider theme={THEME}>
+    <ConfigProvider theme={ANTD_THEME}>
       <TimePicker
         value={dayjsValue}
         onChange={(d) => onChange?.(d ? d.format(FORMAT) : '')}

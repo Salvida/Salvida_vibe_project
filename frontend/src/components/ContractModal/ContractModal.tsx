@@ -29,7 +29,7 @@ export default function ContractModal({ booking, onClose, onSigned }: ContractMo
 
     // Extract base64 PNG without the data-URI prefix
     const dataUrl = canvas.toDataURL('image/png');
-    const base64 = dataUrl.split(',')[1];
+    const base64 = dataUrl.split(',')[1] ?? '';
 
     try {
       await signBooking.mutateAsync({ id: booking.id, signatureImage: base64 });
@@ -42,7 +42,7 @@ export default function ContractModal({ booking, onClose, onSigned }: ContractMo
 
   return (
     <div className="contract-modal-overlay" onClick={onClose}>
-      <div className="contract-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="contract-modal" onClick={(event) => event.stopPropagation()}>
         <div className="contract-modal__header">
           <h2 className="contract-modal__title">{t('contract.modalTitle')}</h2>
           <button type="button" className="contract-modal__close" onClick={onClose}>

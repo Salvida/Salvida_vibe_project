@@ -8,7 +8,7 @@ import AddressSelector from '../../components/AddressSelector';
 import UserSelector from '../../components/UserSelector/UserSelector';
 import { useAuthStore } from '../../store/useAuthStore';
 import DateInput from '../../components/DateInput/DateInput';
-import type { Address, EmergencyContact } from '../../types';
+import type { Address } from '../../types';
 import './NewPrm.css';
 
 interface ContactDraft {
@@ -79,8 +79,8 @@ export default function NewPrm() {
     setAddressDrafts(addressDrafts.filter((_, i) => i !== index));
   }
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault();
     setNameError('');
     setFormError('');
 
@@ -300,7 +300,7 @@ export default function NewPrm() {
                       className="new-prm__input"
                       placeholder={t('prms.newPrm.contactNamePlaceholder')}
                       value={contact.name}
-                      onChange={(e) => updateContact(index, 'name', e.target.value)}
+                      onChange={(event) => updateContact(index, 'name', event.target.value)}
                     />
                   </div>
                   <div className="new-prm__field">
@@ -310,7 +310,7 @@ export default function NewPrm() {
                       className="new-prm__input"
                       placeholder={t('prms.newPrm.phonePlaceholder')}
                       value={contact.phone}
-                      onChange={(e) => updateContact(index, 'phone', e.target.value)}
+                      onChange={(event) => updateContact(index, 'phone', event.target.value)}
                     />
                   </div>
                   <div className="new-prm__field">
@@ -320,7 +320,7 @@ export default function NewPrm() {
                       className="new-prm__input"
                       placeholder={t('prms.newPrm.contactRelationshipPlaceholder')}
                       value={contact.relationship}
-                      onChange={(e) => updateContact(index, 'relationship', e.target.value)}
+                      onChange={(event) => updateContact(index, 'relationship', event.target.value)}
                     />
                   </div>
                 </div>
@@ -362,7 +362,7 @@ export default function NewPrm() {
                     className="new-prm__input"
                     placeholder={t('prms.newPrm.addressAlias')}
                     value={draft.alias}
-                    onChange={(e) => updateAddressDraftAlias(index, e.target.value)}
+                    onChange={(event) => updateAddressDraftAlias(index, event.target.value)}
                     maxLength={40}
                   />
                 </div>
